@@ -1,5 +1,6 @@
 package com.project.ems.role;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,12 +32,12 @@ public class RoleRestController {
     }
 
     @PostMapping
-    public ResponseEntity<RoleDto> save(@RequestBody RoleDto roleDto) {
+    public ResponseEntity<RoleDto> save(@RequestBody @Valid RoleDto roleDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(roleService.save(roleDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<RoleDto> updateById(@RequestBody RoleDto roleDto, @PathVariable Integer id) {
+    public ResponseEntity<RoleDto> updateById(@RequestBody @Valid RoleDto roleDto, @PathVariable Integer id) {
         return ResponseEntity.ok(roleService.updateById(roleDto, id));
     }
 
