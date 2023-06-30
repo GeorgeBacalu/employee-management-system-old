@@ -14,34 +14,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
-@RequestMapping("/api/roles")
 @RequiredArgsConstructor
-public class RoleRestController {
+@RequestMapping(value = "/api/roles", produces = APPLICATION_JSON_VALUE)
+public class RoleRestController implements RoleApi {
 
     private final RoleService roleService;
 
-    @GetMapping
+    @Override @GetMapping
     public ResponseEntity<List<RoleDto>> findAll() {
         return ResponseEntity.ok(roleService.findAll());
     }
 
-    @GetMapping("/{id}")
+    @Override @GetMapping("/{id}")
     public ResponseEntity<RoleDto> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(roleService.findById(id));
     }
 
-    @PostMapping
+    @Override @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<RoleDto> save(@RequestBody @Valid RoleDto roleDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(roleService.save(roleDto));
     }
 
-    @PutMapping("/{id}")
+    @Override @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<RoleDto> updateById(@RequestBody @Valid RoleDto roleDto, @PathVariable Integer id) {
         return ResponseEntity.ok(roleService.updateById(roleDto, id));
     }
 
-    @DeleteMapping("/{id}")
+    @Override @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
         roleService.deleteById(id);
         return ResponseEntity.noContent().build();

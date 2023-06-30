@@ -14,34 +14,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
-@RequestMapping("/api/mentors")
 @RequiredArgsConstructor
-public class MentorRestController {
+@RequestMapping(value = "/api/mentors", produces = APPLICATION_JSON_VALUE)
+public class MentorRestController implements MentorApi {
 
     private final MentorService mentorService;
 
-    @GetMapping
+    @Override @GetMapping
     public ResponseEntity<List<MentorDto>> findAll() {
         return ResponseEntity.ok(mentorService.findAll());
     }
 
-    @GetMapping("/{id}")
+    @Override @GetMapping("/{id}")
     public ResponseEntity<MentorDto> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(mentorService.findById(id));
     }
 
-    @PostMapping
+    @Override @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<MentorDto> save(@RequestBody @Valid MentorDto mentorDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(mentorService.save(mentorDto));
     }
 
-    @PutMapping("/{id}")
+    @Override @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<MentorDto> updateById(@RequestBody @Valid MentorDto mentorDto, @PathVariable Integer id) {
         return ResponseEntity.ok(mentorService.updateById(mentorDto, id));
     }
 
-    @DeleteMapping("/{id}")
+    @Override @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
         mentorService.deleteById(id);
         return ResponseEntity.noContent().build();

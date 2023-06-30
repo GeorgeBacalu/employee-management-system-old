@@ -14,34 +14,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
-@RequestMapping("/api/employees")
 @RequiredArgsConstructor
-public class EmployeeRestController {
+@RequestMapping(value = "/api/employees", produces = APPLICATION_JSON_VALUE)
+public class EmployeeRestController implements EmployeeApi {
 
     private final EmployeeService employeeService;
 
-    @GetMapping
+    @Override @GetMapping
     public ResponseEntity<List<EmployeeDto>> findAll() {
         return ResponseEntity.ok(employeeService.findAll());
     }
 
-    @GetMapping("/{id}")
+    @Override @GetMapping("/{id}")
     public ResponseEntity<EmployeeDto> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(employeeService.findById(id));
     }
 
-    @PostMapping
+    @Override @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<EmployeeDto> save(@RequestBody @Valid EmployeeDto employeeDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.save(employeeDto));
     }
 
-    @PutMapping("/{id}")
+    @Override @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<EmployeeDto> updateById(@RequestBody @Valid EmployeeDto employeeDto, @PathVariable Integer id) {
         return ResponseEntity.ok(employeeService.updateById(employeeDto, id));
     }
 
-    @DeleteMapping("/{id}")
+    @Override @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
         employeeService.deleteById(id);
         return ResponseEntity.noContent().build();

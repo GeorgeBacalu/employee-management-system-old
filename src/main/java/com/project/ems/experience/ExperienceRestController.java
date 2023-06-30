@@ -14,34 +14,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
-@RequestMapping("/api/experiences")
 @RequiredArgsConstructor
-public class ExperienceRestController {
+@RequestMapping(value = "/api/experiences", produces = APPLICATION_JSON_VALUE)
+public class ExperienceRestController implements ExperienceApi {
 
     private final ExperienceService experienceService;
     
-    @GetMapping
+    @Override @GetMapping
     public ResponseEntity<List<ExperienceDto>> findAll() {
         return ResponseEntity.ok(experienceService.findAll());
     }
     
-    @GetMapping("/{id}")
+    @Override @GetMapping("/{id}")
     public ResponseEntity<ExperienceDto> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(experienceService.findById(id));
     }
     
-    @PostMapping
+    @Override @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<ExperienceDto> save(@RequestBody @Valid ExperienceDto experienceDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(experienceService.save(experienceDto));
     }
     
-    @PutMapping("/{id}")
+    @Override @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<ExperienceDto> updateById(@RequestBody @Valid ExperienceDto experienceDto, @PathVariable Integer id) {
         return ResponseEntity.ok(experienceService.updateById(experienceDto, id));
     }
     
-    @DeleteMapping("/{id}")
+    @Override @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
         experienceService.deleteById(id);
         return ResponseEntity.noContent().build();

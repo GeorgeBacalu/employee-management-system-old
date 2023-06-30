@@ -14,34 +14,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
-@RequestMapping("/api/users")
 @RequiredArgsConstructor
-public class UserRestController {
+@RequestMapping(value = "/api/users", produces = APPLICATION_JSON_VALUE)
+public class UserRestController implements UserApi {
 
     private final UserService userService;
 
-    @GetMapping
+    @Override @GetMapping
     public ResponseEntity<List<UserDto>> findAll() {
         return ResponseEntity.ok(userService.findAll());
     }
 
-    @GetMapping("/{id}")
+    @Override @GetMapping("/{id}")
     public ResponseEntity<UserDto> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(userService.findById(id));
     }
 
-    @PostMapping
+    @Override @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> save(@RequestBody @Valid UserDto userDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(userDto));
     }
 
-    @PutMapping("/{id}")
+    @Override @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> updateById(@RequestBody @Valid UserDto userDto, @PathVariable Integer id) {
         return ResponseEntity.ok(userService.updateById(userDto, id));
     }
 
-    @DeleteMapping("/{id}")
+    @Override @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();

@@ -14,34 +14,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @RestController
-@RequestMapping("/api/feedbacks")
 @RequiredArgsConstructor
-public class FeedbackRestController {
+@RequestMapping(value = "/api/feedbacks", produces = APPLICATION_JSON_VALUE)
+public class FeedbackRestController implements FeedbackApi {
 
     private final FeedbackService feedbackService;
 
-    @GetMapping
+    @Override @GetMapping
     public ResponseEntity<List<FeedbackDto>> findAll() {
         return ResponseEntity.ok(feedbackService.findAll());
     }
 
-    @GetMapping("/{id}")
+    @Override @GetMapping("/{id}")
     public ResponseEntity<FeedbackDto> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(feedbackService.findById(id));
     }
 
-    @PostMapping
+    @Override @PostMapping(consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<FeedbackDto> save(@RequestBody @Valid FeedbackDto feedbackDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(feedbackService.save(feedbackDto));
     }
 
-    @PutMapping("/{id}")
+    @Override @PutMapping(value = "/{id}", consumes = APPLICATION_JSON_VALUE)
     public ResponseEntity<FeedbackDto> updateById(@RequestBody @Valid FeedbackDto feedbackDto, @PathVariable Integer id) {
         return ResponseEntity.ok(feedbackService.updateById(feedbackDto, id));
     }
 
-    @DeleteMapping("/{id}")
+    @Override @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
         feedbackService.deleteById(id);
         return ResponseEntity.noContent().build();
