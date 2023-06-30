@@ -1,5 +1,6 @@
 package com.project.ems.experience;
 
+import com.project.ems.exception.ResourceNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -49,7 +50,7 @@ public class ExperienceServiceImpl implements ExperienceService {
 
     @Override
     public Experience findEntityById(Integer id) {
-        return experienceRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Experience with id %s not found", id)));
+        return experienceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("Experience with id %s not found", id)));
     }
 
     private void updateEntityFromDto(ExperienceDto experienceDto, Experience experience) {

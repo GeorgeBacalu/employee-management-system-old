@@ -1,5 +1,6 @@
 package com.project.ems.employee;
 
+import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.experience.ExperienceService;
 import com.project.ems.mentor.MentorService;
 import com.project.ems.role.RoleService;
@@ -56,7 +57,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private Employee findEntityById(Integer id) {
-        return employeeRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Employee with id %s not found", id)));
+        return employeeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("Employee with id %s not found", id)));
     }
 
     private void updateEntityFromDto(EmployeeDto employeeDto, Employee employee) {

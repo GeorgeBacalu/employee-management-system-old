@@ -1,5 +1,6 @@
 package com.project.ems.study;
 
+import com.project.ems.exception.ResourceNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -49,7 +50,7 @@ public class StudyServiceImpl implements StudyService {
 
     @Override
     public Study findEntityById(Integer id) {
-        return studyRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Study with id %s not found", id)));
+        return studyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("Study with id %s not found", id)));
     }
 
     private void updateEntityFromDto(StudyDto studyDto, Study study) {
