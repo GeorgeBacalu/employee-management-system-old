@@ -11,34 +11,72 @@ public class ExperienceServiceImpl implements ExperienceService {
     private final ExperienceRepository experienceRepository;
 
     @Override
-    public List<Experience> findAll() {
-        return experienceRepository.findAll();
+    public List<ExperienceDto> findAll() {
+        List<Experience> experiences = experienceRepository.findAll();
+        return experiences.stream().map(this::convertToDto).toList();
     }
 
     @Override
-    public Experience findById(Integer id) {
-        return experienceRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Experience with id %s not found", id)));
+    public ExperienceDto findById(Integer id) {
+        Experience experience = findEntityById(id);
+        return convertToDto(experience);
     }
 
     @Override
-    public Experience save(Experience experience) {
-        return experienceRepository.save(experience);
+    public ExperienceDto save(ExperienceDto experienceDto) {
+        Experience experience = convertToEntity(experienceDto);
+        Experience savedExperience = experienceRepository.save(experience);
+        return convertToDto(savedExperience);
     }
 
     @Override
-    public Experience updateById(Experience experience, Integer id) {
-        Experience experienceToUpdate = findById(id);
-        experienceToUpdate.setTitle(experience.getTitle());
-        experienceToUpdate.setOrganization(experience.getOrganization());
-        experienceToUpdate.setDescription(experience.getDescription());
-        experienceToUpdate.setType(experience.getType());
-        experienceToUpdate.setStartedAt(experience.getStartedAt());
-        experienceToUpdate.setFinishedAt(experience.getFinishedAt());
-        return experienceRepository.save(experienceToUpdate);
+    public ExperienceDto updateById(ExperienceDto experienceDto, Integer id) {
+        Experience experienceToUpdate = findEntityById(id);
+        updateEntityFromDto(experienceDto, experienceToUpdate);
+        Experience updatedExperience = experienceRepository.save(experienceToUpdate);
+        return convertToDto(updatedExperience);
     }
 
     @Override
     public void deleteById(Integer id) {
         experienceRepository.deleteById(id);
+    }
+
+    @Override
+    public Experience findEntityById(Integer id) {
+        return experienceRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Experience with id %s not found", id)));
+    }
+
+    private ExperienceDto convertToDto(Experience experience) {
+        return ExperienceDto.builder()
+              .id(experience.getId())
+              .title(experience.getTitle())
+              .organization(experience.getOrganization())
+              .description(experience.getDescription())
+              .type(experience.getType())
+              .startedAt(experience.getStartedAt())
+              .finishedAt(experience.getFinishedAt())
+              .build();
+    }
+
+    private Experience convertToEntity(ExperienceDto experienceDto) {
+        return Experience.builder()
+              .id(experienceDto.getId())
+              .title(experienceDto.getTitle())
+              .organization(experienceDto.getOrganization())
+              .description(experienceDto.getDescription())
+              .type(experienceDto.getType())
+              .startedAt(experienceDto.getStartedAt())
+              .finishedAt(experienceDto.getFinishedAt())
+              .build();
+    }
+
+    private void updateEntityFromDto(ExperienceDto experienceDto, Experience experience) {
+        experience.setTitle(experienceDto.getTitle());
+        experience.setOrganization(experienceDto.getOrganization());
+        experience.setDescription(experienceDto.getDescription());
+        experience.setType(experienceDto.getType());
+        experience.setStartedAt(experienceDto.getStartedAt());
+        experience.setFinishedAt(experienceDto.getFinishedAt());
     }
 }

@@ -4,13 +4,15 @@ import java.util.List;
 
 public interface RoleService {
 
-    List<Role> findAll();
+    List<RoleDto> findAll();
 
-    Role findById(Integer id);
+    RoleDto findById(Integer id);
 
-    Role save(Role role);
+    RoleDto save(RoleDto roleDto);
 
-    Role updateById(Role role, Integer id);
+    RoleDto updateById(RoleDto roleDto, Integer id);
 
     void deleteById(Integer id);
+
+    Role findEntityById(Integer id);
 }

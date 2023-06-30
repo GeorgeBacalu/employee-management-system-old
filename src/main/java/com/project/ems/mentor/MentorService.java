@@ -4,13 +4,15 @@ import java.util.List;
 
 public interface MentorService {
 
-    List<Mentor> findAll();
+    List<MentorDto> findAll();
 
-    Mentor findById(Integer id);
+    MentorDto findById(Integer id);
 
-    Mentor save(Mentor mentor);
+    MentorDto save(MentorDto mentorDto);
 
-    Mentor updateById(Mentor mentor, Integer id);
+    MentorDto updateById(MentorDto mentorDto, Integer id);
 
     void deleteById(Integer id);
+
+    Mentor findEntityById(Integer id);
 }

@@ -21,23 +21,23 @@ public class EmployeeRestController {
     private final EmployeeService employeeService;
 
     @GetMapping
-    public ResponseEntity<List<Employee>> findAll() {
+    public ResponseEntity<List<EmployeeDto>> findAll() {
         return ResponseEntity.ok(employeeService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Employee> findById(@PathVariable Integer id) {
+    public ResponseEntity<EmployeeDto> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(employeeService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Employee> save(@RequestBody Employee employee) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.save(employee));
+    public ResponseEntity<EmployeeDto> save(@RequestBody EmployeeDto employeeDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.save(employeeDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Employee> updateById(@RequestBody Employee employee, @PathVariable Integer id) {
-        return ResponseEntity.ok(employeeService.updateById(employee, id));
+    public ResponseEntity<EmployeeDto> updateById(@RequestBody EmployeeDto employeeDto, @PathVariable Integer id) {
+        return ResponseEntity.ok(employeeService.updateById(employeeDto, id));
     }
 
     @DeleteMapping("/{id}")

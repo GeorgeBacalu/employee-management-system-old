@@ -21,23 +21,23 @@ public class FeedbackRestController {
     private final FeedbackService feedbackService;
 
     @GetMapping
-    public ResponseEntity<List<Feedback>> findAll() {
+    public ResponseEntity<List<FeedbackDto>> findAll() {
         return ResponseEntity.ok(feedbackService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Feedback> findById(@PathVariable Integer id) {
+    public ResponseEntity<FeedbackDto> findById(@PathVariable Integer id) {
         return ResponseEntity.ok(feedbackService.findById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Feedback> save(@RequestBody Feedback feedback) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(feedbackService.save(feedback));
+    public ResponseEntity<FeedbackDto> save(@RequestBody FeedbackDto feedbackDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(feedbackService.save(feedbackDto));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Feedback> updateById(@RequestBody Feedback feedback, @PathVariable Integer id) {
-        return ResponseEntity.ok(feedbackService.updateById(feedback, id));
+    public ResponseEntity<FeedbackDto> updateById(@RequestBody FeedbackDto feedbackDto, @PathVariable Integer id) {
+        return ResponseEntity.ok(feedbackService.updateById(feedbackDto, id));
     }
 
     @DeleteMapping("/{id}")

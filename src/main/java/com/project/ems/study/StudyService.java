@@ -4,13 +4,15 @@ import java.util.List;
 
 public interface StudyService {
 
-    List<Study> findAll();
+    List<StudyDto> findAll();
 
-    Study findById(Integer id);
+    StudyDto findById(Integer id);
 
-    Study save(Study study);
+    StudyDto save(StudyDto studyDto);
 
-    Study updateById(Study study, Integer id);
+    StudyDto updateById(StudyDto studyDto, Integer id);
 
     void deleteById(Integer id);
+
+    Study findEntityById(Integer id);
 }

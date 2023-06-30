@@ -74,15 +74,15 @@ public class Mentor {
     private Mentor supervisingMentor;
 
     @ManyToMany
-    @JoinTable(name = "employees_studies",
-          joinColumns = @JoinColumn(name = "employee_id"),
+    @JoinTable(name = "mentors_studies",
+          joinColumns = @JoinColumn(name = "mentor_id"),
           inverseJoinColumns = @JoinColumn(name = "study_id"))
     @ToString.Exclude
     private List<Study> studies;
 
     @ManyToMany
-    @JoinTable(name = "employees_experiences",
-          joinColumns = @JoinColumn(name = "employee_id"),
+    @JoinTable(name = "mentors_experiences",
+          joinColumns = @JoinColumn(name = "mentor_id"),
           inverseJoinColumns = @JoinColumn(name = "experience_id"))
     @ToString.Exclude
     private List<Experience> experiences;

@@ -4,13 +4,15 @@ import java.util.List;
 
 public interface UserService {
 
-    List<User> findAll();
+    List<UserDto> findAll();
 
-    User findById(Integer id);
+    UserDto findById(Integer id);
 
-    User save(User user);
+    UserDto save(UserDto userDto);
 
-    User updateById(User user, Integer id);
+    UserDto updateById(UserDto userDto, Integer id);
 
     void deleteById(Integer id);
+
+    User findEntityById(Integer id);
 }
