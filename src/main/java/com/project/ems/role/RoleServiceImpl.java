@@ -2,31 +2,36 @@ package com.project.ems.role;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import static com.project.ems.mapper.RoleMapper.convertToDto;
+import static com.project.ems.mapper.RoleMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<RoleDto> findAll() {
         List<Role> roles = roleRepository.findAll();
-        return roles.stream().map(this::convertToDto).toList();
+        return roles.stream().map(role -> convertToDto(modelMapper, role)).toList();
     }
 
     @Override
     public RoleDto findById(Integer id) {
         Role role = findEntityById(id);
-        return convertToDto(role);
+        return convertToDto(modelMapper, role);
     }
 
     @Override
     public RoleDto save(RoleDto roleDto) {
-        Role role = convertToEntity(roleDto);
+        Role role = convertToEntity(modelMapper, roleDto);
         Role savedRole = roleRepository.save(role);
-        return convertToDto(savedRole);
+        return convertToDto(modelMapper, savedRole);
     }
 
     @Override
@@ -34,7 +39,7 @@ public class RoleServiceImpl implements RoleService {
         Role roleToUpdate = findEntityById(id);
         updateEntityFromDto(roleDto, roleToUpdate);
         Role updatedRole = roleRepository.save(roleToUpdate);
-        return convertToDto(updatedRole);
+        return convertToDto(modelMapper, updatedRole);
     }
 
     @Override
@@ -45,20 +50,6 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public Role findEntityById(Integer id) {
         return roleRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Role with id %s not found", id)));
-    }
-
-    private RoleDto convertToDto(Role role) {
-        return RoleDto.builder()
-              .id(role.getId())
-              .authority(role.getAuthority())
-              .build();
-    }
-
-    private Role convertToEntity(RoleDto roleDto) {
-        return Role.builder()
-              .id(roleDto.getId())
-              .authority(roleDto.getAuthority())
-              .build();
     }
 
     private void updateEntityFromDto(RoleDto roleDto, Role role) {

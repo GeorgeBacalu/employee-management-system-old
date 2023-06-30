@@ -2,31 +2,36 @@ package com.project.ems.study;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import static com.project.ems.mapper.StudyMapper.convertToDto;
+import static com.project.ems.mapper.StudyMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
 public class StudyServiceImpl implements StudyService {
 
     private final StudyRepository studyRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<StudyDto> findAll() {
         List<Study> studies = studyRepository.findAll();
-        return studies.stream().map(this::convertToDto).toList();
+        return studies.stream().map(study -> convertToDto(modelMapper, study)).toList();
     }
 
     @Override
     public StudyDto findById(Integer id) {
         Study study = findEntityById(id);
-        return convertToDto(study);
+        return convertToDto(modelMapper, study);
     }
 
     @Override
     public StudyDto save(StudyDto studyDto) {
-        Study study = convertToEntity(studyDto);
+        Study study = convertToEntity(modelMapper, studyDto);
         Study savedStudy = studyRepository.save(study);
-        return convertToDto(savedStudy);
+        return convertToDto(modelMapper, savedStudy);
     }
 
     @Override
@@ -34,7 +39,7 @@ public class StudyServiceImpl implements StudyService {
         Study studyToUpdate = findEntityById(id);
         updateEntityFromDto(studyDto, studyToUpdate);
         Study updatedStudy = studyRepository.save(studyToUpdate);
-        return convertToDto(updatedStudy);
+        return convertToDto(modelMapper, updatedStudy);
     }
 
     @Override
@@ -45,30 +50,6 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public Study findEntityById(Integer id) {
         return studyRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Study with id %s not found", id)));
-    }
-
-    private StudyDto convertToDto(Study study) {
-        return StudyDto.builder()
-              .id(study.getId())
-              .title(study.getTitle())
-              .institution(study.getInstitution())
-              .description(study.getDescription())
-              .type(study.getType())
-              .startedAt(study.getStartedAt())
-              .finishedAt(study.getFinishedAt())
-              .build();
-    }
-
-    private Study convertToEntity(StudyDto studyDto) {
-        return Study.builder()
-              .id(studyDto.getId())
-              .title(studyDto.getTitle())
-              .institution(studyDto.getInstitution())
-              .description(studyDto.getDescription())
-              .type(studyDto.getType())
-              .startedAt(studyDto.getStartedAt())
-              .finishedAt(studyDto.getFinishedAt())
-              .build();
     }
 
     private void updateEntityFromDto(StudyDto studyDto, Study study) {

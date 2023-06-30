@@ -1,14 +1,16 @@
 package com.project.ems.employee;
 
-import com.project.ems.experience.Experience;
 import com.project.ems.experience.ExperienceService;
 import com.project.ems.mentor.MentorService;
 import com.project.ems.role.RoleService;
-import com.project.ems.study.Study;
 import com.project.ems.study.StudyService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import static com.project.ems.mapper.EmployeeMapper.convertToDto;
+import static com.project.ems.mapper.EmployeeMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -19,24 +21,25 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final MentorService mentorService;
     private final StudyService studyService;
     private final ExperienceService experienceService;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<EmployeeDto> findAll() {
         List<Employee> employees = employeeRepository.findAll();
-        return employees.stream().map(this::convertToDto).toList();
+        return employees.stream().map(employee -> convertToDto(modelMapper, employee)).toList();
     }
 
     @Override
     public EmployeeDto findById(Integer id) {
         Employee employee = findEntityById(id);
-        return convertToDto(employee);
+        return convertToDto(modelMapper, employee);
     }
 
     @Override
     public EmployeeDto save(EmployeeDto employeeDto) {
-        Employee employee = convertToEntity(employeeDto);
+        Employee employee = convertToEntity(modelMapper, employeeDto, studyService, experienceService);
         Employee savedEmployee = employeeRepository.save(employee);
-        return convertToDto(savedEmployee);
+        return convertToDto(modelMapper, savedEmployee);
     }
 
     @Override
@@ -44,7 +47,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employeeToUpdate = findEntityById(id);
         updateEntityFromDto(employeeDto, employeeToUpdate);
         Employee updatedEmployee = employeeRepository.save(employeeToUpdate);
-        return convertToDto(updatedEmployee);
+        return convertToDto(modelMapper, updatedEmployee);
     }
 
     @Override
@@ -54,44 +57,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private Employee findEntityById(Integer id) {
         return employeeRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Employee with id %s not found", id)));
-    }
-
-    private EmployeeDto convertToDto(Employee employee) {
-        return EmployeeDto.builder()
-              .id(employee.getId())
-              .name(employee.getName())
-              .email(employee.getEmail())
-              .password(employee.getPassword())
-              .mobile(employee.getMobile())
-              .address(employee.getAddress())
-              .birthday(employee.getBirthday())
-              .roleId(employee.getRole().getId())
-              .employmentType(employee.getEmploymentType())
-              .position(employee.getPosition())
-              .grade(employee.getGrade())
-              .mentorId(employee.getMentor().getId())
-              .studiesIds(employee.getStudies().stream().map(Study::getId).toList())
-              .experiencesIds(employee.getExperiences().stream().map(Experience::getId).toList())
-              .build();
-    }
-
-    private Employee convertToEntity(EmployeeDto employeeDto) {
-        return Employee.builder()
-              .id(employeeDto.getId())
-              .name(employeeDto.getName())
-              .email(employeeDto.getEmail())
-              .password(employeeDto.getPassword())
-              .mobile(employeeDto.getMobile())
-              .address(employeeDto.getAddress())
-              .birthday(employeeDto.getBirthday())
-              .role(roleService.findEntityById(employeeDto.getRoleId()))
-              .employmentType(employeeDto.getEmploymentType())
-              .position(employeeDto.getPosition())
-              .grade(employeeDto.getGrade())
-              .mentor(mentorService.findEntityById(employeeDto.getMentorId()))
-              .studies(employeeDto.getStudiesIds().stream().map(studyService::findEntityById).toList())
-              .experiences(employeeDto.getExperiencesIds().stream().map(experienceService::findEntityById).toList())
-              .build();
     }
 
     private void updateEntityFromDto(EmployeeDto employeeDto, Employee employee) {

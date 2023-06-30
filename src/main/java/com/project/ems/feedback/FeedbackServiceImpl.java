@@ -3,7 +3,11 @@ package com.project.ems.feedback;
 import com.project.ems.user.UserService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import static com.project.ems.mapper.FeedbackMapper.convertToDto;
+import static com.project.ems.mapper.FeedbackMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -11,24 +15,25 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
     private final UserService userService;
+    private final ModelMapper modelMapper;
 
     @Override
     public List<FeedbackDto> findAll() {
         List<Feedback> feedbacks = feedbackRepository.findAll();
-        return feedbacks.stream().map(this::convertToDto).toList();
+        return feedbacks.stream().map(feedback -> convertToDto(modelMapper, feedback)).toList();
     }
 
     @Override
     public FeedbackDto findById(Integer id) {
         Feedback feedback = findEntityById(id);
-        return convertToDto(feedback);
+        return convertToDto(modelMapper, feedback);
     }
 
     @Override
     public FeedbackDto save(FeedbackDto feedbackDto) {
-        Feedback feedback = convertToEntity(feedbackDto);
+        Feedback feedback = convertToEntity(modelMapper, feedbackDto);
         Feedback savedFeedback = feedbackRepository.save(feedback);
-        return convertToDto(savedFeedback);
+        return convertToDto(modelMapper, savedFeedback);
     }
 
     @Override
@@ -36,7 +41,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         Feedback feedbackToUpdate = findEntityById(id);
         updateEntityFromDto(feedbackDto, feedbackToUpdate);
         Feedback updatedFeedback = feedbackRepository.save(feedbackToUpdate);
-        return convertToDto(updatedFeedback);
+        return convertToDto(modelMapper, updatedFeedback);
     }
 
     @Override
@@ -46,26 +51,6 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     private Feedback findEntityById(Integer id) {
         return feedbackRepository.findById(id).orElseThrow(() -> new RuntimeException(String.format("Feedback with id %s not found", id)));
-    }
-
-    private FeedbackDto convertToDto(Feedback feedback) {
-        return FeedbackDto.builder()
-              .id(feedback.getId())
-              .type(feedback.getType())
-              .description(feedback.getDescription())
-              .sentAt(feedback.getSentAt())
-              .userId(feedback.getUser().getId())
-              .build();
-    }
-
-    private Feedback convertToEntity(FeedbackDto feedbackDto) {
-        return Feedback.builder()
-              .id(feedbackDto.getUserId())
-              .type(feedbackDto.getType())
-              .description(feedbackDto.getDescription())
-              .sentAt(feedbackDto.getSentAt())
-              .user(userService.findEntityById(feedbackDto.getUserId()))
-              .build();
     }
 
     private void updateEntityFromDto(FeedbackDto feedbackDto, Feedback feedback) {
