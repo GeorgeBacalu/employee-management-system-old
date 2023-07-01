@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import static com.project.ems.constants.ExceptionMessageConstants.EXPERIENCE_NOT_FOUND;
 import static com.project.ems.mapper.ExperienceMapper.convertToDto;
+import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
 import static com.project.ems.mapper.ExperienceMapper.convertToEntity;
 
 @Service
@@ -19,7 +21,7 @@ public class ExperienceServiceImpl implements ExperienceService {
     @Override
     public List<ExperienceDto> findAll() {
         List<Experience> experiences = experienceRepository.findAll();
-        return experiences.stream().map(experience -> convertToDto(modelMapper, experience)).toList();
+        return convertToDtoList(modelMapper, experiences);
     }
 
     @Override
@@ -45,12 +47,13 @@ public class ExperienceServiceImpl implements ExperienceService {
 
     @Override
     public void deleteById(Integer id) {
-        experienceRepository.deleteById(id);
+        Experience experienceToDelete = findEntityById(id);
+        experienceRepository.delete(experienceToDelete);
     }
 
     @Override
     public Experience findEntityById(Integer id) {
-        return experienceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("Experience with id %s not found", id)));
+        return experienceRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format(EXPERIENCE_NOT_FOUND, id)));
     }
 
     private void updateEntityFromDto(ExperienceDto experienceDto, Experience experience) {

@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import static com.project.ems.constants.ExceptionMessageConstants.ROLE_NOT_FOUND;
 import static com.project.ems.mapper.RoleMapper.convertToDto;
+import static com.project.ems.mapper.RoleMapper.convertToDtoList;
 import static com.project.ems.mapper.RoleMapper.convertToEntity;
 
 @Service
@@ -19,7 +21,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public List<RoleDto> findAll() {
         List<Role> roles = roleRepository.findAll();
-        return roles.stream().map(role -> convertToDto(modelMapper, role)).toList();
+        return convertToDtoList(modelMapper, roles);
     }
 
     @Override
@@ -45,12 +47,13 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void deleteById(Integer id) {
-        roleRepository.deleteById(id);
+        Role roleToDelete = findEntityById(id);
+        roleRepository.delete(roleToDelete);
     }
 
     @Override
     public Role findEntityById(Integer id) {
-        return roleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("Role with id %s not found", id)));
+        return roleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format(ROLE_NOT_FOUND, id)));
     }
 
     private void updateEntityFromDto(RoleDto roleDto, Role role) {

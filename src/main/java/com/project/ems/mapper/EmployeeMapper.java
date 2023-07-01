@@ -4,8 +4,11 @@ import com.project.ems.employee.Employee;
 import com.project.ems.employee.EmployeeDto;
 import com.project.ems.experience.Experience;
 import com.project.ems.experience.ExperienceService;
+import com.project.ems.mentor.MentorService;
+import com.project.ems.role.RoleService;
 import com.project.ems.study.Study;
 import com.project.ems.study.StudyService;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -20,10 +23,16 @@ public class EmployeeMapper {
         return employeeDto;
     }
 
-    public static Employee convertToEntity(ModelMapper modelMapper, EmployeeDto employeeDto, StudyService studyService, ExperienceService experienceService) {
+    public static Employee convertToEntity(ModelMapper modelMapper, EmployeeDto employeeDto, RoleService roleService, MentorService mentorService, StudyService studyService, ExperienceService experienceService) {
         Employee employee = modelMapper.map(employeeDto, Employee.class);
+        employee.setRole(roleService.findEntityById(employeeDto.getRoleId()));
+        employee.setMentor(mentorService.findEntityById(employeeDto.getMentorId()));
         employee.setStudies(employeeDto.getStudiesIds().stream().map(studyService::findEntityById).toList());
         employee.setExperiences(employeeDto.getExperiencesIds().stream().map(experienceService::findEntityById).toList());
         return employee;
+    }
+
+    public static List<EmployeeDto> convertToDtoList(ModelMapper modelMapper, List<Employee> employees) {
+        return employees.stream().map(employee -> convertToDto(modelMapper, employee)).toList();
     }
 }

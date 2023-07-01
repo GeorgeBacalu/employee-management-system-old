@@ -9,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import static com.project.ems.constants.ExceptionMessageConstants.MENTOR_NOT_FOUND;
 import static com.project.ems.mapper.MentorMapper.convertToDto;
+import static com.project.ems.mapper.MentorMapper.convertToDtoList;
 import static com.project.ems.mapper.MentorMapper.convertToEntity;
 
 @Service
@@ -25,7 +27,7 @@ public class MentorServiceImpl implements MentorService {
     @Override
     public List<MentorDto> findAll() {
         List<Mentor> mentors = mentorRepository.findAll();
-        return mentors.stream().map(mentor -> convertToDto(modelMapper, mentor)).toList();
+        return convertToDtoList(modelMapper, mentors);
     }
 
     @Override
@@ -36,7 +38,7 @@ public class MentorServiceImpl implements MentorService {
 
     @Override
     public MentorDto save(MentorDto mentorDto) {
-        Mentor mentor = convertToEntity(modelMapper, mentorDto, this, studyService, experienceService);
+        Mentor mentor = convertToEntity(modelMapper, mentorDto, roleService, this, studyService, experienceService);
         Mentor savedMentor = mentorRepository.save(mentor);
         return convertToDto(modelMapper, savedMentor);
     }
@@ -51,12 +53,13 @@ public class MentorServiceImpl implements MentorService {
 
     @Override
     public void deleteById(Integer id) {
-        mentorRepository.deleteById(id);
+        Mentor mentorToDelete = findEntityById(id);
+        mentorRepository.delete(mentorToDelete);
     }
 
     @Override
     public Mentor findEntityById(Integer id) {
-        return mentorRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("Mentor with id %s not found", id)));
+        return mentorRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format(MENTOR_NOT_FOUND, id)));
     }
 
     private void updateEntityFromDto(MentorDto mentorDto, Mentor mentor) {

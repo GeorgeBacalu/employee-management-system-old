@@ -18,7 +18,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 @NoArgsConstructor
 public class UserDto {
 
-    @Positive(message = "Employee ID must be positive")
+    @Positive(message = "User ID must be positive")
     private Integer id;
 
     @NotBlank(message = "User name must not be blank")

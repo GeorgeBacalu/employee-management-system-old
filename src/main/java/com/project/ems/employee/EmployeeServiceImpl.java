@@ -10,7 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import static com.project.ems.constants.ExceptionMessageConstants.EMPLOYEE_NOT_FOUND;
 import static com.project.ems.mapper.EmployeeMapper.convertToDto;
+import static com.project.ems.mapper.EmployeeMapper.convertToDtoList;
 import static com.project.ems.mapper.EmployeeMapper.convertToEntity;
 
 @Service
@@ -27,7 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeDto> findAll() {
         List<Employee> employees = employeeRepository.findAll();
-        return employees.stream().map(employee -> convertToDto(modelMapper, employee)).toList();
+        return convertToDtoList(modelMapper, employees);
     }
 
     @Override
@@ -38,7 +40,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public EmployeeDto save(EmployeeDto employeeDto) {
-        Employee employee = convertToEntity(modelMapper, employeeDto, studyService, experienceService);
+        Employee employee = convertToEntity(modelMapper, employeeDto, roleService, mentorService, studyService, experienceService);
         Employee savedEmployee = employeeRepository.save(employee);
         return convertToDto(modelMapper, savedEmployee);
     }
@@ -53,11 +55,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public void deleteById(Integer id) {
-        employeeRepository.deleteById(id);
+        Employee employeeToDelete = findEntityById(id);
+        employeeRepository.delete(employeeToDelete);
     }
 
     private Employee findEntityById(Integer id) {
-        return employeeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("Employee with id %s not found", id)));
+        return employeeRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format(EMPLOYEE_NOT_FOUND, id)));
     }
 
     private void updateEntityFromDto(EmployeeDto employeeDto, Employee employee) {

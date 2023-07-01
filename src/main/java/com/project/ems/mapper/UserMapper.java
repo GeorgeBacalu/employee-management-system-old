@@ -2,6 +2,7 @@ package com.project.ems.mapper;
 
 import com.project.ems.user.User;
 import com.project.ems.user.UserDto;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -15,5 +16,9 @@ public class UserMapper {
 
     public static User convertToEntity(ModelMapper modelMapper, UserDto userDto) {
         return modelMapper.map(userDto, User.class);
+    }
+
+    public static List<UserDto> convertToDtoLiSt(ModelMapper modelMapper, List<User> users) {
+        return users.stream().map(user -> convertToDto(modelMapper, user)).toList();
     }
 }

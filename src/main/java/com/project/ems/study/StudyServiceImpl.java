@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUND;
 import static com.project.ems.mapper.StudyMapper.convertToDto;
+import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mapper.StudyMapper.convertToEntity;
 
 @Service
@@ -19,7 +21,7 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public List<StudyDto> findAll() {
         List<Study> studies = studyRepository.findAll();
-        return studies.stream().map(study -> convertToDto(modelMapper, study)).toList();
+        return convertToDtoList(modelMapper, studies);
     }
 
     @Override
@@ -45,12 +47,13 @@ public class StudyServiceImpl implements StudyService {
 
     @Override
     public void deleteById(Integer id) {
-        studyRepository.deleteById(id);
+        Study studyToDelete = findEntityById(id);
+        studyRepository.delete(studyToDelete);
     }
 
     @Override
     public Study findEntityById(Integer id) {
-        return studyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("Study with id %s not found", id)));
+        return studyRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format(STUDY_NOT_FOUND, id)));
     }
 
     private void updateEntityFromDto(StudyDto studyDto, Study study) {

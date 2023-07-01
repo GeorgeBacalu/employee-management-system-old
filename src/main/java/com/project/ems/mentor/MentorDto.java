@@ -73,11 +73,14 @@ public class MentorDto {
           @Positive(message = "Experience ID must be positive")
           Integer> experiencesIds;
 
+    @NotNull(message = "Mentor's number of trainees must not be null")
     @Positive(message = "Mentor's number of trainees must be positive")
     private Integer nrTrainees;
 
+    @NotNull(message = "Mentor's maximum number of trainees must not be null")
     @Positive(message = "Mentor's maximum number of trainees must be positive")
     private Integer maxTrainees;
 
+    @NotNull(message = "Mentor's open for training status must not be null")
     private Boolean isTrainingOpen;
 }

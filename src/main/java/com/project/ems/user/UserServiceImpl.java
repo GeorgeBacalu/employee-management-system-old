@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND;
 import static com.project.ems.mapper.UserMapper.convertToDto;
+import static com.project.ems.mapper.UserMapper.convertToDtoLiSt;
 import static com.project.ems.mapper.UserMapper.convertToEntity;
 
 @Service
@@ -21,7 +23,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
-        return users.stream().map(user -> convertToDto(modelMapper, user)).toList();
+        return convertToDtoLiSt(modelMapper, users);
     }
 
     @Override
@@ -47,12 +49,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void deleteById(Integer id) {
-        userRepository.deleteById(id);
+        User userToDelete = findEntityById(id);
+        userRepository.delete(userToDelete);
     }
 
     @Override
     public User findEntityById(Integer id) {
-        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format("User with id %s not found", id)));
+        return userRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException(String.format(USER_NOT_FOUND, id)));
     }
 
     private void updateEntityFromDto(UserDto userDto, User user) {
