@@ -3,6 +3,7 @@ package com.project.ems.mock;
 import com.project.ems.study.Study;
 import com.project.ems.study.enums.StudyType;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
@@ -16,11 +17,11 @@ public class StudyMock {
     }
 
     public static List<Study> getMockedStudies1() {
-        return List.of(getMockedStudy1(), getMockedStudy2());
+        return new ArrayList<>(List.of(getMockedStudy1(), getMockedStudy2()));
     }
 
     public static List<Study> getMockedStudies2() {
-        return List.of(getMockedStudy3(), getMockedStudy4());
+        return new ArrayList<>(List.of(getMockedStudy3(), getMockedStudy4()));
     }
 
     public static Study getMockedStudy1() {

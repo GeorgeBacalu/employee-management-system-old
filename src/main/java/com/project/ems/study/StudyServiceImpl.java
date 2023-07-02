@@ -1,6 +1,8 @@
 package com.project.ems.study;
 
+import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
+import com.project.ems.mentor.MentorRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,6 +18,8 @@ import static com.project.ems.mapper.StudyMapper.convertToEntity;
 public class StudyServiceImpl implements StudyService {
 
     private final StudyRepository studyRepository;
+    private final EmployeeRepository employeeRepository;
+    private final MentorRepository mentorRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -48,6 +52,8 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public void deleteById(Integer id) {
         Study studyToDelete = findEntityById(id);
+        employeeRepository.findByStudiesContains(studyToDelete).ifPresent(employee -> employee.getStudies().remove(studyToDelete));
+        mentorRepository.findByStudiesContains(studyToDelete).ifPresent(mentor -> mentor.getStudies().remove(studyToDelete));
         studyRepository.delete(studyToDelete);
     }
 

@@ -1,6 +1,8 @@
 package com.project.ems.experience;
 
+import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
+import com.project.ems.mentor.MentorRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,6 +18,8 @@ import static com.project.ems.mapper.ExperienceMapper.convertToEntity;
 public class ExperienceServiceImpl implements ExperienceService {
 
     private final ExperienceRepository experienceRepository;
+    private final EmployeeRepository employeeRepository;
+    private final MentorRepository mentorRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -48,6 +52,8 @@ public class ExperienceServiceImpl implements ExperienceService {
     @Override
     public void deleteById(Integer id) {
         Experience experienceToDelete = findEntityById(id);
+        employeeRepository.findByExperiencesContains(experienceToDelete).ifPresent(employee -> employee.getExperiences().remove(experienceToDelete));
+        mentorRepository.findByExperiencesContains(experienceToDelete).ifPresent(mentor -> mentor.getExperiences().remove(experienceToDelete));
         experienceRepository.delete(experienceToDelete);
     }
 

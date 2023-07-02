@@ -3,6 +3,7 @@ package com.project.ems.mock;
 import com.project.ems.experience.Experience;
 import com.project.ems.experience.enums.ExperienceType;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 import lombok.AccessLevel;
@@ -16,11 +17,11 @@ public class ExperienceMock {
     }
 
     public static List<Experience> getMockedExperiences1() {
-        return List.of(getMockedExperience1(), getMockedExperience2());
+        return new ArrayList<>(List.of(getMockedExperience1(), getMockedExperience2()));
     }
 
     public static List<Experience> getMockedExperiences2() {
-        return List.of(getMockedExperience3(), getMockedExperience4());
+        return new ArrayList<>(List.of(getMockedExperience3(), getMockedExperience4()));
     }
 
     public static Experience getMockedExperience1() {

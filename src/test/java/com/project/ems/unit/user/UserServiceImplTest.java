@@ -1,6 +1,7 @@
 package com.project.ems.unit.user;
 
 import com.project.ems.exception.ResourceNotFoundException;
+import com.project.ems.feedback.FeedbackRepository;
 import com.project.ems.role.Role;
 import com.project.ems.role.RoleService;
 import com.project.ems.user.User;
@@ -45,6 +46,9 @@ class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private FeedbackRepository feedbackRepository;
 
     @Mock
     private RoleService roleService;

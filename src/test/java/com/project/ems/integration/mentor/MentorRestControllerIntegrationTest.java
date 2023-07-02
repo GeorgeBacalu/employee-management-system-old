@@ -129,6 +129,7 @@ class MentorRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<MentorDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
+        mentorDto2.setSupervisingMentorId(null);
         assertThat(result).isEqualTo(List.of(mentorDto2));
     }
 

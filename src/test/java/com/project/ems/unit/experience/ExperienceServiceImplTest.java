@@ -1,10 +1,14 @@
 package com.project.ems.unit.experience;
 
+import com.project.ems.employee.Employee;
+import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.experience.Experience;
 import com.project.ems.experience.ExperienceDto;
 import com.project.ems.experience.ExperienceRepository;
 import com.project.ems.experience.ExperienceServiceImpl;
+import com.project.ems.mentor.Mentor;
+import com.project.ems.mentor.MentorRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,9 +27,11 @@ import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.mapper.ExperienceMapper.convertToDto;
 import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience2;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences;
+import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,6 +49,12 @@ class ExperienceServiceImplTest {
     @Mock
     private ExperienceRepository experienceRepository;
 
+    @Mock
+    private EmployeeRepository employeeRepository;
+
+    @Mock
+    private MentorRepository mentorRepository;
+
     @Spy
     private ModelMapper modelMapper;
 
@@ -52,6 +64,8 @@ class ExperienceServiceImplTest {
     private Experience experience1;
     private Experience experience2;
     private List<Experience> experiences;
+    private Employee employee;
+    private Mentor mentor;
     private ExperienceDto experienceDto1;
     private ExperienceDto experienceDto2;
     private List<ExperienceDto> experienceDtos;
@@ -61,6 +75,8 @@ class ExperienceServiceImplTest {
         experience1 = getMockedExperience1();
         experience2 = getMockedExperience2();
         experiences = getMockedExperiences();
+        employee = getMockedEmployee1();
+        mentor = getMockedMentor1();
         experienceDto1 = convertToDto(modelMapper, experience1);
         experienceDto2 = convertToDto(modelMapper, experience2);
         experienceDtos = convertToDtoList(modelMapper, experiences);
@@ -116,6 +132,8 @@ class ExperienceServiceImplTest {
     @Test
     void deleteById_withValidId_shouldRemoveExperienceWithGivenFromList() {
         given(experienceRepository.findById(anyInt())).willReturn(Optional.ofNullable(experience1));
+        given(employeeRepository.findByExperiencesContains(any(Experience.class))).willReturn(Optional.ofNullable(employee));
+        given(mentorRepository.findByExperiencesContains(any(Experience.class))).willReturn(Optional.ofNullable(mentor));
         experienceService.deleteById(VALID_ID);
         verify(experienceRepository).delete(experience1);
     }

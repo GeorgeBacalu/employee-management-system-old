@@ -1,5 +1,7 @@
 package com.project.ems.mentor;
 
+import com.project.ems.employee.Employee;
+import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.experience.ExperienceService;
 import com.project.ems.role.RoleService;
@@ -20,6 +22,7 @@ import static com.project.ems.mapper.MentorMapper.convertToEntity;
 public class MentorServiceImpl implements MentorService {
 
     private final MentorRepository mentorRepository;
+    private final EmployeeRepository employeeRepository;
     private final RoleService roleService;
     private final StudyService studyService;
     private final ExperienceService experienceService;
@@ -55,6 +58,12 @@ public class MentorServiceImpl implements MentorService {
     @Override
     public void deleteById(Integer id) {
         Mentor mentorToDelete = findEntityById(id);
+        for(Mentor mentor : mentorRepository.findAllBySupervisingMentor(mentorToDelete)) {
+            mentor.setSupervisingMentor(null);
+        }
+        for(Employee employee : employeeRepository.findAllByMentor(mentorToDelete)) {
+            employee.setMentor(null);
+        }
         mentorRepository.delete(mentorToDelete);
     }
 

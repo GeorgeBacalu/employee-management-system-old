@@ -1,6 +1,11 @@
 package com.project.ems.role;
 
+import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
+import com.project.ems.feedback.FeedbackRepository;
+import com.project.ems.mentor.MentorRepository;
+import com.project.ems.user.User;
+import com.project.ems.user.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -16,6 +21,10 @@ import static com.project.ems.mapper.RoleMapper.convertToEntity;
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
+    private final EmployeeRepository employeeRepository;
+    private final MentorRepository mentorRepository;
+    private final FeedbackRepository feedbackRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -48,6 +57,12 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public void deleteById(Integer id) {
         Role roleToDelete = findEntityById(id);
+        for(User user : userRepository.findAllByRole(roleToDelete)) {
+            feedbackRepository.deleteAllByUser(user);
+        }
+        userRepository.deleteAllByRole(roleToDelete);
+        employeeRepository.deleteAllByRole(roleToDelete);
+        mentorRepository.deleteAllByRole(roleToDelete);
         roleRepository.delete(roleToDelete);
     }
 

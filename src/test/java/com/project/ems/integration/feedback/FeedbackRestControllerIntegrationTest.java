@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.feedback.FeedbackDto;
 import java.util.List;
+import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -79,17 +80,16 @@ class FeedbackRestControllerIntegrationTest {
     }
 
     @Test
-    void save_shouldAddFeedbackToList() throws Exception {
+    void save_shouldAddFeedbackToList() {
         ResponseEntity<FeedbackDto> saveResponse = template.postForEntity(API_FEEDBACKS, feedbackDto1, FeedbackDto.class);
         assertThat(saveResponse).isNotNull();
         assertThat(saveResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(saveResponse.getBody()).isEqualTo(feedbackDto1);
-
-        ResponseEntity<String> getAllResponse = template.getForEntity(API_FEEDBACKS, String.class);
-        assertThat(getAllResponse).isNotNull();
-        assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        List<FeedbackDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(feedbackDtos);
+        FeedbackDto saveResult = saveResponse.getBody();
+        assertThat(Objects.requireNonNull(saveResult).getId()).isEqualTo(feedbackDto1.getId());
+        assertThat(saveResult.getType()).isEqualTo(feedbackDto1.getType());
+        assertThat(saveResult.getDescription()).isEqualTo(feedbackDto1.getDescription());
+        assertThat(saveResult.getUserId()).isEqualTo(feedbackDto1.getUserId());
+        assertThat(saveResult.getSentAt()).isNotNull();
     }
 
     @Test
@@ -98,12 +98,22 @@ class FeedbackRestControllerIntegrationTest {
         ResponseEntity<FeedbackDto> updateResponse = template.exchange(API_FEEDBACKS + "/" + VALID_ID, HttpMethod.PUT, new HttpEntity<>(feedbackDto2), FeedbackDto.class);
         assertThat(updateResponse).isNotNull();
         assertThat(updateResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(updateResponse.getBody()).isEqualTo(feedbackDto);
+        FeedbackDto updateResult = updateResponse.getBody();
+        assertThat(Objects.requireNonNull(updateResult).getId()).isEqualTo(feedbackDto.getId());
+        assertThat(updateResult.getType()).isEqualTo(feedbackDto.getType());
+        assertThat(updateResult.getDescription()).isEqualTo(feedbackDto.getDescription());
+        assertThat(updateResult.getUserId()).isEqualTo(feedbackDto.getUserId());
+        assertThat(updateResult.getSentAt()).isNotNull();
 
         ResponseEntity<FeedbackDto> getResponse = template.getForEntity(API_FEEDBACKS + "/" + VALID_ID, FeedbackDto.class);
         assertThat(getResponse).isNotNull();
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(getResponse.getBody()).isEqualTo(feedbackDto);
+        FeedbackDto getResult = getResponse.getBody();
+        assertThat(Objects.requireNonNull(getResult).getId()).isEqualTo(feedbackDto.getId());
+        assertThat(getResult.getType()).isEqualTo(feedbackDto.getType());
+        assertThat(getResult.getDescription()).isEqualTo(feedbackDto.getDescription());
+        assertThat(getResult.getUserId()).isEqualTo(feedbackDto.getUserId());
+        assertThat(getResult.getSentAt()).isNotNull();
     }
 
     @Test

@@ -1,5 +1,7 @@
 package com.project.ems.unit.mentor;
 
+import com.project.ems.employee.Employee;
+import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.experience.Experience;
 import com.project.ems.experience.ExperienceService;
@@ -29,6 +31,7 @@ import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.mapper.MentorMapper.convertToDto;
 import static com.project.ems.mapper.MentorMapper.convertToDtoList;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences2;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
@@ -56,6 +59,9 @@ class MentorServiceImplTest {
     private MentorRepository mentorRepository;
 
     @Mock
+    private EmployeeRepository employeeRepository;
+
+    @Mock
     private RoleService roleService;
 
     @Mock
@@ -73,6 +79,7 @@ class MentorServiceImplTest {
     private Mentor mentor1;
     private Mentor mentor2;
     private List<Mentor> mentors;
+    private Employee employee;
     private Role role1;
     private Role role2;
     private List<Study> studies1;
@@ -88,6 +95,7 @@ class MentorServiceImplTest {
         mentor1 = getMockedMentor1();
         mentor2 = getMockedMentor2();
         mentors = getMockedMentors();
+        employee = getMockedEmployee1();
         role1 = getMockedRole1();
         role2 = getMockedRole2();
         studies1 = getMockedStudies1();
@@ -155,6 +163,8 @@ class MentorServiceImplTest {
     @Test
     void deleteById_withValidId_shouldRemoveMentorWithGivenIdFromList() {
         given(mentorRepository.findById(anyInt())).willReturn(Optional.ofNullable(mentor1));
+        given(mentorRepository.findAllBySupervisingMentor(any(Mentor.class))).willReturn(List.of(mentor2));
+        given(employeeRepository.findAllByMentor(any(Mentor.class))).willReturn(List.of(employee));
         mentorService.deleteById(VALID_ID);
         verify(mentorRepository).delete(mentor1);
     }
