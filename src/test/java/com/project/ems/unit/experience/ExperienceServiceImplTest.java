@@ -132,8 +132,8 @@ class ExperienceServiceImplTest {
     @Test
     void deleteById_withValidId_shouldRemoveExperienceWithGivenFromList() {
         given(experienceRepository.findById(anyInt())).willReturn(Optional.ofNullable(experience1));
-        given(employeeRepository.findByExperiencesContains(any(Experience.class))).willReturn(Optional.ofNullable(employee));
-        given(mentorRepository.findByExperiencesContains(any(Experience.class))).willReturn(Optional.ofNullable(mentor));
+        given(employeeRepository.findAllByExperiencesContains(any(Experience.class))).willReturn(List.of(employee));
+        given(mentorRepository.findAllByExperiencesContains(any(Experience.class))).willReturn(List.of(mentor));
         experienceService.deleteById(VALID_ID);
         verify(experienceRepository).delete(experience1);
     }

@@ -1,6 +1,10 @@
 package com.project.ems.integration.study;
 
+import com.project.ems.employee.Employee;
+import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
+import com.project.ems.mentor.Mentor;
+import com.project.ems.mentor.MentorRepository;
 import com.project.ems.study.Study;
 import com.project.ems.study.StudyDto;
 import com.project.ems.study.StudyRepository;
@@ -22,6 +26,8 @@ import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.mapper.StudyMapper.convertToDto;
 import static com.project.ems.mapper.StudyMapper.convertToDtoList;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
+import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
 import static com.project.ems.mock.StudyMock.getMockedStudy2;
@@ -42,6 +48,12 @@ class StudyServiceIntegrationTest {
     @MockBean
     private StudyRepository studyRepository;
 
+    @MockBean
+    private EmployeeRepository employeeRepository;
+
+    @MockBean
+    private MentorRepository mentorRepository;
+
     @Spy
     private ModelMapper modelMapper;
 
@@ -51,6 +63,8 @@ class StudyServiceIntegrationTest {
     private Study study1;
     private Study study2;
     private List<Study> studies;
+    private Employee employee;
+    private Mentor mentor;
     private StudyDto studyDto1;
     private StudyDto studyDto2;
     private List<StudyDto> studyDtos;
@@ -60,6 +74,8 @@ class StudyServiceIntegrationTest {
         study1 = getMockedStudy1();
         study2 = getMockedStudy2();
         studies = getMockedStudies();
+        employee = getMockedEmployee1();
+        mentor = getMockedMentor1();
         studyDto1 = convertToDto(modelMapper, study1);
         studyDto2 = convertToDto(modelMapper, study2);
         studyDtos = convertToDtoList(modelMapper, studies);
@@ -115,6 +131,8 @@ class StudyServiceIntegrationTest {
     @Test
     void deleteById_withValidId_shouldRemoveStudyWithGivenIdFromList() {
         given(studyRepository.findById(anyInt())).willReturn(Optional.ofNullable(study1));
+        given(employeeRepository.findAllByStudiesContains(any(Study.class))).willReturn(List.of(employee));
+        given(mentorRepository.findAllByStudiesContains(any(Study.class))).willReturn(List.of(mentor));
         studyService.deleteById(VALID_ID);
         verify(studyRepository).delete(study1);
     }

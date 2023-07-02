@@ -132,8 +132,8 @@ class StudyServiceImplTest {
     @Test
     void deleteById_withValidId_shouldRemoveStudyWithGivenIdFromList() {
         given(studyRepository.findById(anyInt())).willReturn(Optional.ofNullable(study1));
-        given(employeeRepository.findByStudiesContains(any(Study.class))).willReturn(Optional.ofNullable(employee));
-        given(mentorRepository.findByStudiesContains(any(Study.class))).willReturn(Optional.ofNullable(mentor));
+        given(employeeRepository.findAllByStudiesContains(any(Study.class))).willReturn(List.of(employee));
+        given(mentorRepository.findAllByStudiesContains(any(Study.class))).willReturn(List.of(mentor));
         studyService.deleteById(VALID_ID);
         verify(studyRepository).delete(study1);
     }

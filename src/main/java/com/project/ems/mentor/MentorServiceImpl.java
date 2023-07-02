@@ -58,12 +58,10 @@ public class MentorServiceImpl implements MentorService {
     @Override
     public void deleteById(Integer id) {
         Mentor mentorToDelete = findEntityById(id);
-        for(Mentor mentor : mentorRepository.findAllBySupervisingMentor(mentorToDelete)) {
-            mentor.setSupervisingMentor(null);
-        }
-        for(Employee employee : employeeRepository.findAllByMentor(mentorToDelete)) {
-            employee.setMentor(null);
-        }
+        List<Mentor> mentors = mentorRepository.findAllBySupervisingMentor(mentorToDelete);
+        mentors.forEach(mentor -> mentor.setSupervisingMentor(null));
+        List<Employee> employees = employeeRepository.findAllByMentor(mentorToDelete);
+        employees.forEach(employee -> employee.setMentor(null));
         mentorRepository.delete(mentorToDelete);
     }
 

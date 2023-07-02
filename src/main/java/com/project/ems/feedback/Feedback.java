@@ -45,7 +45,7 @@ public class Feedback {
     private LocalDateTime sentAt;
 
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Override

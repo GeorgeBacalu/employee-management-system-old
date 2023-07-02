@@ -1,7 +1,6 @@
 package com.project.ems.user;
 
 import com.project.ems.exception.ResourceNotFoundException;
-import com.project.ems.feedback.FeedbackRepository;
 import com.project.ems.role.RoleService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,6 @@ import static com.project.ems.mapper.UserMapper.convertToEntity;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
-    private final FeedbackRepository feedbackRepository;
     private final RoleService roleService;
     private final ModelMapper modelMapper;
 
@@ -54,7 +52,6 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteById(Integer id) {
         User userToDelete = findEntityById(id);
-        feedbackRepository.deleteAllByUser(userToDelete);
         userRepository.delete(userToDelete);
     }
 
