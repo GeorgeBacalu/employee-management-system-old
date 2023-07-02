@@ -59,7 +59,6 @@ public class MentorDto {
     @NotNull(message = "Mentor grade must not be null")
     private Grade grade;
 
-    @NotNull(message = "Supervising mentor ID must not be null")
     @Positive(message = "Supervising mentor ID must be positive")
     private Integer supervisingMentorId;
 

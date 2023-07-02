@@ -5,6 +5,7 @@ import com.project.ems.experience.ExperienceService;
 import com.project.ems.role.RoleService;
 import com.project.ems.study.StudyService;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -75,8 +76,8 @@ public class MentorServiceImpl implements MentorService {
         mentor.setPosition(mentorDto.getPosition());
         mentor.setGrade(mentorDto.getGrade());
         mentor.setSupervisingMentor(supervisingMentorId != null ? findEntityById(supervisingMentorId) : null);
-        mentor.setStudies(mentorDto.getStudiesIds().stream().map(studyService::findEntityById).toList());
-        mentor.setExperiences(mentorDto.getExperiencesIds().stream().map(experienceService::findEntityById).toList());
+        mentor.setStudies(mentorDto.getStudiesIds().stream().map(studyService::findEntityById).collect(Collectors.toList()));
+        mentor.setExperiences(mentorDto.getExperiencesIds().stream().map(experienceService::findEntityById).collect(Collectors.toList()));
         mentor.setNrTrainees(mentorDto.getNrTrainees());
         mentor.setMaxTrainees(mentorDto.getMaxTrainees());
         mentor.setIsTrainingOpen(mentorDto.getIsTrainingOpen());

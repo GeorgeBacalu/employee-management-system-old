@@ -26,7 +26,6 @@ public class FeedbackDto {
     @NotBlank(message = "Feedback description must not be blank")
     private String description;
 
-    @NotNull(message = "Sent at must not be null")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime sentAt;
 

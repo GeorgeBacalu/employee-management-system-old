@@ -10,18 +10,21 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import static com.project.ems.constants.ExceptionMessageConstants.INVALID_REQUEST;
+import static com.project.ems.constants.ExceptionMessageConstants.RESOURCE_NOT_FOUND;
+
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format("Resource not found: %s", exception.getMessage()));
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(String.format(RESOURCE_NOT_FOUND, exception.getMessage()));
     }
 
     @ExceptionHandler(InvalidRequestException.class)
     public ResponseEntity<String> handleInvalidRequestException(InvalidRequestException exception) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format("Invalid request: %s", exception.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(String.format(INVALID_REQUEST, exception.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

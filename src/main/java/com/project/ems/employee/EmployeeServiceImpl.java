@@ -6,6 +6,7 @@ import com.project.ems.mentor.MentorService;
 import com.project.ems.role.RoleService;
 import com.project.ems.study.StudyService;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setPosition(employeeDto.getPosition());
         employee.setGrade(employeeDto.getGrade());
         employee.setMentor(mentorService.findEntityById(employeeDto.getMentorId()));
-        employee.setStudies(employeeDto.getStudiesIds().stream().map(studyService::findEntityById).toList());
-        employee.setExperiences(employeeDto.getExperiencesIds().stream().map(experienceService::findEntityById).toList());
+        employee.setStudies(employeeDto.getStudiesIds().stream().map(studyService::findEntityById).collect(Collectors.toList()));
+        employee.setExperiences(employeeDto.getExperiencesIds().stream().map(experienceService::findEntityById).collect(Collectors.toList()));
     }
 }
