@@ -113,30 +113,4 @@ class RoleRestControllerIntegrationTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody()).isEqualTo(String.format(RESOURCE_NOT_FOUND, String.format(ROLE_NOT_FOUND, INVALID_ID)));
     }
-
-    @Test
-    void deleteById_withValidId_shouldRemoveRoleWithGivenIdFromList() throws Exception {
-        ResponseEntity<RoleDto> deleteResponse = template.exchange(API_ROLES + "/" + VALID_ID, HttpMethod.DELETE, null, RoleDto.class);
-        assertThat(deleteResponse).isNotNull();
-        assertThat(deleteResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
-
-        ResponseEntity<String> getResponse = template.getForEntity(API_ROLES + "/" + VALID_ID, String.class);
-        assertThat(getResponse).isNotNull();
-        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(getResponse.getBody()).isEqualTo(String.format(RESOURCE_NOT_FOUND, String.format(ROLE_NOT_FOUND, INVALID_ID)));
-
-        ResponseEntity<String> getAllResponse = template.getForEntity(API_ROLES, String.class);
-        assertThat(getAllResponse).isNotNull();
-        assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        List<RoleDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(roleDto2));
-    }
-
-    @Test
-    void deleteById_withInvalidId_shouldThrowException() {
-        ResponseEntity<String> response = template.exchange(API_ROLES + "/" + INVALID_ID, HttpMethod.DELETE, null, String.class);
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody()).isEqualTo(String.format(RESOURCE_NOT_FOUND, String.format(ROLE_NOT_FOUND, INVALID_ID)));
-    }
 }

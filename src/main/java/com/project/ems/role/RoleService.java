@@ -12,7 +12,5 @@ public interface RoleService {
 
     RoleDto updateById(RoleDto roleDto, Integer id);
 
-    void deleteById(Integer id);
-
     Role findEntityById(Integer id);
 }

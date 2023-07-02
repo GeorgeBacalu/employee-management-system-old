@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class RoleRestControllerTest {
@@ -85,13 +84,5 @@ class RoleRestControllerTest {
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(roleDto);
-    }
-
-    @Test
-    void deleteById_shouldRemoveRoleWithGivenIdFromList() {
-        ResponseEntity<Void> response = roleRestController.deleteById(VALID_ID);
-        verify(roleService).deleteById(VALID_ID);
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 }

@@ -112,19 +112,4 @@ class RoleServiceImplTest {
               .hasMessage(String.format(ROLE_NOT_FOUND, INVALID_ID));
         verify(roleRepository, never()).save(any(Role.class));
     }
-
-    @Test
-    void deleteById_withValidId_shouldRemoveRoleWithGivenIdFromList() {
-        given(roleRepository.findById(anyInt())).willReturn(Optional.ofNullable(role1));
-        roleService.deleteById(VALID_ID);
-        verify(roleRepository).delete(role1);
-    }
-
-    @Test
-    void deleteById_withInvalidId_shouldThrowException() {
-        assertThatThrownBy(() -> roleService.deleteById(INVALID_ID))
-              .isInstanceOf(ResourceNotFoundException.class)
-              .hasMessage(String.format(ROLE_NOT_FOUND, INVALID_ID));
-        verify(roleRepository, never()).delete(any(Role.class));
-    }
 }

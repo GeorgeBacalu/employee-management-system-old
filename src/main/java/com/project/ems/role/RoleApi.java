@@ -33,10 +33,4 @@ public interface RoleApi {
           @ApiResponse(responseCode = "500", description = "Internal server error")})
     ResponseEntity<RoleDto> updateById(@RequestBody(description = "Updated role object") RoleDto roleDto,
                                        @Parameter(name = "id", description = "ID of the role to update", example = "1") Integer id);
-
-    @Operation(summary = "Delete role by ID", description = "Delete an existing role with the given ID", tags = "role", responses = {
-          @ApiResponse(responseCode = "200", description = "Successful operation"),
-          @ApiResponse(responseCode = "404", description = "Invalid ID supplied"),
-          @ApiResponse(responseCode = "500", description = "Internal server error")})
-    ResponseEntity<Void> deleteById(@Parameter(name = "id", description = "ID of the role to delete", example = "1") Integer id);
 }

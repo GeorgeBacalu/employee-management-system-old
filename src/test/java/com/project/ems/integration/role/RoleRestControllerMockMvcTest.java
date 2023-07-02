@@ -35,10 +35,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -152,22 +150,5 @@ class RoleRestControllerMockMvcTest {
               .andExpect(result -> assertTrue(result.getResolvedException() instanceof  ResourceNotFoundException))
               .andExpect(result -> assertThat(Objects.requireNonNull(result.getResolvedException()).getMessage()).isEqualTo(message));
         verify(roleService).updateById(roleDto2, INVALID_ID);
-    }
-
-    @Test
-    void deleteById_withValidId_shouldRemoveRoleWithGivenIdFromList() throws Exception {
-        mockMvc.perform(delete(API_ROLES + "/{id}", VALID_ID)).andExpect(status().isNoContent());
-        verify(roleService).deleteById(VALID_ID);
-    }
-
-    @Test
-    void deleteById_withInvalidId_shouldThrowException() throws Exception {
-        String message = String.format(ROLE_NOT_FOUND, INVALID_ID);
-        doThrow(new ResourceNotFoundException(message)).when(roleService).deleteById(anyInt());
-        mockMvc.perform(delete(API_ROLES + "/{id}", INVALID_ID))
-              .andExpect(status().isNotFound())
-              .andExpect(result -> assertTrue(result.getResolvedException() instanceof  ResourceNotFoundException))
-              .andExpect(result -> assertThat(Objects.requireNonNull(result.getResolvedException()).getMessage()).isEqualTo(message));
-        verify(roleService).deleteById(INVALID_ID);
     }
 }

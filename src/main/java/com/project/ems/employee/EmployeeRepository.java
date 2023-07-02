@@ -2,7 +2,6 @@ package com.project.ems.employee;
 
 import com.project.ems.experience.Experience;
 import com.project.ems.mentor.Mentor;
-import com.project.ems.role.Role;
 import com.project.ems.study.Study;
 import java.util.List;
 import java.util.Optional;
@@ -15,6 +14,4 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     Optional<Employee> findByExperiencesContains(Experience experience);
 
     Optional<Employee> findByStudiesContains(Study study);
-
-    void deleteAllByRole(Role role);
 }
