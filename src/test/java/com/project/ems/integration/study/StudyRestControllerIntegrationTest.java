@@ -14,6 +14,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.jdbc.Sql;
 
 import static com.project.ems.constants.EndpointConstants.API_STUDIES;
 import static com.project.ems.constants.ExceptionMessageConstants.RESOURCE_NOT_FOUND;
@@ -25,9 +26,13 @@ import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
 import static com.project.ems.mock.StudyMock.getMockedStudy2;
+import static com.project.ems.mock.StudyMock.getMockedStudy3;
+import static com.project.ems.mock.StudyMock.getMockedStudy4;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(scripts = "classpath:data-test.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "classpath:cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class StudyRestControllerIntegrationTest {
 
     @Autowired
@@ -41,12 +46,16 @@ class StudyRestControllerIntegrationTest {
 
     private StudyDto studyDto1;
     private StudyDto studyDto2;
+    private StudyDto studyDto3;
+    private StudyDto studyDto4;
     private List<StudyDto> studyDtos;
 
     @BeforeEach
     void setUp() {
         studyDto1 = convertToDto(modelMapper, getMockedStudy1());
         studyDto2 = convertToDto(modelMapper, getMockedStudy2());
+        studyDto3 = convertToDto(modelMapper, getMockedStudy3());
+        studyDto4 = convertToDto(modelMapper, getMockedStudy4());
         studyDtos = convertToDtoList(modelMapper, getMockedStudies());
     }
 
@@ -86,7 +95,7 @@ class StudyRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<StudyDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(studyDto1, studyDto2));
+        assertThat(result).isEqualTo(studyDtos);
     }
 
     @Test
@@ -120,13 +129,13 @@ class StudyRestControllerIntegrationTest {
         ResponseEntity<String> getResponse = template.getForEntity(API_STUDIES + "/" + VALID_ID, String.class);
         assertThat(getResponse).isNotNull();
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(getResponse.getBody()).isEqualTo(String.format(RESOURCE_NOT_FOUND, String.format(STUDY_NOT_FOUND, INVALID_ID)));
+        assertThat(getResponse.getBody()).isEqualTo(String.format(RESOURCE_NOT_FOUND, String.format(STUDY_NOT_FOUND, VALID_ID)));
 
         ResponseEntity<String> getAllResponse = template.getForEntity(API_STUDIES, String.class);
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<StudyDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(studyDto2));
+        assertThat(result).isEqualTo(List.of(studyDto2, studyDto3, studyDto4));
     }
 
     @Test

@@ -14,6 +14,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.jdbc.Sql;
 
 import static com.project.ems.constants.EndpointConstants.API_FEEDBACKS;
 import static com.project.ems.constants.ExceptionMessageConstants.FEEDBACK_NOT_FOUND;
@@ -28,6 +29,8 @@ import static com.project.ems.mock.FeedbackMock.getMockedFeedbacks;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(scripts = "classpath:data-test.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "classpath:cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class FeedbackRestControllerIntegrationTest {
 
     @Autowired
@@ -86,7 +89,7 @@ class FeedbackRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<FeedbackDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(feedbackDto1, feedbackDto2));
+        assertThat(result).isEqualTo(feedbackDtos);
     }
 
     @Test
@@ -120,7 +123,7 @@ class FeedbackRestControllerIntegrationTest {
         ResponseEntity<String> getResponse = template.getForEntity(API_FEEDBACKS + "/" + VALID_ID, String.class);
         assertThat(getResponse).isNotNull();
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(getResponse.getBody()).isEqualTo(String.format(RESOURCE_NOT_FOUND, String.format(FEEDBACK_NOT_FOUND, INVALID_ID)));
+        assertThat(getResponse.getBody()).isEqualTo(String.format(RESOURCE_NOT_FOUND, String.format(FEEDBACK_NOT_FOUND, VALID_ID)));
 
         ResponseEntity<String> getAllResponse = template.getForEntity(API_FEEDBACKS, String.class);
         assertThat(getAllResponse).isNotNull();

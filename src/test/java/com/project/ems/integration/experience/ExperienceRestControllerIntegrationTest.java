@@ -14,6 +14,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.jdbc.Sql;
 
 import static com.project.ems.constants.EndpointConstants.API_EXPERIENCES;
 import static com.project.ems.constants.ExceptionMessageConstants.EXPERIENCE_NOT_FOUND;
@@ -24,10 +25,14 @@ import static com.project.ems.mapper.ExperienceMapper.convertToDto;
 import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience2;
+import static com.project.ems.mock.ExperienceMock.getMockedExperience3;
+import static com.project.ems.mock.ExperienceMock.getMockedExperience4;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(scripts = "classpath:data-test.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "classpath:cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class ExperienceRestControllerIntegrationTest {
 
     @Autowired
@@ -41,12 +46,16 @@ class ExperienceRestControllerIntegrationTest {
 
     private ExperienceDto experienceDto1;
     private ExperienceDto experienceDto2;
+    private ExperienceDto experienceDto3;
+    private ExperienceDto experienceDto4;
     private List<ExperienceDto> experienceDtos;
 
     @BeforeEach
     void setUp() {
         experienceDto1 = convertToDto(modelMapper, getMockedExperience1());
         experienceDto2 = convertToDto(modelMapper, getMockedExperience2());
+        experienceDto3 = convertToDto(modelMapper, getMockedExperience3());
+        experienceDto4 = convertToDto(modelMapper, getMockedExperience4());
         experienceDtos = convertToDtoList(modelMapper, getMockedExperiences());
     }
 
@@ -86,7 +95,7 @@ class ExperienceRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<ExperienceDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(experienceDto1, experienceDto2));
+        assertThat(result).isEqualTo(experienceDtos);
     }
 
     @Test
@@ -120,13 +129,13 @@ class ExperienceRestControllerIntegrationTest {
         ResponseEntity<String> getResponse = template.getForEntity(API_EXPERIENCES + "/" + VALID_ID, String.class);
         assertThat(getResponse).isNotNull();
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(getResponse.getBody()).isEqualTo(String.format(RESOURCE_NOT_FOUND, String.format(EXPERIENCE_NOT_FOUND, INVALID_ID)));
+        assertThat(getResponse.getBody()).isEqualTo(String.format(RESOURCE_NOT_FOUND, String.format(EXPERIENCE_NOT_FOUND, VALID_ID)));
 
         ResponseEntity<String> getAllResponse = template.getForEntity(API_EXPERIENCES, String.class);
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<ExperienceDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(experienceDto2));
+        assertThat(result).isEqualTo(List.of(experienceDto2, experienceDto3, experienceDto4));
     }
 
     @Test

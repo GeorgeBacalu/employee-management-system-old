@@ -14,6 +14,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.context.jdbc.Sql;
 
 import static com.project.ems.constants.EndpointConstants.API_ROLES;
 import static com.project.ems.constants.ExceptionMessageConstants.RESOURCE_NOT_FOUND;
@@ -28,6 +29,8 @@ import static com.project.ems.mock.RoleMock.getMockedRoles;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Sql(scripts = "classpath:data-test.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+@Sql(scripts = "classpath:cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class RoleRestControllerIntegrationTest {
 
     @Autowired
@@ -86,7 +89,7 @@ class RoleRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<RoleDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(roleDto1, roleDto2));
+        assertThat(result).isEqualTo(roleDtos);
     }
 
     @Test
