@@ -1,0 +1,11 @@
+delete from mentors_studies;
+delete from mentors_experiences;
+delete from employees_studies;
+delete from employees_experiences;
+delete from employees;
+delete from mentors;
+delete from experiences;
+delete from studies;
+delete from feedbacks;
+delete from users;
+delete from roles;
