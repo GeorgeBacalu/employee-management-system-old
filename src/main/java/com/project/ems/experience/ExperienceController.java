@@ -33,27 +33,20 @@ public class ExperienceController {
         return "experience/experience-details";
     }
 
-    @GetMapping("/save")
-    public String getSaveExperiencePage(Model model) {
-        model.addAttribute("experienceDto", new ExperienceDto());
+    @GetMapping("/save/{id}")
+    public String getSaveExperiencePage(Model model, @PathVariable Integer id) {
+        model.addAttribute("id", id);
+        model.addAttribute("experienceDto", id == -1 ? new ExperienceDto() : experienceService.findById(id));
         return "experience/save-experience";
     }
 
-    @PostMapping("/save")
-    public String save(@ModelAttribute ExperienceDto experienceDto) {
-        experienceService.save(experienceDto);
-        return "redirect:/experiences";
-    }
-
-    @GetMapping("/update/{id}")
-    public String getUpdateExperiencePage(Model model, @PathVariable Integer id) {
-        model.addAttribute("experienceDto", experienceService.findById(id));
-        return "experience/update-experience";
-    }
-
-    @PostMapping("/update/{id}")
-    public String updateById(@ModelAttribute ExperienceDto experienceDto, @PathVariable Integer id) {
-        experienceService.updateById(experienceDto, id);
+    @PostMapping("/save/{id}")
+    public String save(@ModelAttribute ExperienceDto experienceDto, @PathVariable Integer id) {
+        if(id == -1) {
+            experienceService.save(experienceDto);
+        } else {
+            experienceService.updateById(experienceDto, id);
+        }
         return "redirect:/experiences";
     }
 

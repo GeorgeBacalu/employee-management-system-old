@@ -28,7 +28,7 @@
 </header>
 <main class="my-2 mx-auto text-left" style="width: 95%">
   <h3>Mentors List</h3>
-  <a th:href="@{/mentors/save}" class="btn btn-primary my-2">Save Mentor</a>
+  <a th:href="@{/mentors/save/-1}" class="btn btn-primary my-2">Save Mentor</a>
   <table class="table table-striped table-bordered">
     <thead class="thead-dark">
     <tr>
@@ -56,7 +56,7 @@
       <td th:text="${mentor.maxTrainees}"></td>
       <td th:text="${mentor.isTrainingOpen}"></td>
       <td>
-        <a th:href="@{'/mentors/update/' + ${mentor.id}}" class="btn btn-secondary">Update</a>
+        <a th:href="@{'/mentors/save/' + ${mentor.id}}" class="btn btn-secondary">Update</a>
         <a th:href="@{'/mentors/delete/' + ${mentor.id}}" class="btn btn-danger">Delete</a>
         <a th:href="@{'/mentors/' + ${mentor.id}}" class="btn btn-info">View details</a>
       </td>

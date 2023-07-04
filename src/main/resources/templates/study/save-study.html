@@ -28,9 +28,9 @@
 </header>
 <main class="container my-2">
   <div class="card px-3">
-    <h3 class="text-center">Save Study</h3>
+    <h3 class="text-center" th:text="${(id == -1) ? 'Save' : 'Update'} + 'Study'"></h3>
     <div class="card-body">
-      <form th:action="@{/studies/save}" method="post" th:object="${studyDto}">
+      <form th:action="@{'/studies/save/' + ${id}}" method="post" th:object="${studyDto}">
         <div class="row mb-3">
           <label for="title">Title <span class="text-danger font-weight-bold">*</span></label>
           <input type="text" id="title" th:field="*{title}" placeholder="Enter title" class="form-control" required>
@@ -48,7 +48,7 @@
           <label for="finished-at" class="mt-2">Finishing date <span class="text-danger font-weight-bold">*</span></label>
           <input type="date" id="finished-at" th:field="*{finishedAt}" placeholder="Enter finishing date" class="form-control" required>
         </div>
-        <button type="submit" class="btn btn-success" style="width: 15%">Save</button>
+        <button type="submit" class="btn btn-success" style="width: 15%" th:text="${(id == -1) ? 'Save' : 'Update'}"></button>
         <a th:href="@{/studies}" type="button" class="btn btn-danger ml-2" style="width: 15%">Cancel</a>
       </form>
     </div>

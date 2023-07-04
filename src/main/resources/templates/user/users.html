@@ -28,7 +28,7 @@
 </header>
 <main class="my-2 mx-auto text-left" style="width: 95%">
   <h3>Users List</h3>
-  <a th:href="@{/users/save}" class="btn btn-primary my-2">Save User</a>
+  <a th:href="@{/users/save/-1}" class="btn btn-primary my-2">Save User</a>
   <table class="table table-striped table-bordered">
     <thead class="thead-dark">
     <tr>
@@ -48,7 +48,7 @@
       <td th:text="${user.address}"></td>
       <td th:text="${user.role.authority}"></td>
       <td>
-        <a th:href="@{'/users/update/' + ${user.id}}" class="btn btn-secondary">Update</a>
+        <a th:href="@{'/users/save/' + ${user.id}}" class="btn btn-secondary">Update</a>
         <a th:href="@{'/users/delete/' + ${user.id}}" class="btn btn-danger">Delete</a>
         <a th:href="@{'/users/' + ${user.id}}" class="btn btn-info">View details</a>
       </td>

@@ -35,27 +35,20 @@ public class FeedbackController {
         return "feedback/feedback-details";
     }
 
-    @GetMapping("/save")
-    public String getSaveFeedbackPage(Model model) {
-        model.addAttribute("feedbackDto", new FeedbackDto());
+    @GetMapping("/save/{id}")
+    public String getSaveFeedbackPage(Model model, @PathVariable Integer id) {
+        model.addAttribute("id", id);
+        model.addAttribute("feedbackDto", id == -1 ? new FeedbackDto() : feedbackService.findById(id));
         return "feedback/save-feedback";
     }
 
-    @PostMapping("/save")
-    public String save(@ModelAttribute FeedbackDto feedbackDto) {
-        feedbackService.save(feedbackDto);
-        return "redirect:/feedbacks";
-    }
-
-    @GetMapping("/update/{id}")
-    public String getUpdateFeedbackPage(Model model, @PathVariable Integer id) {
-        model.addAttribute("feedbackDto", feedbackService.findById(id));
-        return "feedback/update-feedback";
-    }
-
-    @PostMapping("/update/{id}")
-    public String updateById(@ModelAttribute FeedbackDto feedbackDto, @PathVariable Integer id) {
-        feedbackService.updateById(feedbackDto, id);
+    @PostMapping("/save/{id}")
+    public String save(@ModelAttribute FeedbackDto feedbackDto, @PathVariable Integer id) {
+        if(id == -1) {
+            feedbackService.save(feedbackDto);
+        } else {
+            feedbackService.updateById(feedbackDto, id);
+        }
         return "redirect:/feedbacks";
     }
 

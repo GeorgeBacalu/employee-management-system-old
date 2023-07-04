@@ -28,9 +28,9 @@
 </header>
 <main class="container my-2">
   <div class="card px-3">
-    <h3 class="text-center">Save Mentor</h3>
+    <h3 class="text-center" th:text="${(id == -1) ? 'Save' : 'Update'} + 'Mentor'"></h3>
     <div class="card-body">
-      <form th:action="@{/mentors/save}" method="post" th:object="${mentorDto}">
+      <form th:action="@{'/mentors/save/' + ${id}}" method="post" th:object="${mentorDto}">
         <div class="row">
           <div class="col-md-6 form-group">
             <label for="name">Name <span class="text-danger font-weight-bold">*</span></label>
@@ -74,7 +74,7 @@
             <input type="checkbox" id="open-for-training" th:field="*{isTrainingOpen}">
           </div>
         </div>
-        <button type="submit" class="btn btn-success" style="width: 15%">Save</button>
+        <button type="submit" class="btn btn-success" style="width: 15%" th:text="${(id == -1) ? 'Save' : 'Update'}"></button>
         <a th:href="@{/mentors}" type="button" class="btn btn-danger ml-2" style="width: 15%">Cancel</a>
       </form>
     </div>

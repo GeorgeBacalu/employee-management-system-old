@@ -39,27 +39,20 @@ public class MentorController {
         return "mentor/mentor-details";
     }
 
-    @GetMapping("/save")
-    public String getSaveMentorPage(Model model) {
-        model.addAttribute("mentorDto", new MentorDto());
+    @GetMapping("/save/{id}")
+    public String getSaveMentorPage(Model model, @PathVariable Integer id) {
+        model.addAttribute("id", id);
+        model.addAttribute("mentorDto", id == -1 ? new MentorDto() : mentorService.findById(id));
         return "mentor/save-mentor";
     }
 
-    @PostMapping("/save")
-    public String save(@ModelAttribute MentorDto mentorDto) {
-        mentorService.save(mentorDto);
-        return "redirect:/mentors";
-    }
-
-    @GetMapping("/update/{id}")
-    public String getUpdateMentorPage(Model model, @PathVariable Integer id) {
-        model.addAttribute("mentorDto", mentorService.findById(id));
-        return "mentor/update-mentor";
-    }
-
-    @PostMapping("/update/{id}")
-    public String updateById(@ModelAttribute MentorDto mentorDto, @PathVariable Integer id) {
-        mentorService.updateById(mentorDto, id);
+    @PostMapping("/save/{id}")
+    public String save(@ModelAttribute MentorDto mentorDto, @PathVariable Integer id) {
+        if(id == -1) {
+            mentorService.save(mentorDto);
+        } else {
+            mentorService.updateById(mentorDto, id);
+        }
         return "redirect:/mentors";
     }
 
