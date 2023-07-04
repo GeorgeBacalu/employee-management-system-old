@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ThymeleafViewConstants {
 
+    public static final String TEXT_HTML_UTF8 = "text/html;charset=UTF-8";
+
     public static final String EMPLOYEES_VIEW = "employee/employees";
     public static final String EMPLOYEE_DETAILS_VIEW = "employee/employee-details";
     public static final String SAVE_EMPLOYEE_VIEW = "employee/save-employee";
