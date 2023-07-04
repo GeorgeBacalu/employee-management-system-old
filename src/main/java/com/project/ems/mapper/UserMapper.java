@@ -21,7 +21,7 @@ public class UserMapper {
         return user;
     }
 
-    public static List<UserDto> convertToDtoLiSt(ModelMapper modelMapper, List<User> users) {
+    public static List<UserDto> convertToDtoList(ModelMapper modelMapper, List<User> users) {
         return users.stream().map(user -> convertToDto(modelMapper, user)).toList();
     }
 

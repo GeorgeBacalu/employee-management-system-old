@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import static com.project.ems.constants.ThymeleafViewConstants.FEEDBACKS_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.FEEDBACK_DETAILS_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_FEEDBACKS_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.SAVE_FEEDBACK_VIEW;
 import static com.project.ems.mapper.FeedbackMapper.convertToEntity;
 import static com.project.ems.mapper.FeedbackMapper.convertToEntityList;
 
@@ -26,20 +30,20 @@ public class FeedbackController {
     @GetMapping
     public String getAllFeedbacksPage(Model model) {
         model.addAttribute("feedbacks", convertToEntityList(modelMapper, feedbackService.findAll(), userService));
-        return "feedback/feedbacks";
+        return FEEDBACKS_VIEW;
     }
 
     @GetMapping("/{id}")
     public String getFeedbackByIdPage(Model model, @PathVariable Integer id) {
         model.addAttribute("feedback", convertToEntity(modelMapper, feedbackService.findById(id), userService));
-        return "feedback/feedback-details";
+        return FEEDBACK_DETAILS_VIEW;
     }
 
     @GetMapping("/save/{id}")
     public String getSaveFeedbackPage(Model model, @PathVariable Integer id) {
         model.addAttribute("id", id);
         model.addAttribute("feedbackDto", id == -1 ? new FeedbackDto() : feedbackService.findById(id));
-        return "feedback/save-feedback";
+        return SAVE_FEEDBACK_VIEW;
     }
 
     @PostMapping("/save/{id}")
@@ -49,12 +53,12 @@ public class FeedbackController {
         } else {
             feedbackService.updateById(feedbackDto, id);
         }
-        return "redirect:/feedbacks";
+        return REDIRECT_FEEDBACKS_VIEW;
     }
 
     @GetMapping("/delete/{id}")
     public String deleteById(@PathVariable Integer id) {
         feedbackService.deleteById(id);
-        return "redirect:/feedbacks";
+        return REDIRECT_FEEDBACKS_VIEW;
     }
 }

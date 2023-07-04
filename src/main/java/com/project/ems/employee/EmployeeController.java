@@ -14,6 +14,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEES_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEE_DETAILS_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_EMPLOYEES_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.SAVE_EMPLOYEE_VIEW;
 import static com.project.ems.mapper.EmployeeMapper.convertToEntity;
 import static com.project.ems.mapper.EmployeeMapper.convertToEntityList;
 
@@ -32,20 +36,20 @@ public class EmployeeController {
     @GetMapping
     public String getAllEmployeesPage(Model model) {
         model.addAttribute("employees", convertToEntityList(modelMapper, employeeService.findAll(), roleService, mentorService, studyService, experienceService));
-        return "employee/employees";
+        return EMPLOYEES_VIEW;
     }
 
     @GetMapping("/{id}")
     public String getEmployeeByIdPage(Model model, @PathVariable Integer id) {
         model.addAttribute("employee", convertToEntity(modelMapper, employeeService.findById(id), roleService, mentorService, studyService, experienceService));
-        return "employee/employee-details";
+        return EMPLOYEE_DETAILS_VIEW;
     }
 
     @GetMapping("/save/{id}")
     public String getSaveEmployeePage(Model model, @PathVariable Integer id) {
         model.addAttribute("id", id);
         model.addAttribute("employeeDto", id == -1 ? new EmployeeDto() : employeeService.findById(id));
-        return "employee/save-employee";
+        return SAVE_EMPLOYEE_VIEW;
     }
 
     @PostMapping("/save/{id}")
@@ -55,12 +59,12 @@ public class EmployeeController {
         } else {
             employeeService.updateById(employeeDto, id);
         }
-        return "redirect:/employees";
+        return REDIRECT_EMPLOYEES_VIEW;
     }
 
     @GetMapping("/delete/{id}")
     public String deleteById(@PathVariable Integer id) {
         employeeService.deleteById(id);
-        return "redirect:/employees";
+        return REDIRECT_EMPLOYEES_VIEW;
     }
 }

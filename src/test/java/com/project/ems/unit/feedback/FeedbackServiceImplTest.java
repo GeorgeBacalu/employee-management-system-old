@@ -111,7 +111,7 @@ class FeedbackServiceImplTest {
         given(feedbackRepository.save(any(Feedback.class))).willReturn(feedback1);
         FeedbackDto result = feedbackService.save(feedbackDto1);
         verify(feedbackRepository).save(feedbackCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, feedbackCaptor.getValue()));
+        assertThat(result).isEqualTo(convertToDto(modelMapper, feedback1));
     }
 
     @Test

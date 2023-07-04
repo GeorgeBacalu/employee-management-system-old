@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_STUDIES_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.SAVE_STUDY_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.STUDIES_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.STUDY_DETAILS_VIEW;
 import static com.project.ems.mapper.StudyMapper.convertToEntity;
 import static com.project.ems.mapper.StudyMapper.convertToEntityList;
 
@@ -24,20 +28,20 @@ public class StudyController {
     @GetMapping
     public String getAllStudiesPage(Model model) {
         model.addAttribute("studies", convertToEntityList(modelMapper, studyService.findAll()));
-        return "study/studies";
+        return STUDIES_VIEW;
     }
 
     @GetMapping("/{id}")
     public String getStudyByIdPage(Model model, @PathVariable Integer id) {
         model.addAttribute("study", convertToEntity(modelMapper, studyService.findById(id)));
-        return "study/study-details";
+        return STUDY_DETAILS_VIEW;
     }
 
     @GetMapping("/save/{id}")
     public String getSaveStudyPage(Model model, @PathVariable Integer id) {
         model.addAttribute("id", id);
         model.addAttribute("studyDto", id == -1 ? new StudyDto() : studyService.findById(id));
-        return "study/save-study";
+        return SAVE_STUDY_VIEW;
     }
 
     @PostMapping("/save/{id}")
@@ -47,12 +51,12 @@ public class StudyController {
         } else {
             studyService.updateById(studyDto, id);
         }
-        return "redirect:/studies";
+        return REDIRECT_STUDIES_VIEW;
     }
 
     @GetMapping("/delete/{id}")
     public String deleteById(@PathVariable Integer id) {
         studyService.deleteById(id);
-        return "redirect:/studies";
+        return REDIRECT_STUDIES_VIEW;
     }
 }

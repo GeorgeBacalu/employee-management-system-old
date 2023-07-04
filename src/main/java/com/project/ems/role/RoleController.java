@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_ROLES_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.ROLES_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.ROLE_DETAILS_VIEW;
+import static com.project.ems.constants.ThymeleafViewConstants.SAVE_ROLE_VIEW;
 import static com.project.ems.mapper.RoleMapper.convertToEntity;
 import static com.project.ems.mapper.RoleMapper.convertToEntityList;
 
@@ -24,20 +28,20 @@ public class RoleController {
     @GetMapping
     public String getAllRolesPage(Model model) {
         model.addAttribute("roles", convertToEntityList(modelMapper, roleService.findAll()));
-        return "role/roles";
+        return ROLES_VIEW;
     }
 
     @GetMapping("/{id}")
     public String getRoleByIdPage(Model model, @PathVariable Integer id) {
         model.addAttribute("role", convertToEntity(modelMapper, roleService.findById(id)));
-        return "role/role-details";
+        return ROLE_DETAILS_VIEW;
     }
 
     @GetMapping("/save/{id}")
     public String getSaveRolePage(Model model, @PathVariable Integer id) {
         model.addAttribute("id", id);
         model.addAttribute("roleDto", id == -1 ? new RoleDto() : roleService.findById(id));
-        return "role/save-role";
+        return SAVE_ROLE_VIEW;
     }
 
     @PostMapping("/save/{id}")
@@ -47,6 +51,6 @@ public class RoleController {
         } else {
             roleService.updateById(roleDto, id);
         }
-        return "redirect:/roles";
+        return REDIRECT_ROLES_VIEW;
     }
 }

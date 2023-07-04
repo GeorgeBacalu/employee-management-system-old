@@ -10,7 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND;
 import static com.project.ems.mapper.UserMapper.convertToDto;
-import static com.project.ems.mapper.UserMapper.convertToDtoLiSt;
+import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mapper.UserMapper.convertToEntity;
 
 @Service
@@ -25,7 +25,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
-        return convertToDtoLiSt(modelMapper, users);
+        return convertToDtoList(modelMapper, users);
     }
 
     @Override
