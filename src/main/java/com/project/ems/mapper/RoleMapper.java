@@ -21,4 +21,8 @@ public class RoleMapper {
     public static List<RoleDto> convertToDtoList(ModelMapper modelMapper, List<Role> roles) {
         return roles.stream().map(role -> convertToDto(modelMapper, role)).toList();
     }
+
+    public static List<Role> convertToEntityList(ModelMapper modelMapper, List<RoleDto> roleDtos) {
+        return roleDtos.stream().map(roleDto -> convertToEntity(modelMapper, roleDto)).toList();
+    }
 }

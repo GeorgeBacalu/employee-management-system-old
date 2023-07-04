@@ -26,7 +26,7 @@ import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.mapper.UserMapper.convertToDto;
-import static com.project.ems.mapper.UserMapper.convertToDtoLiSt;
+import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mock.UserMock.getMockedUser1;
 import static com.project.ems.mock.UserMock.getMockedUser2;
 import static com.project.ems.mock.UserMock.getMockedUsers;
@@ -69,7 +69,7 @@ class UserRestControllerMockMvcTest {
     void setUp() {
         userDto1 = convertToDto(modelMapper, getMockedUser1());
         userDto2 = convertToDto(modelMapper, getMockedUser2());
-        userDtos = convertToDtoLiSt(modelMapper, getMockedUsers());
+        userDtos = convertToDtoList(modelMapper, getMockedUsers());
     }
 
     @Test

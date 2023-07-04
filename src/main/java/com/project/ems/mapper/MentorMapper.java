@@ -38,4 +38,8 @@ public class MentorMapper {
     public static List<MentorDto> convertToDtoList(ModelMapper modelMapper, List<Mentor> mentors) {
         return mentors.stream().map(mentor -> convertToDto(modelMapper, mentor)).toList();
     }
+
+    public static List<Mentor> convertToEntityList(ModelMapper modelMapper, List<MentorDto> mentorDtos, RoleService roleService, MentorService mentorService, StudyService studyService, ExperienceService experienceService) {
+        return mentorDtos.stream().map(mentorDto -> convertToEntity(modelMapper, mentorDto, roleService, mentorService, studyService, experienceService)).toList();
+    }
 }

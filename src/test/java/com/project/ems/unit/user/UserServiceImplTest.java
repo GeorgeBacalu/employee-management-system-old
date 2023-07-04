@@ -24,7 +24,7 @@ import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.mapper.UserMapper.convertToDto;
-import static com.project.ems.mapper.UserMapper.convertToDtoLiSt;
+import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mock.RoleMock.getMockedRole2;
 import static com.project.ems.mock.UserMock.getMockedUser1;
 import static com.project.ems.mock.UserMock.getMockedUser2;
@@ -71,7 +71,7 @@ class UserServiceImplTest {
         role = getMockedRole2();
         userDto1 = convertToDto(modelMapper, user1);
         userDto2 = convertToDto(modelMapper, user2);
-        userDtos = convertToDtoLiSt(modelMapper, users);
+        userDtos = convertToDtoList(modelMapper, users);
     }
 
     @Test
@@ -100,7 +100,7 @@ class UserServiceImplTest {
         given(userRepository.save(any(User.class))).willReturn(user1);
         UserDto result = userService.save(userDto1);
         verify(userRepository).save(userCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, userCaptor.getValue()));
+        assertThat(result).isEqualTo(convertToDto(modelMapper, user1));
     }
 
     @Test

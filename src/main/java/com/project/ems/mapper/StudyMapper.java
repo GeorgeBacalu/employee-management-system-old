@@ -21,4 +21,8 @@ public class StudyMapper {
     public static List<StudyDto> convertToDtoList(ModelMapper modelMapper, List<Study> studies) {
         return studies.stream().map(study -> convertToDto(modelMapper, study)).toList();
     }
+
+    public static List<Study> convertToEntityList(ModelMapper modelMapper, List<StudyDto> studyDtos) {
+        return studyDtos.stream().map(studyDto -> convertToEntity(modelMapper, studyDto)).toList();
+    }
 }

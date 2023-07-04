@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/_fragments/layout :: head('Experience Details')}"></head>
+<body>
+<header th:replace="~{/_fragments/layout :: header}"></header>
+<main class="container my-2">
+  <div class="card px-3">
+    <h3 class="text-center">Experience Details</h3>
+    <div class="card-body">
+      <div class="row" style="font-size: 14px; line-height: 0.9">
+        <div class="col-md-12">
+          <p>Title: <span th:text="${experience.title}"></span></p>
+          <p>Organization: <span th:text="${experience.organization}"></span></p>
+          <p>Description: <span th:text="${experience.description}"></span></p>
+          <p>Experience type: <span th:text="${experience.type}"></span></p>
+          <p>Starting date: <span th:text="${experience.startedAt}"></span></p>
+          <p>Finishing date: <span th:text="${experience.finishedAt}"></span></p>
+        </div>
+        <a th:href="@{/experiences}" type="button" class="btn btn-secondary" style="width: 15%"><i class="fas fa-arrow-left"></i> Back</a>
+      </div>
+    </div>
+  </div>
+</main>
+<footer th:replace="~{/_fragments/layout :: footer}"></footer>
+</body>
+</html>

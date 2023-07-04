@@ -35,4 +35,8 @@ public class EmployeeMapper {
     public static List<EmployeeDto> convertToDtoList(ModelMapper modelMapper, List<Employee> employees) {
         return employees.stream().map(employee -> convertToDto(modelMapper, employee)).toList();
     }
+
+    public static List<Employee> convertToEntityList(ModelMapper modelMapper, List<EmployeeDto> employeeDtos, RoleService roleService, MentorService mentorService, StudyService studyService, ExperienceService experienceService) {
+        return employeeDtos.stream().map(employeeDto -> convertToEntity(modelMapper, employeeDto, roleService, mentorService, studyService, experienceService)).toList();
+    }
 }

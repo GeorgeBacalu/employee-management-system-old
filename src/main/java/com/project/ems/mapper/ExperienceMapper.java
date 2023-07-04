@@ -21,4 +21,8 @@ public class ExperienceMapper {
     public static List<ExperienceDto> convertToDtoList(ModelMapper modelMapper, List<Experience> experiences) {
         return experiences.stream().map(experience -> convertToDto(modelMapper, experience)).toList();
     }
+
+    public static List<Experience> convertToEntityList(ModelMapper modelMapper, List<ExperienceDto> experienceDtos) {
+        return experienceDtos.stream().map(experienceDto -> convertToEntity(modelMapper, experienceDto)).toList();
+    }
 }
