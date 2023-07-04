@@ -25,8 +25,8 @@
           <label for="finished-at" class="mt-2">Finishing date <span class="text-danger font-weight-bold">*</span></label>
           <input type="date" id="finished-at" th:field="*{finishedAt}" placeholder="Enter finishing date" class="form-control" required>
         </div>
-        <button type="submit" class="btn btn-success" style="width: 15%" th:text="${(id == -1) ? 'Save' : 'Update'}"></button>
-        <a th:href="@{/studies}" type="button" class="btn btn-danger ml-2" style="width: 15%">Cancel</a>
+        <button type="submit" class="btn btn-success" style="width: 15%"><i class="fa fa-save"></i> <span th:text="${(id == -1) ? 'Save' : 'Update'}"></span></button>
+        <a th:href="@{/studies}" type="button" class="btn btn-danger ml-2" style="width: 15%"><i class="fa fa-times"></i> Cancel</a>
       </form>
     </div>
   </div>

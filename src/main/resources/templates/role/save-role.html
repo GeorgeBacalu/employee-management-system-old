@@ -15,8 +15,8 @@
             <option th:each="authority : ${T(com.project.ems.role.enums.Authority).values()}" th:text="${authority}" th:value="${authority}"></option>
           </select>
         </div>
-        <button type="submit" class="btn btn-success" style="width: 15%" th:text="${(id == -1) ? 'Save' : 'Update'}"></button>
-        <a th:href="@{/roles}" type="button" class="btn btn-danger ml-2" style="width: 15%">Cancel</a>
+        <button type="submit" class="btn btn-success" style="width: 15%"><i class="fa fa-save"></i> <span th:text="${(id == -1) ? 'Save' : 'Update'}"></span></button>
+        <a th:href="@{/roles}" type="button" class="btn btn-danger ml-2" style="width: 15%"><i class="fa fa-times"></i> Cancel</a>
       </form>
     </div>
   </div>
