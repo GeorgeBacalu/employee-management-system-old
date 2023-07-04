@@ -37,7 +37,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public FeedbackDto save(FeedbackDto feedbackDto) {
-        Feedback feedback = convertToEntity(modelMapper, feedbackDto);
+        Feedback feedback = convertToEntity(modelMapper, feedbackDto, userService);
         feedback.setSentAt(LocalDateTime.now(clock));
         Feedback savedFeedback = feedbackRepository.save(feedback);
         return convertToDto(modelMapper, savedFeedback);

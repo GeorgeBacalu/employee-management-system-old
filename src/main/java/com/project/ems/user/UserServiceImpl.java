@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto save(UserDto userDto) {
-        User user = convertToEntity(modelMapper, userDto);
+        User user = convertToEntity(modelMapper, userDto, roleService);
         User savedUser = userRepository.save(user);
         return convertToDto(modelMapper, savedUser);
     }
