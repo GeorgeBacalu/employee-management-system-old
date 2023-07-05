@@ -1,6 +1,8 @@
 package com.project.ems.employee;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface EmployeeService {
 
@@ -13,4 +15,6 @@ public interface EmployeeService {
     EmployeeDto updateById(EmployeeDto employeeDto, Integer id);
 
     void deleteById(Integer id);
+
+    Page<EmployeeDto> findAllByKey(Pageable pageable, String key);
 }
