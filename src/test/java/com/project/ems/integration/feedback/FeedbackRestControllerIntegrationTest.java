@@ -3,6 +3,7 @@ package com.project.ems.integration.feedback;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.feedback.FeedbackDto;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
@@ -139,7 +140,9 @@ class FeedbackRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<FeedbackDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(feedbackDto2));
+        List<FeedbackDto> feedbackDtosCopy = new ArrayList<>(feedbackDtos);
+        feedbackDtosCopy.remove(feedbackDto1);
+        assertThat(result).isEqualTo(feedbackDtosCopy);
     }
 
     @Test

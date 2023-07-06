@@ -3,6 +3,7 @@ package com.project.ems.integration.mentor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.mentor.MentorDto;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -129,8 +130,12 @@ class MentorRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<MentorDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        mentorDto2.setSupervisingMentorId(null);
-        assertThat(result).isEqualTo(List.of(mentorDto2));
+        List<MentorDto> mentorDtosCopy = new ArrayList<>(mentorDtos);
+        for(int i = 6; i < 12; i++) {
+            mentorDtosCopy.get(i).setSupervisingMentorId(null);
+        }
+        mentorDtosCopy.remove(mentorDto1);
+        assertThat(result).isEqualTo(mentorDtosCopy);
     }
 
     @Test

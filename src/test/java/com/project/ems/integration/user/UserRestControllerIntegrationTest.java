@@ -3,6 +3,7 @@ package com.project.ems.integration.user;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.user.UserDto;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -129,7 +130,9 @@ class UserRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<UserDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(userDto2));
+        List<UserDto> userDtosCopy = new ArrayList<>(userDtos);
+        userDtosCopy.remove(userDto1);
+        assertThat(result).isEqualTo(userDtosCopy);
     }
 
     @Test

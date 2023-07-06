@@ -3,6 +3,7 @@ package com.project.ems.integration.study;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.study.StudyDto;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,8 +27,6 @@ import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
 import static com.project.ems.mock.StudyMock.getMockedStudy2;
-import static com.project.ems.mock.StudyMock.getMockedStudy3;
-import static com.project.ems.mock.StudyMock.getMockedStudy4;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -46,16 +45,12 @@ class StudyRestControllerIntegrationTest {
 
     private StudyDto studyDto1;
     private StudyDto studyDto2;
-    private StudyDto studyDto3;
-    private StudyDto studyDto4;
     private List<StudyDto> studyDtos;
 
     @BeforeEach
     void setUp() {
         studyDto1 = convertToDto(modelMapper, getMockedStudy1());
         studyDto2 = convertToDto(modelMapper, getMockedStudy2());
-        studyDto3 = convertToDto(modelMapper, getMockedStudy3());
-        studyDto4 = convertToDto(modelMapper, getMockedStudy4());
         studyDtos = convertToDtoList(modelMapper, getMockedStudies());
     }
 
@@ -135,7 +130,9 @@ class StudyRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<StudyDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(studyDto2, studyDto3, studyDto4));
+        List<StudyDto> studyDtosCopy = new ArrayList<>(studyDtos);
+        studyDtosCopy.remove(studyDto1);
+        assertThat(result).isEqualTo(studyDtosCopy);
     }
 
     @Test

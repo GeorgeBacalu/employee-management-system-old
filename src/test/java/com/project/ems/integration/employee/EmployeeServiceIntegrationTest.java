@@ -153,7 +153,7 @@ class EmployeeServiceIntegrationTest {
         given(employeeRepository.save(any(Employee.class))).willReturn(employee);
         EmployeeDto result = employeeService.updateById(employeeDto2, VALID_ID);
         verify(employeeRepository).save(employeeCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, employeeCaptor.getValue()));
+        assertThat(result).isEqualTo(convertToDto(modelMapper, employee));
     }
 
     @Test

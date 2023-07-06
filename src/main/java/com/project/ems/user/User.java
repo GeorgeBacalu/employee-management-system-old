@@ -59,6 +59,17 @@ public class User {
     @ToString.Exclude
     private List<Feedback> feedbacks = new ArrayList<>();
 
+    public User(Integer id, String name, String email, String password, String mobile, String address, LocalDate birthday, Role role) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.mobile = mobile;
+        this.address = address;
+        this.birthday = birthday;
+        this.role = role;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

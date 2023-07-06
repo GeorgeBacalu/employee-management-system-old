@@ -36,7 +36,6 @@ import static com.project.ems.mock.ExperienceMock.getMockedExperiences2;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.MentorMock.getMockedMentor2;
 import static com.project.ems.mock.MentorMock.getMockedMentors;
-import static com.project.ems.mock.RoleMock.getMockedRole1;
 import static com.project.ems.mock.RoleMock.getMockedRole2;
 import static com.project.ems.mock.StudyMock.getMockedStudies1;
 import static com.project.ems.mock.StudyMock.getMockedStudies2;
@@ -79,8 +78,7 @@ class MentorServiceIntegrationTest {
     private Mentor mentor2;
     private List<Mentor> mentors;
     private Employee employee;
-    private Role role1;
-    private Role role2;
+    private Role role;
     private List<Study> studies1;
     private List<Study> studies2;
     private List<Experience> experiences1;
@@ -95,8 +93,7 @@ class MentorServiceIntegrationTest {
         mentor2 = getMockedMentor2();
         mentors = getMockedMentors();
         employee = getMockedEmployee1();
-        role1 = getMockedRole1();
-        role2 = getMockedRole2();
+        role = getMockedRole2();
         studies1 = getMockedStudies1();
         studies2 = getMockedStudies2();
         experiences1 = getMockedExperiences1();
@@ -129,7 +126,7 @@ class MentorServiceIntegrationTest {
 
     @Test
     void save_shouldAddMentorToList() {
-        given(roleService.findEntityById(anyInt())).willReturn(role1);
+        given(roleService.findEntityById(anyInt())).willReturn(role);
         mentorDto1.getStudiesIds().forEach(id -> given(studyService.findEntityById(id)).willReturn(studies1.get(id - 1)));
         mentorDto1.getExperiencesIds().forEach(id -> given(experienceService.findEntityById(id)).willReturn(experiences1.get(id - 1)));
         given(mentorRepository.save(any(Mentor.class))).willReturn(mentor1);
@@ -142,7 +139,7 @@ class MentorServiceIntegrationTest {
     void updateById_withValidId_shouldUpdateMentorWithGivenId() {
         Mentor mentor = mentor2; mentor.setId(VALID_ID);
         given(mentorRepository.findById(anyInt())).willReturn(Optional.ofNullable(mentor1));
-        given(roleService.findEntityById(anyInt())).willReturn(role2);
+        given(roleService.findEntityById(anyInt())).willReturn(role);
         mentorDto2.getStudiesIds().forEach(id -> given(studyService.findEntityById(id)).willReturn(studies2.get(id - 3)));
         mentorDto2.getExperiencesIds().forEach(id -> given(experienceService.findEntityById(id)).willReturn(experiences2.get(id - 3)));
         given(mentorRepository.save(any(Mentor.class))).willReturn(mentor);

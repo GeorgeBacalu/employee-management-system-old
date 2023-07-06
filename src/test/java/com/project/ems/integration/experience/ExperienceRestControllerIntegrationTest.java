@@ -3,6 +3,7 @@ package com.project.ems.integration.experience;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.experience.ExperienceDto;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,6 @@ import static com.project.ems.mapper.ExperienceMapper.convertToDto;
 import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience2;
-import static com.project.ems.mock.ExperienceMock.getMockedExperience3;
-import static com.project.ems.mock.ExperienceMock.getMockedExperience4;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -46,16 +45,12 @@ class ExperienceRestControllerIntegrationTest {
 
     private ExperienceDto experienceDto1;
     private ExperienceDto experienceDto2;
-    private ExperienceDto experienceDto3;
-    private ExperienceDto experienceDto4;
     private List<ExperienceDto> experienceDtos;
 
     @BeforeEach
     void setUp() {
         experienceDto1 = convertToDto(modelMapper, getMockedExperience1());
         experienceDto2 = convertToDto(modelMapper, getMockedExperience2());
-        experienceDto3 = convertToDto(modelMapper, getMockedExperience3());
-        experienceDto4 = convertToDto(modelMapper, getMockedExperience4());
         experienceDtos = convertToDtoList(modelMapper, getMockedExperiences());
     }
 
@@ -135,7 +130,9 @@ class ExperienceRestControllerIntegrationTest {
         assertThat(getAllResponse).isNotNull();
         assertThat(getAllResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         List<ExperienceDto> result = objectMapper.readValue(getAllResponse.getBody(), new TypeReference<>() {});
-        assertThat(result).isEqualTo(List.of(experienceDto2, experienceDto3, experienceDto4));
+        List<ExperienceDto> experienceDtosCopy = new ArrayList<>(experienceDtos);
+        experienceDtosCopy.remove(experienceDto1);
+        assertThat(result).isEqualTo(experienceDtosCopy);
     }
 
     @Test
