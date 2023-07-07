@@ -173,11 +173,11 @@ class FeedbackServiceIntegrationTest {
         List<FeedbackDto> feedbackDtosPage2 = convertToDtoList(modelMapper, feedbacksPage2);
         List<FeedbackDto> feedbackDtosPage3 = convertToDtoList(modelMapper, feedbacksPage3);
         return Stream.of(Arguments.of(0, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(feedbacksPage1), new PageImpl<>(feedbackDtosPage1)),
-              Arguments.of(1, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(feedbacksPage2), new PageImpl<>(feedbackDtosPage2)),
-              Arguments.of(2, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
-              Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(feedbacksPage1), new PageImpl<>(feedbackDtosPage1)),
-              Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(feedbacksPage2), new PageImpl<>(feedbackDtosPage2)),
-              Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(feedbacksPage3), new PageImpl<>(feedbackDtosPage3)));
+                         Arguments.of(1, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(feedbacksPage2), new PageImpl<>(feedbackDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
+                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(feedbacksPage1), new PageImpl<>(feedbackDtosPage1)),
+                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(feedbacksPage2), new PageImpl<>(feedbackDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(feedbacksPage3), new PageImpl<>(feedbackDtosPage3)));
     }
 
     @ParameterizedTest

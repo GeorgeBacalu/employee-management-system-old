@@ -204,11 +204,11 @@ class EmployeeServiceIntegrationTest {
         List<EmployeeDto> employeeDtosPage2 = convertToDtoList(modelMapper, employeesPage2);
         List<EmployeeDto> employeeDtosPage3 = convertToDtoList(modelMapper, employeesPage3);
         return Stream.of(Arguments.of(0, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeesPage1), new PageImpl<>(employeeDtosPage1)),
-              Arguments.of(1, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeesPage2), new PageImpl<>(employeeDtosPage2)),
-              Arguments.of(2, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
-              Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(employeesPage1), new PageImpl<>(employeeDtosPage1)),
-              Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(employeesPage2), new PageImpl<>(employeeDtosPage2)),
-              Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(employeesPage3), new PageImpl<>(employeeDtosPage3)));
+                         Arguments.of(1, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeesPage2), new PageImpl<>(employeeDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
+                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(employeesPage1), new PageImpl<>(employeeDtosPage1)),
+                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(employeesPage2), new PageImpl<>(employeeDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(employeesPage3), new PageImpl<>(employeeDtosPage3)));
     }
 
     @ParameterizedTest

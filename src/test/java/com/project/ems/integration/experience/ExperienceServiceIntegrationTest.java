@@ -170,11 +170,11 @@ class ExperienceServiceIntegrationTest {
         List<ExperienceDto> experienceDtosPage2 = convertToDtoList(modelMapper, experiencesPage2);
         List<ExperienceDto> experienceDtosPage3 = convertToDtoList(modelMapper, experiencesPage3);
         return Stream.of(Arguments.of(0, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(experiencesPage1), new PageImpl<>(experienceDtosPage1)),
-              Arguments.of(1, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(experiencesPage2), new PageImpl<>(experienceDtosPage2)),
-              Arguments.of(2, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
-              Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(experiencesPage1), new PageImpl<>(experienceDtosPage1)),
-              Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(experiencesPage2), new PageImpl<>(experienceDtosPage2)),
-              Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(experiencesPage3), new PageImpl<>(experienceDtosPage3)));
+                         Arguments.of(1, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(experiencesPage2), new PageImpl<>(experienceDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
+                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(experiencesPage1), new PageImpl<>(experienceDtosPage1)),
+                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(experiencesPage2), new PageImpl<>(experienceDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(experiencesPage3), new PageImpl<>(experienceDtosPage3)));
     }
 
     @ParameterizedTest

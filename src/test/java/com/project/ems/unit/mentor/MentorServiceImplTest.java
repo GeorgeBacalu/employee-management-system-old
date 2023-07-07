@@ -109,10 +109,10 @@ class MentorServiceImplTest {
         mentor1 = getMockedMentor1();
         mentor2 = getMockedMentor2();
         mentors = getMockedMentors();
-        employee = getMockedEmployee1();
         mentorsPage1 = getMockedMentorsPage1();
         mentorsPage2 = getMockedMentorsPage2();
         mentorsPage3 = getMockedMentorsPage3();
+        employee = getMockedEmployee1();
         role = getMockedRole2();
         studies1 = getMockedStudies1();
         studies2 = getMockedStudies2();
