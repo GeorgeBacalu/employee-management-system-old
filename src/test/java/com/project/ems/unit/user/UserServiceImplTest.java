@@ -19,13 +19,18 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.USER_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.mapper.UserMapper.convertToDto;
 import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mock.RoleMock.getMockedRole2;
+import static com.project.ems.mock.UserMock.getMockedFilteredUsers;
 import static com.project.ems.mock.UserMock.getMockedUser1;
 import static com.project.ems.mock.UserMock.getMockedUser2;
 import static com.project.ems.mock.UserMock.getMockedUsers;
@@ -58,20 +63,24 @@ class UserServiceImplTest {
     private User user1;
     private User user2;
     private List<User> users;
+    private List<User> filteredUsers;
     private Role role;
     private UserDto userDto1;
     private UserDto userDto2;
     private List<UserDto> userDtos;
+    private List<UserDto> filteredUserDtos;
 
     @BeforeEach
     void setUp() {
         user1 = getMockedUser1();
         user2 = getMockedUser2();
         users = getMockedUsers();
+        filteredUsers = getMockedFilteredUsers();
         role = getMockedRole2();
         userDto1 = convertToDto(modelMapper, user1);
         userDto2 = convertToDto(modelMapper, user2);
         userDtos = convertToDtoList(modelMapper, users);
+        filteredUserDtos = convertToDtoList(modelMapper, filteredUsers);
     }
 
     @Test
@@ -135,5 +144,19 @@ class UserServiceImplTest {
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(String.format(USER_NOT_FOUND, INVALID_ID));
         verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfUsersPaginatedSortedAndFilteredByKey() {
+        given(userRepository.findAllByKey(pageable, USER_FILTER_KEY)).willReturn(new PageImpl<>(filteredUsers));
+        Page<UserDto> result = userService.findAllByKey(pageable, USER_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(filteredUserDtos);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfUsersPaginatedAndSorted() {
+        given(userRepository.findAll(pageable)).willReturn(new PageImpl<>(users));
+        Page<UserDto> result = userService.findAllByKey(pageable, "");
+        assertThat(result.getContent()).isEqualTo(userDtos);
     }
 }

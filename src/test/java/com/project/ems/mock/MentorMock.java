@@ -37,6 +37,10 @@ public class MentorMock {
               getMockedMentor28(), getMockedMentor29(), getMockedMentor30(), getMockedMentor31(), getMockedMentor32(), getMockedMentor33(), getMockedMentor34(), getMockedMentor35(), getMockedMentor36());
     }
 
+    public static List<Mentor> getMockedFilteredMentors() {
+        return List.of(getMockedMentor1(), getMockedMentor2(), getMockedMentor3(), getMockedMentor4());
+    }
+
     public static Mentor getMockedMentor1() {
         return new Mentor(1, "John Doe", "john.doe@example.com", "#John_Doe_Password0", "+40721543701", "123 Main St, Boston, USA", LocalDate.of(1980, 2, 15), getMockedRole2(), EmploymentType.FULL_TIME, Position.FRONTEND, Grade.SENIOR, null, getMockedStudies1(), getMockedExperiences1(), 7, 10, true);
     }

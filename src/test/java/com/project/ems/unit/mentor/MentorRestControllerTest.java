@@ -12,12 +12,17 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.MENTOR_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.mapper.MentorMapper.convertToDto;
 import static com.project.ems.mapper.MentorMapper.convertToDtoList;
+import static com.project.ems.mock.MentorMock.getMockedFilteredMentors;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.MentorMock.getMockedMentor2;
 import static com.project.ems.mock.MentorMock.getMockedMentors;
@@ -42,12 +47,14 @@ class MentorRestControllerTest {
     private MentorDto mentorDto1;
     private MentorDto mentorDto2;
     private List<MentorDto> mentorDtos;
+    private List<MentorDto> filteredMentorDtos;
 
     @BeforeEach
     void setUp() {
         mentorDto1 = convertToDto(modelMapper, getMockedMentor1());
         mentorDto2 = convertToDto(modelMapper, getMockedMentor2());
         mentorDtos = convertToDtoList(modelMapper, getMockedMentors());
+        filteredMentorDtos = convertToDtoList(modelMapper, getMockedFilteredMentors());
     }
 
     @Test
@@ -93,5 +100,15 @@ class MentorRestControllerTest {
         verify(mentorService).deleteById(VALID_ID);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void findAllByKey_shouldReturnListOfMentorsPaginatedSortedAndFilteredByKey() {
+        PageImpl<MentorDto> filteredMentorDtosPage = new PageImpl<>(filteredMentorDtos);
+        given(mentorService.findAllByKey(pageable, MENTOR_FILTER_KEY)).willReturn(filteredMentorDtosPage);
+        ResponseEntity<Page<MentorDto>> response = mentorRestController.findAllByKey(pageable, MENTOR_FILTER_KEY);
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(filteredMentorDtosPage);
     }
 }

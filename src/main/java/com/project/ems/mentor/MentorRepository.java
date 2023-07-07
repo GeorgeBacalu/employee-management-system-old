@@ -9,6 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import static com.project.ems.constants.PaginationConstants.MENTOR_FILTER_QUERY;
+
 public interface MentorRepository extends JpaRepository<Mentor, Integer> {
 
     List<Mentor> findAllBySupervisingMentor(Mentor mentor);
@@ -17,11 +19,6 @@ public interface MentorRepository extends JpaRepository<Mentor, Integer> {
 
     List<Mentor> findAllByStudiesContains(Study study);
 
-    @Query("select m from Mentor m " +
-          "left join m.studies s " +
-          "left join m.experiences e " +
-          "where lower(concat(m.name, ' ', m.email, ' ', m.mobile, ' ', m.address, ' ', m.birthday, ' ', m.role.authority, ' ', m.employmentType, ' ', m.position, ' ', m.grade, ' ', m.supervisingMentor.name, ' ', m.nrTrainees, ' ', m.maxTrainees, ' ', m.isTrainingOpen)) like %:key% " +
-          "or lower(s.title) like %:key% " +
-          "or lower(e.title) like %:key%")
+    @Query(MENTOR_FILTER_QUERY)
     Page<Mentor> findAllByKey(Pageable pageable, @Param("key") String key);
 }

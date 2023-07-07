@@ -25,15 +25,20 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import static com.project.ems.constants.ExceptionMessageConstants.MENTOR_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.MENTOR_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.mapper.MentorMapper.convertToDto;
 import static com.project.ems.mapper.MentorMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences2;
+import static com.project.ems.mock.MentorMock.getMockedFilteredMentors;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.MentorMock.getMockedMentor2;
 import static com.project.ems.mock.MentorMock.getMockedMentors;
@@ -78,6 +83,7 @@ class MentorServiceImplTest {
     private Mentor mentor1;
     private Mentor mentor2;
     private List<Mentor> mentors;
+    private List<Mentor> filteredMentors;
     private Employee employee;
     private Role role;
     private List<Study> studies1;
@@ -87,6 +93,7 @@ class MentorServiceImplTest {
     private MentorDto mentorDto1;
     private MentorDto mentorDto2;
     private List<MentorDto> mentorDtos;
+    private List<MentorDto> filteredMentorDtos;
 
     @BeforeEach
     void setUp() {
@@ -94,6 +101,7 @@ class MentorServiceImplTest {
         mentor2 = getMockedMentor2();
         mentors = getMockedMentors();
         employee = getMockedEmployee1();
+        filteredMentors = getMockedFilteredMentors();
         role = getMockedRole2();
         studies1 = getMockedStudies1();
         studies2 = getMockedStudies2();
@@ -102,6 +110,7 @@ class MentorServiceImplTest {
         mentorDto1 = convertToDto(modelMapper, mentor1);
         mentorDto2 = convertToDto(modelMapper, mentor2);
         mentorDtos = convertToDtoList(modelMapper, mentors);
+        filteredMentorDtos = convertToDtoList(modelMapper, filteredMentors);
     }
 
     @Test
@@ -172,5 +181,19 @@ class MentorServiceImplTest {
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(String.format(MENTOR_NOT_FOUND, INVALID_ID));
         verify(mentorRepository, never()).delete(any(Mentor.class));
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfMentorsPaginatedSortedAndFilteredByKey() {
+        given(mentorRepository.findAllByKey(pageable, MENTOR_FILTER_KEY)).willReturn(new PageImpl<>(filteredMentors));
+        Page<MentorDto> result = mentorService.findAllByKey(pageable, MENTOR_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(filteredMentorDtos);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfMentorsPaginatedAndSorted() {
+        given(mentorRepository.findAll(pageable)).willReturn(new PageImpl<>(mentors));
+        Page<MentorDto> result = mentorService.findAllByKey(pageable, "");
+        assertThat(result.getContent()).isEqualTo(mentorDtos);
     }
 }

@@ -12,12 +12,17 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.STUDY_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.mapper.StudyMapper.convertToDto;
 import static com.project.ems.mapper.StudyMapper.convertToDtoList;
+import static com.project.ems.mock.StudyMock.getMockedFilteredStudies;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
 import static com.project.ems.mock.StudyMock.getMockedStudy2;
@@ -42,12 +47,14 @@ class StudyRestControllerTest {
     private StudyDto studyDto1;
     private StudyDto studyDto2;
     private List<StudyDto> studyDtos;
+    private List<StudyDto> filteredStudyDtos;
 
     @BeforeEach
     void setUp() {
         studyDto1 = convertToDto(modelMapper, getMockedStudy1());
         studyDto2 = convertToDto(modelMapper, getMockedStudy2());
         studyDtos = convertToDtoList(modelMapper, getMockedStudies());
+        filteredStudyDtos = convertToDtoList(modelMapper, getMockedFilteredStudies());
     }
 
     @Test
@@ -93,5 +100,15 @@ class StudyRestControllerTest {
         verify(studyService).deleteById(VALID_ID);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void findAllByKey_shouldReturnListOfStudyPaginatedSortedAndFilteredByKey() {
+        PageImpl<StudyDto> filteredStudyDtosPage = new PageImpl<>(filteredStudyDtos);
+        given(studyService.findAllByKey(pageable, STUDY_FILTER_KEY)).willReturn(filteredStudyDtosPage);
+        ResponseEntity<Page<StudyDto>> response = studyRestController.findAllByKey(pageable, STUDY_FILTER_KEY);
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(filteredStudyDtosPage);
     }
 }

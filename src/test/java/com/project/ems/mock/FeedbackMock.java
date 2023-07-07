@@ -29,6 +29,10 @@ public class FeedbackMock {
               getMockedFeedback7(), getMockedFeedback8(), getMockedFeedback9(), getMockedFeedback10(), getMockedFeedback11(), getMockedFeedback12());
     }
 
+    public static List<Feedback> getMockedFilteredFeedbacks() {
+        return List.of(getMockedFeedback3(), getMockedFeedback6(), getMockedFeedback9(), getMockedFeedback12());
+    }
+
     public static Feedback getMockedFeedback1() {
         return new Feedback(1, FeedbackType.ISSUE, "App crashes when submitting a form.", LocalDateTime.of(2023, 4, 20, 14, 30), getMockedUser1());
     }

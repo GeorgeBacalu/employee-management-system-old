@@ -12,12 +12,17 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.USER_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.mapper.UserMapper.convertToDto;
 import static com.project.ems.mapper.UserMapper.convertToDtoList;
+import static com.project.ems.mock.UserMock.getMockedFilteredUsers;
 import static com.project.ems.mock.UserMock.getMockedUser1;
 import static com.project.ems.mock.UserMock.getMockedUser2;
 import static com.project.ems.mock.UserMock.getMockedUsers;
@@ -42,12 +47,14 @@ class UserRestControllerTest {
     private UserDto userDto1;
     private UserDto userDto2;
     private List<UserDto> userDtos;
+    private List<UserDto> filteredUserDtos;
 
     @BeforeEach
     void setUp() {
         userDto1 = convertToDto(modelMapper, getMockedUser1());
         userDto2 = convertToDto(modelMapper, getMockedUser2());
         userDtos = convertToDtoList(modelMapper, getMockedUsers());
+        filteredUserDtos = convertToDtoList(modelMapper, getMockedFilteredUsers());
     }
 
     @Test
@@ -93,5 +100,15 @@ class UserRestControllerTest {
         verify(userService).deleteById(VALID_ID);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+    }
+
+    @Test
+    void findAllByKey_shouldReturnListOfUserPaginatedSortedAndFilteredByKey() {
+        PageImpl<UserDto> filteredUserDtosPage = new PageImpl<>(filteredUserDtos);
+        given(userService.findAllByKey(pageable, USER_FILTER_KEY)).willReturn(filteredUserDtosPage);
+        ResponseEntity<Page<UserDto>> response = userRestController.findAllByKey(pageable, USER_FILTER_KEY);
+        assertThat(response).isNotNull();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isEqualTo(filteredUserDtosPage);
     }
 }

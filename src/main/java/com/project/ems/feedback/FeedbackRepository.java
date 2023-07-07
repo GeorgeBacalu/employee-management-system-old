@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import static com.project.ems.constants.PaginationConstants.FEEDBACK_FILTER_QUERY;
+
 public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
 
-    @Query("select f from Feedback f where lower(concat(f.type, ' ', f.description, ' ', f.sentAt, ' ', f.user.name)) like %:key%")
+    @Query(FEEDBACK_FILTER_QUERY)
     Page<Feedback> findAllByKey(Pageable pageable, @Param("key") String key);
 }

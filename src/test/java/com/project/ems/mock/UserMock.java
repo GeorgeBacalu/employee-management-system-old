@@ -24,6 +24,10 @@ public class UserMock {
               getMockedUser64(), getMockedUser65(), getMockedUser66(), getMockedUser67(), getMockedUser68(), getMockedUser69(), getMockedUser70(), getMockedUser71(), getMockedUser72());
     }
 
+    public static List<User> getMockedFilteredUsers() {
+        return List.of(getMockedUser1(), getMockedUser2(), getMockedUser3(), getMockedUser4());
+    }
+
     public static User getMockedUser1() {
         return new User(1, "John Doe", "john.doe@example.com", "#John_Doe_Password0", "+40721543701", "123 Main St, Boston, USA", LocalDate.of(1980, 2, 15), getMockedRole2());
     }

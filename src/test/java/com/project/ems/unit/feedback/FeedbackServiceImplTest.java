@@ -22,15 +22,20 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import static com.project.ems.constants.ExceptionMessageConstants.FEEDBACK_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.FEEDBACK_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.mapper.FeedbackMapper.convertToDto;
 import static com.project.ems.mapper.FeedbackMapper.convertToDtoList;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedback1;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedback2;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacks;
+import static com.project.ems.mock.FeedbackMock.getMockedFilteredFeedbacks;
 import static com.project.ems.mock.UserMock.getMockedUser2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -66,20 +71,24 @@ class FeedbackServiceImplTest {
     private Feedback feedback1;
     private Feedback feedback2;
     private List<Feedback> feedbacks;
+    private List<Feedback> filteredFeedbacks;
     private User user;
     private FeedbackDto feedbackDto1;
     private FeedbackDto feedbackDto2;
     private List<FeedbackDto> feedbackDtos;
+    private List<FeedbackDto> filteredFeedbackDtos;
 
     @BeforeEach
     void setUp() {
         feedback1 = getMockedFeedback1();
         feedback2 = getMockedFeedback2();
         feedbacks = getMockedFeedbacks();
+        filteredFeedbacks = getMockedFilteredFeedbacks();
         user = getMockedUser2();
         feedbackDto1 = convertToDto(modelMapper, feedback1);
         feedbackDto2 = convertToDto(modelMapper, feedback2);
         feedbackDtos = convertToDtoList(modelMapper, feedbacks);
+        filteredFeedbackDtos = convertToDtoList(modelMapper, filteredFeedbacks);
     }
 
     @Test
@@ -147,5 +156,19 @@ class FeedbackServiceImplTest {
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(String.format(FEEDBACK_NOT_FOUND, INVALID_ID));
         verify(feedbackRepository, never()).delete(any(Feedback.class));
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfFeedbacksPaginatedSortedAndFilteredByKey() {
+        given(feedbackRepository.findAllByKey(pageable, FEEDBACK_FILTER_KEY)).willReturn(new PageImpl<>(filteredFeedbacks));
+        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable, FEEDBACK_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(filteredFeedbackDtos);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfFeedbacksPaginatedAndSorted() {
+        given(feedbackRepository.findAll(pageable)).willReturn(new PageImpl<>(feedbacks));
+        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable, "");
+        assertThat(result.getContent()).isEqualTo(feedbackDtos);
     }
 }

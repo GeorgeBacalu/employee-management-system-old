@@ -16,6 +16,10 @@ public class StudyMock {
         return Stream.of(getMockedStudies1(), getMockedStudies2(), getMockedStudies3(), getMockedStudies4(), getMockedStudies5(), getMockedStudies6()).flatMap(List::stream).toList();
     }
 
+    public static List<Study> getMockedFilteredStudies() {
+        return List.of(getMockedStudy3(), getMockedStudy6(), getMockedStudy9(), getMockedStudy12());
+    }
+
     public static List<Study> getMockedStudies1() {
         return new ArrayList<>(List.of(getMockedStudy1(), getMockedStudy2()));
     }

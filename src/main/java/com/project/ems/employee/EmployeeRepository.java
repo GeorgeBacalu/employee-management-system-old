@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import static com.project.ems.constants.PaginationConstants.EMPLOYEE_FILTER_QUERY;
+
 public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     List<Employee> findAllByMentor(Mentor mentor);
@@ -18,12 +20,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
 
     List<Employee> findAllByStudiesContains(Study study);
 
-    @Query("select e from Employee e " +
-           "left join e.studies s " +
-           "left join e.experiences ex " +
-           "where lower(concat(e.name, ' ', e.email, ' ', e.mobile, ' ', e.address, ' ', e.birthday, ' ', e.role.authority, ' ', e.employmentType, ' ', e.position, ' ', e.grade, ' ', e.mentor.name)) like %:key% " +
-           "or lower(s.title) like %:key% " +
-           "or lower(ex.title) like %:key%")
+    @Query(EMPLOYEE_FILTER_QUERY)
     Page<Employee> findAllByKey(Pageable pageable, @Param("key") String key);
 
 }

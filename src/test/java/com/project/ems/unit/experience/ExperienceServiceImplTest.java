@@ -21,16 +21,21 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import static com.project.ems.constants.ExceptionMessageConstants.EXPERIENCE_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.EXPERIENCE_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.mapper.ExperienceMapper.convertToDto;
 import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience2;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences;
+import static com.project.ems.mock.ExperienceMock.getMockedFilteredExperiences;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -64,22 +69,26 @@ class ExperienceServiceImplTest {
     private Experience experience1;
     private Experience experience2;
     private List<Experience> experiences;
+    private List<Experience> filteredExperiences;
     private Employee employee;
     private Mentor mentor;
     private ExperienceDto experienceDto1;
     private ExperienceDto experienceDto2;
     private List<ExperienceDto> experienceDtos;
+    private List<ExperienceDto> filteredExperienceDtos;
 
     @BeforeEach
     void setUp() {
         experience1 = getMockedExperience1();
         experience2 = getMockedExperience2();
         experiences = getMockedExperiences();
+        filteredExperiences = getMockedFilteredExperiences();
         employee = getMockedEmployee1();
         mentor = getMockedMentor1();
         experienceDto1 = convertToDto(modelMapper, experience1);
         experienceDto2 = convertToDto(modelMapper, experience2);
         experienceDtos = convertToDtoList(modelMapper, experiences);
+        filteredExperienceDtos = convertToDtoList(modelMapper, filteredExperiences);
     }
 
     @Test
@@ -144,5 +153,19 @@ class ExperienceServiceImplTest {
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(String.format(EXPERIENCE_NOT_FOUND, INVALID_ID));
         verify(experienceRepository, never()).delete(any(Experience.class));
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfExperiencesPaginatedSortedAndFilteredByKey() {
+        given(experienceRepository.findAllByKey(pageable, EXPERIENCE_FILTER_KEY)).willReturn(new PageImpl<>(filteredExperiences));
+        Page<ExperienceDto> result = experienceService.findAllByKey(pageable, EXPERIENCE_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(filteredExperienceDtos);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfExperiencesPaginatedAndSorted() {
+        given(experienceRepository.findAll(pageable)).willReturn(new PageImpl<>(experiences));
+        Page<ExperienceDto> result = experienceService.findAllByKey(pageable, "");
+        assertThat(result.getContent()).isEqualTo(experienceDtos);
     }
 }

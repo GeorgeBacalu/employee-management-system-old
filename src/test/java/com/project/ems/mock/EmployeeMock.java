@@ -37,6 +37,10 @@ public class EmployeeMock {
               getMockedEmployee28(), getMockedEmployee29(), getMockedEmployee30(), getMockedEmployee31(), getMockedEmployee32(), getMockedEmployee33(), getMockedEmployee34(), getMockedEmployee35(), getMockedEmployee36());
     }
 
+    public static List<Employee> getMockedFilteredEmployees() {
+        return List.of(getMockedEmployee1(), getMockedEmployee2(), getMockedEmployee3(), getMockedEmployee4());
+    }
+
     public static Employee getMockedEmployee1() {
         return new Employee(1, "Abigail Johnson", "abigail.johnson@example.com", "#Abigail_Johnson_Password0", "+40754321837", "999 Oak St, Athens, Greece", LocalDate.of(2000, 10, 2), getMockedRole1(), EmploymentType.FULL_TIME, Position.FRONTEND, Grade.JUNIOR, getMockedMentor1(), getMockedStudies1(), getMockedExperiences1());
     }

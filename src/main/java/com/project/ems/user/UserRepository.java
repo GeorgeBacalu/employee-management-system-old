@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import static com.project.ems.constants.PaginationConstants.USER_FILTER_QUERY;
+
 public interface UserRepository extends JpaRepository<User, Integer> {
 
-    @Query("select u from User u where lower(concat(u.name, ' ', u.email, ' ', u.mobile, ' ', u.address, ' ', u.birthday, ' ', u.role.authority)) like %:key%")
+    @Query(USER_FILTER_QUERY)
     Page<User> findAllByKey(Pageable pageable, @Param("key") String key);
 }

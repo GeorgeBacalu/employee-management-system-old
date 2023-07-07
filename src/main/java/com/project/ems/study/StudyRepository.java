@@ -6,8 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import static com.project.ems.constants.PaginationConstants.STUDY_FILTER_QUERY;
+
 public interface StudyRepository extends JpaRepository<Study, Integer> {
 
-    @Query("select s from Study s where lower(concat(s.title, ' ', s.institution, ' ', s.description, ' ', s.type, ' ', s.startedAt, ' ', s.finishedAt)) like %:key%")
+    @Query(STUDY_FILTER_QUERY)
     Page<Study> findAllByKey(Pageable pageable, @Param("key") String key);
 }

@@ -21,14 +21,19 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.STUDY_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.mapper.StudyMapper.convertToDto;
 import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
+import static com.project.ems.mock.StudyMock.getMockedFilteredStudies;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
 import static com.project.ems.mock.StudyMock.getMockedStudy2;
@@ -64,22 +69,26 @@ class StudyServiceImplTest {
     private Study study1;
     private Study study2;
     private List<Study> studies;
+    private List<Study> filteredStudies;
     private Employee employee;
     private Mentor mentor;
     private StudyDto studyDto1;
     private StudyDto studyDto2;
     private List<StudyDto> studyDtos;
+    private List<StudyDto> filteredStudyDtos;
 
     @BeforeEach
     void setUp() {
         study1 = getMockedStudy1();
         study2 = getMockedStudy2();
         studies = getMockedStudies();
+        filteredStudies = getMockedFilteredStudies();
         employee = getMockedEmployee1();
         mentor = getMockedMentor1();
         studyDto1 = convertToDto(modelMapper, study1);
         studyDto2 = convertToDto(modelMapper, study2);
         studyDtos = convertToDtoList(modelMapper, studies);
+        filteredStudyDtos = convertToDtoList(modelMapper, filteredStudies);
     }
 
     @Test
@@ -144,5 +153,19 @@ class StudyServiceImplTest {
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(String.format(STUDY_NOT_FOUND, INVALID_ID));
         verify(studyRepository, never()).delete(any(Study.class));
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfStudiesPaginatedSortedAndFilteredByKey() {
+        given(studyRepository.findAllByKey(pageable, STUDY_FILTER_KEY)).willReturn(new PageImpl<>(filteredStudies));
+        Page<StudyDto> result = studyService.findAllByKey(pageable, STUDY_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(filteredStudyDtos);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfStudiesPaginatedAndSorted() {
+        given(studyRepository.findAll(pageable)).willReturn(new PageImpl<>(studies));
+        Page<StudyDto> result = studyService.findAllByKey(pageable, "");
+        assertThat(result.getContent()).isEqualTo(studyDtos);
     }
 }
