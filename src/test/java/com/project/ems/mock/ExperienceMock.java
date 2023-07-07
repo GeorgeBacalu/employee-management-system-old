@@ -18,8 +18,16 @@ public class ExperienceMock {
               .toList();
     }
 
-    public static List<Experience> getMockedFilteredExperiences() {
-        return Stream.of(getMockedExperiences1(), getMockedExperiences2()).flatMap(List::stream).toList();
+    public static List<Experience> getMockedExperiencesPage1() {
+        return getMockedExperiences1();
+    }
+
+    public static List<Experience> getMockedExperiencesPage2() {
+        return getMockedExperiences2();
+    }
+
+    public static List<Experience> getMockedExperiencesPage3() {
+        return getMockedExperiences3();
     }
 
     public static List<Experience> getMockedExperiences1() {

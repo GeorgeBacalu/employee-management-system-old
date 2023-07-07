@@ -1,9 +1,9 @@
 package com.project.ems.user;
 
+import com.project.ems.wrapper.PageWrapper;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -55,8 +55,8 @@ public class UserRestController implements UserApi {
     }
 
     @Override @GetMapping("/pagination")
-    public ResponseEntity<Page<UserDto>> findAllByKey(@PageableDefault(size = 5, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-                                                      @RequestParam(required = false, defaultValue = "") String key) {
-        return ResponseEntity.ok(userService.findAllByKey(pageable, key));
+    public ResponseEntity<PageWrapper<UserDto>> findAllByKey(@PageableDefault(size = 2, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+                                                             @RequestParam(required = false, defaultValue = "") String key) {
+        return ResponseEntity.ok(new PageWrapper<>(userService.findAllByKey(pageable, key).getContent()));
     }
 }

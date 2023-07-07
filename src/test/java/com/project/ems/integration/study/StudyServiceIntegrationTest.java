@@ -9,10 +9,16 @@ import com.project.ems.study.Study;
 import com.project.ems.study.StudyDto;
 import com.project.ems.study.StudyRepository;
 import com.project.ems.study.StudyServiceImpl;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Spy;
@@ -20,25 +26,36 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.STUDY_FILTER_KEY;
 import static com.project.ems.mapper.StudyMapper.convertToDto;
 import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
+import static com.project.ems.mock.StudyMock.getMockedStudiesPage1;
+import static com.project.ems.mock.StudyMock.getMockedStudiesPage2;
+import static com.project.ems.mock.StudyMock.getMockedStudiesPage3;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
 import static com.project.ems.mock.StudyMock.getMockedStudy2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class StudyServiceIntegrationTest {
 
@@ -143,5 +160,32 @@ class StudyServiceIntegrationTest {
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(String.format(STUDY_NOT_FOUND, INVALID_ID));
         verify(studyRepository, never()).delete(any(Study.class));
+    }
+
+    private Stream<Arguments> paginationArguments() {
+        List<Study> studiesPage1 = getMockedStudiesPage1();
+        List<Study> studiesPage2 = getMockedStudiesPage2();
+        List<Study> studiesPage3 = getMockedStudiesPage3();
+        List<StudyDto> studyDtosPage1 = convertToDtoList(modelMapper, studiesPage1);
+        List<StudyDto> studyDtosPage2 = convertToDtoList(modelMapper, studiesPage2);
+        List<StudyDto> studyDtosPage3 = convertToDtoList(modelMapper, studiesPage3);
+        return Stream.of(Arguments.of(0, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studiesPage1), new PageImpl<>(studyDtosPage1)),
+              Arguments.of(1, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studiesPage2), new PageImpl<>(studyDtosPage2)),
+              Arguments.of(2, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
+              Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(studiesPage1), new PageImpl<>(studyDtosPage1)),
+              Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(studiesPage2), new PageImpl<>(studyDtosPage2)),
+              Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(studiesPage3), new PageImpl<>(studyDtosPage3)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("paginationArguments")
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<Study> entityPage, PageImpl<StudyDto> dtoPage) {
+        if(key.trim().equals("")) {
+            given(studyRepository.findAll(any(Pageable.class))).willReturn(entityPage);
+        } else {
+            given(studyRepository.findAllByKey(any(Pageable.class), anyString())).willReturn(entityPage);
+        }
+        Page<StudyDto> result = studyService.findAllByKey(PageRequest.of(page, size, Sort.Direction.ASC, sortField), key);
+        assertThat(result.getContent()).isEqualTo(dtoPage.getContent());
     }
 }

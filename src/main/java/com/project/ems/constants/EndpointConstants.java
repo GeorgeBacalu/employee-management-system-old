@@ -21,4 +21,7 @@ public class EndpointConstants {
     public static final String ROLES = "/roles";
     public static final String STUDIES = "/studies";
     public static final String USERS = "/users";
+
+    public static final String API_PAGINATION = "/pagination?page={page}&size={size}&sort={field},{direction}&key={key}";
+    public static final String API_PAGINATION_V2 = "/pagination?page=%s&size=%s&sort=%s,%s&key=%s";
 }

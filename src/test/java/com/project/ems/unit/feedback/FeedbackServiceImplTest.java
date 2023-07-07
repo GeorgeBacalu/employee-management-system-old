@@ -10,6 +10,7 @@ import com.project.ems.user.UserService;
 import java.time.Clock;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,12 +31,16 @@ import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.FEEDBACK_FILTER_KEY;
 import static com.project.ems.constants.PaginationConstants.pageable;
+import static com.project.ems.constants.PaginationConstants.pageable2;
+import static com.project.ems.constants.PaginationConstants.pageable3;
 import static com.project.ems.mapper.FeedbackMapper.convertToDto;
 import static com.project.ems.mapper.FeedbackMapper.convertToDtoList;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedback1;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedback2;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacks;
-import static com.project.ems.mock.FeedbackMock.getMockedFilteredFeedbacks;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage1;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage3;
 import static com.project.ems.mock.UserMock.getMockedUser2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -71,24 +76,32 @@ class FeedbackServiceImplTest {
     private Feedback feedback1;
     private Feedback feedback2;
     private List<Feedback> feedbacks;
-    private List<Feedback> filteredFeedbacks;
+    private List<Feedback> feedbacksPage1;
+    private List<Feedback> feedbacksPage2;
+    private List<Feedback> feedbacksPage3;
     private User user;
     private FeedbackDto feedbackDto1;
     private FeedbackDto feedbackDto2;
     private List<FeedbackDto> feedbackDtos;
-    private List<FeedbackDto> filteredFeedbackDtos;
+    private List<FeedbackDto> feedbackDtosPage1;
+    private List<FeedbackDto> feedbackDtosPage2;
+    private List<FeedbackDto> feedbackDtosPage3;
 
     @BeforeEach
     void setUp() {
         feedback1 = getMockedFeedback1();
         feedback2 = getMockedFeedback2();
         feedbacks = getMockedFeedbacks();
-        filteredFeedbacks = getMockedFilteredFeedbacks();
+        feedbacksPage1 = getMockedFeedbacksPage1();
+        feedbacksPage2 = getMockedFeedbacksPage2();
+        feedbacksPage3 = getMockedFeedbacksPage3();
         user = getMockedUser2();
         feedbackDto1 = convertToDto(modelMapper, feedback1);
         feedbackDto2 = convertToDto(modelMapper, feedback2);
         feedbackDtos = convertToDtoList(modelMapper, feedbacks);
-        filteredFeedbackDtos = convertToDtoList(modelMapper, filteredFeedbacks);
+        feedbackDtosPage1 = convertToDtoList(modelMapper, feedbacksPage1);
+        feedbackDtosPage2 = convertToDtoList(modelMapper, feedbacksPage2);
+        feedbackDtosPage3 = convertToDtoList(modelMapper, feedbacksPage3);
     }
 
     @Test
@@ -159,16 +172,44 @@ class FeedbackServiceImplTest {
     }
 
     @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfFeedbacksPaginatedSortedAndFilteredByKey() {
-        given(feedbackRepository.findAllByKey(pageable, FEEDBACK_FILTER_KEY)).willReturn(new PageImpl<>(filteredFeedbacks));
+    void findAllByKey_withFilterKey_shouldReturnListOfFeedbacksFilteredByKeyPage1() {
+        given(feedbackRepository.findAllByKey(pageable, FEEDBACK_FILTER_KEY)).willReturn(new PageImpl<>(feedbacksPage1));
         Page<FeedbackDto> result = feedbackService.findAllByKey(pageable, FEEDBACK_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(filteredFeedbackDtos);
+        assertThat(result.getContent()).isEqualTo(feedbackDtosPage1);
     }
 
     @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfFeedbacksPaginatedAndSorted() {
-        given(feedbackRepository.findAll(pageable)).willReturn(new PageImpl<>(feedbacks));
+    void findAllByKey_withFilterKey_shouldReturnListOfFeedbacksFilteredByKeyPage2() {
+        given(feedbackRepository.findAllByKey(pageable2, FEEDBACK_FILTER_KEY)).willReturn(new PageImpl<>(feedbacksPage2));
+        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable2, FEEDBACK_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(feedbackDtosPage2);
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfFeedbacksFilteredByKeyPage3() {
+        given(feedbackRepository.findAllByKey(pageable3, FEEDBACK_FILTER_KEY)).willReturn(new PageImpl<>(Collections.emptyList()));
+        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable3, FEEDBACK_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(Collections.emptyList());
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfFeedbacksPage1() {
+        given(feedbackRepository.findAll(pageable)).willReturn(new PageImpl<>(feedbacksPage1));
         Page<FeedbackDto> result = feedbackService.findAllByKey(pageable, "");
-        assertThat(result.getContent()).isEqualTo(feedbackDtos);
+        assertThat(result.getContent()).isEqualTo(feedbackDtosPage1);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfFeedbacksPage2() {
+        given(feedbackRepository.findAll(pageable2)).willReturn(new PageImpl<>(feedbacksPage2));
+        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable2, "");
+        assertThat(result.getContent()).isEqualTo(feedbackDtosPage2);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfFeedbacksPage3() {
+        given(feedbackRepository.findAll(pageable3)).willReturn(new PageImpl<>(feedbacksPage3));
+        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable3, "");
+        assertThat(result.getContent()).isEqualTo(feedbackDtosPage3);
     }
 }

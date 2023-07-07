@@ -29,32 +29,40 @@ public class FeedbackMock {
               getMockedFeedback7(), getMockedFeedback8(), getMockedFeedback9(), getMockedFeedback10(), getMockedFeedback11(), getMockedFeedback12());
     }
 
-    public static List<Feedback> getMockedFilteredFeedbacks() {
-        return List.of(getMockedFeedback3(), getMockedFeedback6(), getMockedFeedback9(), getMockedFeedback12());
+    public static List<Feedback> getMockedFeedbacksPage1() {
+        return List.of(getMockedFeedback1(), getMockedFeedback2());
+    }
+
+    public static List<Feedback> getMockedFeedbacksPage2() {
+        return List.of(getMockedFeedback3(), getMockedFeedback4());
+    }
+
+    public static List<Feedback> getMockedFeedbacksPage3() {
+        return List.of(getMockedFeedback5(), getMockedFeedback6());
     }
 
     public static Feedback getMockedFeedback1() {
-        return new Feedback(1, FeedbackType.ISSUE, "App crashes when submitting a form.", LocalDateTime.of(2023, 4, 20, 14, 30), getMockedUser1());
+        return new Feedback(1, FeedbackType.OPTIMIZATION, "Improve page load time for the dashboard.", LocalDateTime.of(2023, 4, 21, 9, 15), getMockedUser1());
     }
 
     public static Feedback getMockedFeedback2() {
-        return new Feedback(2, FeedbackType.OPTIMIZATION, "Improve page load time for the dashboard.", LocalDateTime.of(2023, 4, 21, 9, 15), getMockedUser2());
+        return new Feedback(2, FeedbackType.OPTIMIZATION, "Optimize search functionality for better results.", LocalDateTime.of(2023, 4, 25, 10, 50), getMockedUser2());
     }
 
     public static Feedback getMockedFeedback3() {
-        return new Feedback(3, FeedbackType.IMPROVEMENT, "Add a dark mode for better user experience.", LocalDateTime.of(2023, 4, 22, 16, 45), getMockedUser3());
+        return new Feedback(3, FeedbackType.OPTIMIZATION, "Compress images to improve page load time.", LocalDateTime.of(2023, 5, 1, 9, 45), getMockedUser3());
     }
 
     public static Feedback getMockedFeedback4() {
-        return new Feedback(4, FeedbackType.ISSUE, "Error message appears when uploading an image.", LocalDateTime.of(2023, 4, 23, 11, 10), getMockedUser4());
+        return new Feedback(4, FeedbackType.OPTIMIZATION, "Implement lazy loading for faster initial load.", LocalDateTime.of(2023, 5, 4, 17, 20), getMockedUser4());
     }
 
     public static Feedback getMockedFeedback5() {
-        return new Feedback(5, FeedbackType.OPTIMIZATION, "Optimize search functionality for better results.", LocalDateTime.of(2023, 4, 25, 10, 50), getMockedUser5());
+        return new Feedback(5, FeedbackType.ISSUE, "App crashes when submitting a form.", LocalDateTime.of(2023, 4, 20, 14, 30), getMockedUser5());
     }
 
     public static Feedback getMockedFeedback6() {
-        return new Feedback(6, FeedbackType.IMPROVEMENT, "Add more filtering options in the search bar.", LocalDateTime.of(2023, 4, 27, 15, 40), getMockedUser6());
+        return new Feedback(6, FeedbackType.ISSUE, "Error message appears when uploading an image.", LocalDateTime.of(2023, 4, 23, 11, 10), getMockedUser6());
     }
 
     public static Feedback getMockedFeedback7() {
@@ -62,19 +70,19 @@ public class FeedbackMock {
     }
 
     public static Feedback getMockedFeedback8() {
-        return new Feedback(8, FeedbackType.OPTIMIZATION, "Compress images to improve page load time.", LocalDateTime.of(2023, 5, 1, 9, 45), getMockedUser8());
+        return new Feedback(8, FeedbackType.ISSUE, "Notifications not appearing on the mobile app.", LocalDateTime.of(2023, 5, 2, 16, 10), getMockedUser8());
     }
 
     public static Feedback getMockedFeedback9() {
-        return new Feedback(9, FeedbackType.IMPROVEMENT, "Include an option to save items to a wishlist.", LocalDateTime.of(2023, 4, 30, 14, 15), getMockedUser9());
+        return new Feedback(9, FeedbackType.IMPROVEMENT, "Add a dark mode for better user experience.", LocalDateTime.of(2023, 4, 22, 16, 45), getMockedUser9());
     }
 
     public static Feedback getMockedFeedback10() {
-        return new Feedback(10, FeedbackType.ISSUE, "Notifications not appearing on the mobile app.", LocalDateTime.of(2023, 5, 2, 16, 10), getMockedUser10());
+        return new Feedback(10, FeedbackType.IMPROVEMENT, "Add more filtering options in the search bar.", LocalDateTime.of(2023, 4, 27, 15, 40), getMockedUser10());
     }
 
     public static Feedback getMockedFeedback11() {
-        return new Feedback(11, FeedbackType.OPTIMIZATION, "Implement lazy loading for faster initial load.", LocalDateTime.of(2023, 5, 4, 17, 20), getMockedUser11());
+        return new Feedback(11, FeedbackType.IMPROVEMENT, "Include an option to save items to a wishlist.", LocalDateTime.of(2023, 4, 30, 14, 15), getMockedUser11());
     }
 
     public static Feedback getMockedFeedback12() {

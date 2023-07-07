@@ -13,6 +13,7 @@ import com.project.ems.role.Role;
 import com.project.ems.role.RoleService;
 import com.project.ems.study.Study;
 import com.project.ems.study.StudyService;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,15 +34,19 @@ import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.MENTOR_FILTER_KEY;
 import static com.project.ems.constants.PaginationConstants.pageable;
+import static com.project.ems.constants.PaginationConstants.pageable2;
+import static com.project.ems.constants.PaginationConstants.pageable3;
 import static com.project.ems.mapper.MentorMapper.convertToDto;
 import static com.project.ems.mapper.MentorMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences2;
-import static com.project.ems.mock.MentorMock.getMockedFilteredMentors;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.MentorMock.getMockedMentor2;
 import static com.project.ems.mock.MentorMock.getMockedMentors;
+import static com.project.ems.mock.MentorMock.getMockedMentorsPage1;
+import static com.project.ems.mock.MentorMock.getMockedMentorsPage2;
+import static com.project.ems.mock.MentorMock.getMockedMentorsPage3;
 import static com.project.ems.mock.RoleMock.getMockedRole2;
 import static com.project.ems.mock.StudyMock.getMockedStudies1;
 import static com.project.ems.mock.StudyMock.getMockedStudies2;
@@ -83,7 +88,9 @@ class MentorServiceImplTest {
     private Mentor mentor1;
     private Mentor mentor2;
     private List<Mentor> mentors;
-    private List<Mentor> filteredMentors;
+    private List<Mentor> mentorsPage1;
+    private List<Mentor> mentorsPage2;
+    private List<Mentor> mentorsPage3;
     private Employee employee;
     private Role role;
     private List<Study> studies1;
@@ -93,7 +100,9 @@ class MentorServiceImplTest {
     private MentorDto mentorDto1;
     private MentorDto mentorDto2;
     private List<MentorDto> mentorDtos;
-    private List<MentorDto> filteredMentorDtos;
+    private List<MentorDto> mentorDtosPage1;
+    private List<MentorDto> mentorDtosPage2;
+    private List<MentorDto> mentorDtosPage3;
 
     @BeforeEach
     void setUp() {
@@ -101,7 +110,9 @@ class MentorServiceImplTest {
         mentor2 = getMockedMentor2();
         mentors = getMockedMentors();
         employee = getMockedEmployee1();
-        filteredMentors = getMockedFilteredMentors();
+        mentorsPage1 = getMockedMentorsPage1();
+        mentorsPage2 = getMockedMentorsPage2();
+        mentorsPage3 = getMockedMentorsPage3();
         role = getMockedRole2();
         studies1 = getMockedStudies1();
         studies2 = getMockedStudies2();
@@ -110,7 +121,9 @@ class MentorServiceImplTest {
         mentorDto1 = convertToDto(modelMapper, mentor1);
         mentorDto2 = convertToDto(modelMapper, mentor2);
         mentorDtos = convertToDtoList(modelMapper, mentors);
-        filteredMentorDtos = convertToDtoList(modelMapper, filteredMentors);
+        mentorDtosPage1 = convertToDtoList(modelMapper, mentorsPage1);
+        mentorDtosPage2 = convertToDtoList(modelMapper, mentorsPage2);
+        mentorDtosPage3 = convertToDtoList(modelMapper, mentorsPage3);
     }
 
     @Test
@@ -184,16 +197,44 @@ class MentorServiceImplTest {
     }
 
     @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfMentorsPaginatedSortedAndFilteredByKey() {
-        given(mentorRepository.findAllByKey(pageable, MENTOR_FILTER_KEY)).willReturn(new PageImpl<>(filteredMentors));
+    void findAllByKey_withFilterKey_shouldReturnListOfMentorsFilteredByKeyPage1() {
+        given(mentorRepository.findAllByKey(pageable, MENTOR_FILTER_KEY)).willReturn(new PageImpl<>(mentorsPage1));
         Page<MentorDto> result = mentorService.findAllByKey(pageable, MENTOR_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(filteredMentorDtos);
+        assertThat(result.getContent()).isEqualTo(mentorDtosPage1);
     }
 
     @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfMentorsPaginatedAndSorted() {
-        given(mentorRepository.findAll(pageable)).willReturn(new PageImpl<>(mentors));
+    void findAllByKey_withFilterKey_shouldReturnListOfMentorsFilteredByKeyPage2() {
+        given(mentorRepository.findAllByKey(pageable2, MENTOR_FILTER_KEY)).willReturn(new PageImpl<>(mentorsPage2));
+        Page<MentorDto> result = mentorService.findAllByKey(pageable2, MENTOR_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(mentorDtosPage2);
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfMentorsFilteredByKeyPage3() {
+        given(mentorRepository.findAllByKey(pageable3, MENTOR_FILTER_KEY)).willReturn(new PageImpl<>(Collections.emptyList()));
+        Page<MentorDto> result = mentorService.findAllByKey(pageable3, MENTOR_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(Collections.emptyList());
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfMentorsPage1() {
+        given(mentorRepository.findAll(pageable)).willReturn(new PageImpl<>(mentorsPage1));
         Page<MentorDto> result = mentorService.findAllByKey(pageable, "");
-        assertThat(result.getContent()).isEqualTo(mentorDtos);
+        assertThat(result.getContent()).isEqualTo(mentorDtosPage1);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfMentorsPage2() {
+        given(mentorRepository.findAll(pageable2)).willReturn(new PageImpl<>(mentorsPage2));
+        Page<MentorDto> result = mentorService.findAllByKey(pageable2, "");
+        assertThat(result.getContent()).isEqualTo(mentorDtosPage2);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfMentorsPage3() {
+        given(mentorRepository.findAll(pageable3)).willReturn(new PageImpl<>(mentorsPage3));
+        Page<MentorDto> result = mentorService.findAllByKey(pageable3, "");
+        assertThat(result.getContent()).isEqualTo(mentorDtosPage3);
     }
 }

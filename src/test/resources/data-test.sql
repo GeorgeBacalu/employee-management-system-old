@@ -75,17 +75,17 @@ INSERT INTO users(id, name, email, password, mobile, address, birthday, role_id)
 (72, 'Michaela Allen', 'michaela.allen@example.com', '#Michaela_Allen_Password0', '+40787654372', '999 Pine St, Beijing, China', '1998-05-06', 1);
 
 INSERT INTO feedbacks(id, type, description, sent_at, user_id) VALUES
-(1, 'ISSUE', 'App crashes when submitting a form.', '2023-04-20 14:30', 1),
-(2, 'OPTIMIZATION', 'Improve page load time for the dashboard.', '2023-04-21 09:15', 2),
-(3, 'IMPROVEMENT', 'Add a dark mode for better user experience.', '2023-04-22 16:45', 3),
-(4, 'ISSUE', 'Error message appears when uploading an image.', '2023-04-23 11:10', 4),
-(5, 'OPTIMIZATION', 'Optimize search functionality for better results.', '2023-04-25 10:50', 5),
-(6, 'IMPROVEMENT', 'Add more filtering options in the search bar.', '2023-04-27 15:40', 6),
+(1, 'OPTIMIZATION', 'Improve page load time for the dashboard.', '2023-04-21 09:15', 1),
+(2, 'OPTIMIZATION', 'Optimize search functionality for better results.', '2023-04-25 10:50', 2),
+(3, 'OPTIMIZATION', 'Compress images to improve page load time.', '2023-05-01 09:45', 3),
+(4, 'OPTIMIZATION', 'Implement lazy loading for faster initial load.', '2023-05-04 17:20', 4),
+(5, 'ISSUE', 'App crashes when submitting a form.', '2023-04-20 14:30', 5),
+(6, 'ISSUE', 'Error message appears when uploading an image.', '2023-04-23 11:10', 6),
 (7, 'ISSUE', 'Login issues after resetting the password.', '2023-04-26 17:20', 7),
-(8, 'OPTIMIZATION', 'Compress images to improve page load time.', '2023-05-01 09:45', 8),
-(9, 'IMPROVEMENT', 'Include an option to save items to a wishlist.', '2023-04-30 14:15', 9),
-(10, 'ISSUE', 'Notifications not appearing on the mobile app.', '2023-05-02 16:10', 10),
-(11, 'OPTIMIZATION', 'Implement lazy loading for faster initial load.', '2023-05-04 17:20', 11),
+(8, 'ISSUE', 'Notifications not appearing on the mobile app.', '2023-05-02 16:10', 8),
+(9, 'IMPROVEMENT', 'Add a dark mode for better user experience.', '2023-04-22 16:45', 9),
+(10, 'IMPROVEMENT', 'Add more filtering options in the search bar.', '2023-04-27 15:40', 10),
+(11, 'IMPROVEMENT', 'Include an option to save items to a wishlist.', '2023-04-30 14:15', 11),
 (12, 'IMPROVEMENT', 'Allow users to customize their profile layout.', '2023-05-03 11:35', 12);
 
 INSERT INTO experiences(id, title, organization, description, type, started_at, finished_at) VALUES
@@ -107,18 +107,18 @@ INSERT INTO experiences(id, title, organization, description, type, started_at, 
 (16, 'Teaching Assistant', 'Coursera', 'Served as a Teaching Assistant for online courses on Coursera, providing guidance and support to learners, grading assignments, and facilitating discussions.', 'VOLUNTEERING', '2018-09-01', '2018-12-31');
 
 INSERT INTO studies(id, title, institution, description, type, started_at, finished_at) VALUES
-(1, 'Harvard University', 'Faculty of Arts and Sciences', 'Bachelor''s degree in Economics at Harvard University - Faculty of Arts and Sciences', 'BACHELORS', '2012-08-31', '2016-06-01'),
-(2, 'Stanford University', 'School of Engineering', 'Master''s degree in Computer Science at Stanford University - School of Engineering', 'MASTERS', '2016-08-31', '2019-06-01'),
-(3, 'Data Science Bootcamp', 'DataCamp', 'Data Science specialized training at DataCamp', 'SPECIALIZED_TRAINING', '2022-01-15', '2022-06-30'),
-(4, 'University of Chicago', 'Booth School of Business', 'Bachelor''s in Business Analysis at University of Chicago - Booth School of Business', 'BACHELORS', '2017-06-01', '2020-03-01'),
-(5, 'University College London', 'Faculty of Engineering', 'Master''s degree in Software Engineering at University College London - Faculty of Engineering', 'MASTERS', '2020-03-01', '2023-03-01'),
-(6, 'Web Development Immersive', 'General Assembly', 'Web Development specialized training at General Assembly', 'SPECIALIZED_TRAINING', '2021-07-01', '2022-01-31'),
+(1, 'Data Science Bootcamp', 'DataCamp', 'Data Science specialized training at DataCamp', 'SPECIALIZED_TRAINING', '2022-01-15', '2022-06-30'),
+(2, 'Web Development Immersive', 'General Assembly', 'Web Development specialized training at General Assembly', 'SPECIALIZED_TRAINING', '2021-07-01', '2022-01-31'),
+(3, 'Digital Marketing Certification', 'HubSpot Academy', 'Digital Marketing Certification from HubSpot Academy', 'SPECIALIZED_TRAINING', '2023-03-01', '2023-06-30'),
+(4, 'UX/UI Design Workshop', 'Interaction Design Foundation', 'UX/UI Design Workshop at Interaction Design Foundation', 'SPECIALIZED_TRAINING', '2022-09-01', '2022-11-30'),
+(5, 'Harvard University', 'Faculty of Arts and Sciences', 'Bachelor''s degree in Economics at Harvard University - Faculty of Arts and Sciences', 'BACHELORS', '2012-08-31', '2016-06-01'),
+(6, 'University of Chicago', 'Booth School of Business', 'Bachelor''s in Business Analysis at University of Chicago - Booth School of Business', 'BACHELORS', '2017-06-01', '2020-03-01'),
 (7, 'Massachusetts Institute of Technology', 'School of Science', 'Bachelor''s degree in Physics at Massachusetts Institute of Technology - School of Science', 'BACHELORS', '2013-09-01', '2017-05-31'),
-(8, 'ETH Zurich', 'Department of Computer Science', 'Bachelor''s degree in Artificial Intelligence at ETH Zurich - Department of Computer Science', 'MASTERS', '2017-09-01', '2020-08-31'),
-(9, 'Digital Marketing Certification', 'HubSpot Academy', 'Digital Marketing Certification from HubSpot Academy', 'SPECIALIZED_TRAINING', '2023-03-01', '2023-06-30'),
-(10, 'University of Cambridge', 'Faculty of Mathematics', 'Bachelor''s degree in Mathematics at University of Cambridge - Faculty of Mathematics', 'BACHELORS', '2019-10-01', '2022-06-30'),
-(11, 'California Institute of Technology', 'Division of Engineering and Applied Science', 'Master''s degree in Electrical Engineering at California Institute of Technology - Division of Engineering and Applied Science', 'MASTERS', '2018-09-01', '2021-05-31'),
-(12, 'UX/UI Design Workshop', 'Interaction Design Foundation', 'UX/UI Design Workshop at Interaction Design Foundation', 'SPECIALIZED_TRAINING', '2022-09-01', '2022-11-30');
+(8, 'University of Cambridge', 'Faculty of Mathematics', 'Bachelor''s degree in Mathematics at University of Cambridge - Faculty of Mathematics', 'BACHELORS', '2019-10-01', '2022-06-30'),
+(9, 'Stanford University', 'School of Engineering', 'Master''s degree in Computer Science at Stanford University - School of Engineering', 'MASTERS', '2016-08-31', '2019-06-01'),
+(10, 'University College London', 'Faculty of Engineering', 'Master''s degree in Software Engineering at University College London - Faculty of Engineering', 'MASTERS', '2020-03-01', '2023-03-01'),
+(11, 'ETH Zurich', 'Department of Computer Science', 'Bachelor''s degree in Artificial Intelligence at ETH Zurich - Department of Computer Science', 'MASTERS', '2017-09-01', '2020-08-31'),
+(12, 'California Institute of Technology', 'Division of Engineering and Applied Science', 'Master''s degree in Electrical Engineering at California Institute of Technology - Division of Engineering and Applied Science', 'MASTERS', '2018-09-01', '2021-05-31');
 
 INSERT INTO mentors(id, name, email, password, mobile, address, birthday, role_id, employment_type, position, grade, mentor_id, nr_trainees, max_trainees, is_training_open) VALUES
 (1, 'John Doe', 'john.doe@example.com', '#John_Doe_Password0', '+40721543701', '123 Main St, Boston, USA', '1980-02-15', 2, 'FULL_TIME', 'FRONTEND', 'SENIOR', null, 7, 10, true),

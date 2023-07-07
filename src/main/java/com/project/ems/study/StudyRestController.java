@@ -1,9 +1,9 @@
 package com.project.ems.study;
 
+import com.project.ems.wrapper.PageWrapper;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -55,8 +55,8 @@ public class StudyRestController implements StudyApi {
     }
 
     @Override @GetMapping("/pagination")
-    public ResponseEntity<Page<StudyDto>> findAllByKey(@PageableDefault(size = 5, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-                                                       @RequestParam(required = false, defaultValue = "") String key) {
-        return ResponseEntity.ok(studyService.findAllByKey(pageable, key));
+    public ResponseEntity<PageWrapper<StudyDto>> findAllByKey(@PageableDefault(size = 2, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+                                                              @RequestParam(required = false, defaultValue = "") String key) {
+        return ResponseEntity.ok(new PageWrapper<>(studyService.findAllByKey(pageable, key).getContent()));
     }
 }

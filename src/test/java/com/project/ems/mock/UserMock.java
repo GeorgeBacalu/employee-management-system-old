@@ -24,8 +24,16 @@ public class UserMock {
               getMockedUser64(), getMockedUser65(), getMockedUser66(), getMockedUser67(), getMockedUser68(), getMockedUser69(), getMockedUser70(), getMockedUser71(), getMockedUser72());
     }
 
-    public static List<User> getMockedFilteredUsers() {
-        return List.of(getMockedUser1(), getMockedUser2(), getMockedUser3(), getMockedUser4());
+    public static List<User> getMockedUsersPage1() {
+        return List.of(getMockedUser1(), getMockedUser2());
+    }
+
+    public static List<User> getMockedUsersPage2() {
+        return List.of(getMockedUser3(), getMockedUser4());
+    }
+
+    public static List<User> getMockedUsersPage3() {
+        return List.of(getMockedUser5(), getMockedUser6());
     }
 
     public static User getMockedUser1() {

@@ -6,34 +6,49 @@ import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.user.UserDto;
 import com.project.ems.user.UserRestController;
 import com.project.ems.user.UserService;
+import com.project.ems.wrapper.PageWrapper;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static com.project.ems.constants.EndpointConstants.API_PAGINATION;
 import static com.project.ems.constants.EndpointConstants.API_USERS;
 import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.USER_FILTER_KEY;
 import static com.project.ems.mapper.UserMapper.convertToDto;
 import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mock.UserMock.getMockedUser1;
 import static com.project.ems.mock.UserMock.getMockedUser2;
 import static com.project.ems.mock.UserMock.getMockedUsers;
+import static com.project.ems.mock.UserMock.getMockedUsersPage1;
+import static com.project.ems.mock.UserMock.getMockedUsersPage2;
+import static com.project.ems.mock.UserMock.getMockedUsersPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -45,6 +60,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @WebMvcTest(UserRestController.class)
 @ExtendWith(MockitoExtension.class)
 class UserRestControllerMockMvcTest {
@@ -77,15 +93,7 @@ class UserRestControllerMockMvcTest {
         given(userService.findAll()).willReturn(userDtos);
         ResultActions actions = mockMvc.perform(get(API_USERS)).andExpect(status().isOk());
         for(int i = 0; i < userDtos.size(); i++) {
-            UserDto userDto = userDtos.get(i);
-            actions.andExpect(jsonPath("$[" + i + "].id").value(userDto.getId()));
-            actions.andExpect(jsonPath("$[" + i + "].name").value(userDto.getName()));
-            actions.andExpect(jsonPath("$[" + i + "].email").value(userDto.getEmail()));
-            actions.andExpect(jsonPath("$[" + i + "].password").value(userDto.getPassword()));
-            actions.andExpect(jsonPath("$[" + i + "].mobile").value(userDto.getMobile()));
-            actions.andExpect(jsonPath("$[" + i + "].address").value(userDto.getAddress()));
-            actions.andExpect(jsonPath("$[" + i + "].birthday").value(userDto.getBirthday().toString()));
-            actions.andExpect(jsonPath("$[" + i + "].roleId").value(userDto.getRoleId()));
+           assertUserDto(actions, "$[" + i + "]", userDtos.get(i));
         }
         MvcResult result = actions.andReturn();
         List<UserDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
@@ -95,19 +103,10 @@ class UserRestControllerMockMvcTest {
     @Test
     void findById_withValidId_shouldReturnUserWithGivenId() throws Exception {
         given(userService.findById(anyInt())).willReturn(userDto1);
-        MvcResult result = mockMvc.perform(get(API_USERS + "/{id}", VALID_ID))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.id").value(userDto1.getId()))
-              .andExpect(jsonPath("$.name").value(userDto1.getName()))
-              .andExpect(jsonPath("$.email").value(userDto1.getEmail()))
-              .andExpect(jsonPath("$.password").value(userDto1.getPassword()))
-              .andExpect(jsonPath("$.mobile").value(userDto1.getMobile()))
-              .andExpect(jsonPath("$.address").value(userDto1.getAddress()))
-              .andExpect(jsonPath("$.birthday").value(userDto1.getBirthday().toString()))
-              .andExpect(jsonPath("$.roleId").value(userDto1.getRoleId()))
-              .andReturn();
+        ResultActions actions = mockMvc.perform(get(API_USERS + "/{id}", VALID_ID)).andExpect(status().isOk());
         verify(userService).findById(VALID_ID);
-        UserDto response = objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
+        assertUserDtoJson(actions, userDto1);
+        UserDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), UserDto.class);
         assertThat(response).isEqualTo(userDto1);
     }
 
@@ -125,21 +124,13 @@ class UserRestControllerMockMvcTest {
     @Test
     void save_shouldAddUserToList() throws Exception {
         given(userService.save(any(UserDto.class))).willReturn(userDto1);
-        MvcResult result = mockMvc.perform(post(API_USERS)
+        ResultActions actions = mockMvc.perform(post(API_USERS)
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(userDto1)))
-              .andExpect(status().isCreated())
-              .andExpect(jsonPath("$.id").value(userDto1.getId()))
-              .andExpect(jsonPath("$.name").value(userDto1.getName()))
-              .andExpect(jsonPath("$.email").value(userDto1.getEmail()))
-              .andExpect(jsonPath("$.password").value(userDto1.getPassword()))
-              .andExpect(jsonPath("$.mobile").value(userDto1.getMobile()))
-              .andExpect(jsonPath("$.address").value(userDto1.getAddress()))
-              .andExpect(jsonPath("$.birthday").value(userDto1.getBirthday().toString()))
-              .andExpect(jsonPath("$.roleId").value(userDto1.getRoleId()))
-              .andReturn();
+              .andExpect(status().isCreated());
         verify(userService).save(userDto1);
-        UserDto response = objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
+        assertUserDtoJson(actions, userDto1);
+        UserDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), UserDto.class);
         assertThat(response).isEqualTo(userDto1);
     }
 
@@ -147,21 +138,13 @@ class UserRestControllerMockMvcTest {
     void updateById_withValidId_shouldUpdateUserWithGivenId() throws Exception {
         UserDto userDto = userDto2; userDto.setId(VALID_ID);
         given(userService.updateById(any(UserDto.class), anyInt())).willReturn(userDto);
-        MvcResult result = mockMvc.perform(put(API_USERS + "/{id}", VALID_ID)
+        ResultActions actions = mockMvc.perform(put(API_USERS + "/{id}", VALID_ID)
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(userDto2)))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.id").value(userDto.getId()))
-              .andExpect(jsonPath("$.name").value(userDto2.getName()))
-              .andExpect(jsonPath("$.email").value(userDto2.getEmail()))
-              .andExpect(jsonPath("$.password").value(userDto2.getPassword()))
-              .andExpect(jsonPath("$.mobile").value(userDto2.getMobile()))
-              .andExpect(jsonPath("$.address").value(userDto2.getAddress()))
-              .andExpect(jsonPath("$.birthday").value(userDto2.getBirthday().toString()))
-              .andExpect(jsonPath("$.roleId").value(userDto2.getRoleId()))
-              .andReturn();
+              .andExpect(status().isOk());
         verify(userService).updateById(userDto2, VALID_ID);
-        UserDto response = objectMapper.readValue(result.getResponse().getContentAsString(), UserDto.class);
+        assertUserDtoJson(actions, userDto);
+        UserDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), UserDto.class);
         assertThat(response).isEqualTo(userDto);
     }
 
@@ -193,5 +176,55 @@ class UserRestControllerMockMvcTest {
               .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResourceNotFoundException))
               .andExpect(result -> assertThat(Objects.requireNonNull(result.getResolvedException()).getMessage()).isEqualTo(message));
         verify(userService).deleteById(INVALID_ID);
+    }
+
+    private Stream<Arguments> paginationArguments() {
+        List<UserDto> userDtosPage1 = convertToDtoList(modelMapper, getMockedUsersPage1());
+        List<UserDto> userDtosPage2 = convertToDtoList(modelMapper, getMockedUsersPage2());
+        List<UserDto> userDtosPage3 = convertToDtoList(modelMapper, getMockedUsersPage3());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", USER_FILTER_KEY, new PageImpl<>(userDtosPage1)),
+                         Arguments.of(1, 2, "id", "asc", USER_FILTER_KEY, new PageImpl<>(userDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", USER_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
+                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(userDtosPage1)),
+                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(userDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(userDtosPage3)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("paginationArguments")
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<UserDto> expectedPage) throws Exception {
+        given(userService.findAllByKey(any(Pageable.class), anyString())).willReturn(expectedPage);
+        ResultActions actions = mockMvc.perform(get(API_USERS + API_PAGINATION, page, size, sortField, sortDirection, key)
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .accept(APPLICATION_JSON_VALUE))
+              .andExpect(status().isOk());
+        for(int i = 0; i < expectedPage.getContent().size(); i++) {
+            assertUserDto(actions, "$.content[" + i + "]", expectedPage.getContent().get(i));
+        }
+        MvcResult result = actions.andReturn();
+        PageWrapper<UserDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        assertThat(response.getContent()).isEqualTo(expectedPage.getContent());
+    }
+
+    private void assertUserDto(ResultActions actions, String prefix, UserDto userDto) throws Exception {
+        actions.andExpect(jsonPath(prefix + ".id").value(userDto.getId()));
+        actions.andExpect(jsonPath(prefix + ".name").value(userDto.getName()));
+        actions.andExpect(jsonPath(prefix + ".email").value(userDto.getEmail()));
+        actions.andExpect(jsonPath(prefix + ".password").value(userDto.getPassword()));
+        actions.andExpect(jsonPath(prefix + ".mobile").value(userDto.getMobile()));
+        actions.andExpect(jsonPath(prefix + ".address").value(userDto.getAddress()));
+        actions.andExpect(jsonPath(prefix + ".birthday").value(userDto.getBirthday().toString()));
+        actions.andExpect(jsonPath(prefix + ".roleId").value(userDto.getRoleId()));
+    }
+
+    private void assertUserDtoJson(ResultActions actions, UserDto userDto) throws Exception {
+        actions.andExpect(jsonPath("$.id").value(userDto.getId()))
+              .andExpect(jsonPath("$.name").value(userDto.getName()))
+              .andExpect(jsonPath("$.email").value(userDto.getEmail()))
+              .andExpect(jsonPath("$.password").value(userDto.getPassword()))
+              .andExpect(jsonPath("$.mobile").value(userDto.getMobile()))
+              .andExpect(jsonPath("$.address").value(userDto.getAddress()))
+              .andExpect(jsonPath("$.birthday").value(userDto.getBirthday().toString()))
+              .andExpect(jsonPath("$.roleId").value(userDto.getRoleId()));
     }
 }

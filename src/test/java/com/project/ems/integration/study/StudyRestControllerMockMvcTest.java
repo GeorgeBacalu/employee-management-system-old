@@ -6,34 +6,49 @@ import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.study.StudyDto;
 import com.project.ems.study.StudyRestController;
 import com.project.ems.study.StudyService;
+import com.project.ems.wrapper.PageWrapper;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static com.project.ems.constants.EndpointConstants.API_PAGINATION;
 import static com.project.ems.constants.EndpointConstants.API_STUDIES;
 import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.STUDY_FILTER_KEY;
 import static com.project.ems.mapper.StudyMapper.convertToDto;
 import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
+import static com.project.ems.mock.StudyMock.getMockedStudiesPage1;
+import static com.project.ems.mock.StudyMock.getMockedStudiesPage2;
+import static com.project.ems.mock.StudyMock.getMockedStudiesPage3;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
 import static com.project.ems.mock.StudyMock.getMockedStudy2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -45,6 +60,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @WebMvcTest(StudyRestController.class)
 @ExtendWith(MockitoExtension.class)
 class StudyRestControllerMockMvcTest {
@@ -77,14 +93,7 @@ class StudyRestControllerMockMvcTest {
         given(studyService.findAll()).willReturn(studyDtos);
         ResultActions actions = mockMvc.perform(get(API_STUDIES)).andExpect(status().isOk());
         for(int i = 0; i < studyDtos.size(); i++) {
-            StudyDto studyDto = studyDtos.get(i);
-            actions.andExpect(jsonPath("$[" + i + "].id").value(studyDto.getId()));
-            actions.andExpect(jsonPath("$[" + i + "].title").value(studyDto.getTitle()));
-            actions.andExpect(jsonPath("$[" + i + "].institution").value(studyDto.getInstitution()));
-            actions.andExpect(jsonPath("$[" + i + "].description").value(studyDto.getDescription()));
-            actions.andExpect(jsonPath("$[" + i + "].type").value(studyDto.getType().toString()));
-            actions.andExpect(jsonPath("$[" + i + "].startedAt").value(studyDto.getStartedAt().toString()));
-            actions.andExpect(jsonPath("$[" + i + "].finishedAt").value(studyDto.getFinishedAt().toString()));
+            assertStudyDto(actions, "$[" + i + "]", studyDtos.get(i));
         }
         MvcResult result = actions.andReturn();
         List<StudyDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
@@ -94,18 +103,10 @@ class StudyRestControllerMockMvcTest {
     @Test
     void findById_withValidId_shouldReturnStudyWithGivenId() throws Exception {
         given(studyService.findById(anyInt())).willReturn(studyDto1);
-        MvcResult result = mockMvc.perform(get(API_STUDIES + "/{id}", VALID_ID))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.id").value(studyDto1.getId()))
-              .andExpect(jsonPath("$.title").value(studyDto1.getTitle()))
-              .andExpect(jsonPath("$.institution").value(studyDto1.getInstitution()))
-              .andExpect(jsonPath("$.description").value(studyDto1.getDescription()))
-              .andExpect(jsonPath("$.type").value(studyDto1.getType().toString()))
-              .andExpect(jsonPath("$.startedAt").value(studyDto1.getStartedAt().toString()))
-              .andExpect(jsonPath("$.finishedAt").value(studyDto1.getFinishedAt().toString()))
-              .andReturn();
+        ResultActions actions = mockMvc.perform(get(API_STUDIES + "/{id}", VALID_ID)).andExpect(status().isOk());
         verify(studyService).findById(VALID_ID);
-        StudyDto response = objectMapper.readValue(result.getResponse().getContentAsString(), StudyDto.class);
+        assertStudyDtoJson(actions, studyDto1);
+        StudyDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), StudyDto.class);
         assertThat(response).isEqualTo(studyDto1);
     }
 
@@ -123,20 +124,13 @@ class StudyRestControllerMockMvcTest {
     @Test
     void save_shouldAddStudyToList() throws Exception {
         given(studyService.save(any(StudyDto.class))).willReturn(studyDto1);
-        MvcResult result = mockMvc.perform(post(API_STUDIES)
+        ResultActions actions = mockMvc.perform(post(API_STUDIES)
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(studyDto1)))
-              .andExpect(status().isCreated())
-              .andExpect(jsonPath("$.id").value(studyDto1.getId()))
-              .andExpect(jsonPath("$.title").value(studyDto1.getTitle()))
-              .andExpect(jsonPath("$.institution").value(studyDto1.getInstitution()))
-              .andExpect(jsonPath("$.description").value(studyDto1.getDescription()))
-              .andExpect(jsonPath("$.type").value(studyDto1.getType().toString()))
-              .andExpect(jsonPath("$.startedAt").value(studyDto1.getStartedAt().toString()))
-              .andExpect(jsonPath("$.finishedAt").value(studyDto1.getFinishedAt().toString()))
-              .andReturn();
+              .andExpect(status().isCreated());
         verify(studyService).save(studyDto1);
-        StudyDto response = objectMapper.readValue(result.getResponse().getContentAsString(), StudyDto.class);
+        assertStudyDtoJson(actions, studyDto1);
+        StudyDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), StudyDto.class);
         assertThat(response).isEqualTo(studyDto1);
     }
 
@@ -144,20 +138,13 @@ class StudyRestControllerMockMvcTest {
     void updateById_withValidId_shouldUpdateStudyWithGivenId() throws Exception {
         StudyDto studyDto = studyDto2; studyDto.setId(VALID_ID);
         given(studyService.updateById(any(StudyDto.class), anyInt())).willReturn(studyDto);
-        MvcResult result = mockMvc.perform(put(API_STUDIES + "/{id}", VALID_ID)
+        ResultActions actions = mockMvc.perform(put(API_STUDIES + "/{id}", VALID_ID)
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(studyDto2)))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.id").value(studyDto.getId()))
-              .andExpect(jsonPath("$.title").value(studyDto2.getTitle()))
-              .andExpect(jsonPath("$.institution").value(studyDto2.getInstitution()))
-              .andExpect(jsonPath("$.description").value(studyDto2.getDescription()))
-              .andExpect(jsonPath("$.type").value(studyDto2.getType().toString()))
-              .andExpect(jsonPath("$.startedAt").value(studyDto2.getStartedAt().toString()))
-              .andExpect(jsonPath("$.finishedAt").value(studyDto2.getFinishedAt().toString()))
-              .andReturn();
+              .andExpect(status().isOk());
         verify(studyService).updateById(studyDto2, VALID_ID);
-        StudyDto response = objectMapper.readValue(result.getResponse().getContentAsString(), StudyDto.class);
+        assertStudyDtoJson(actions, studyDto);
+        StudyDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), StudyDto.class);
         assertThat(response).isEqualTo(studyDto);
     }
 
@@ -189,5 +176,53 @@ class StudyRestControllerMockMvcTest {
               .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResourceNotFoundException))
               .andExpect(result -> assertThat(Objects.requireNonNull(result.getResolvedException()).getMessage()).isEqualTo(message));
         verify(studyService).deleteById(INVALID_ID);
+    }
+
+    private Stream<Arguments> paginationArguments() {
+        List<StudyDto> studyDtosPage1 = convertToDtoList(modelMapper, getMockedStudiesPage1());
+        List<StudyDto> studyDtosPage2 = convertToDtoList(modelMapper, getMockedStudiesPage2());
+        List<StudyDto> studyDtosPage3 = convertToDtoList(modelMapper, getMockedStudiesPage3());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studyDtosPage1)),
+                         Arguments.of(1, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studyDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
+                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(studyDtosPage1)),
+                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(studyDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(studyDtosPage3)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("paginationArguments")
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<StudyDto> expectedPage) throws Exception {
+        given(studyService.findAllByKey(any(Pageable.class), anyString())).willReturn(expectedPage);
+        ResultActions actions = mockMvc.perform(get(API_STUDIES + API_PAGINATION, page, size, sortField, sortDirection, key)
+                    .contentType(APPLICATION_JSON_VALUE)
+                    .accept(APPLICATION_JSON_VALUE))
+              .andExpect(status().isOk());
+        for(int i = 0; i < expectedPage.getContent().size(); i++) {
+            assertStudyDto(actions, "$.content[" + i + "]", expectedPage.getContent().get(i));
+        }
+        MvcResult result = actions.andReturn();
+        PageWrapper<StudyDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        assertThat(response.getContent()).isEqualTo(expectedPage.getContent());
+    }
+
+    private void assertStudyDto(ResultActions actions, String prefix, StudyDto studyDto) throws Exception {
+        actions.andExpect(jsonPath(prefix + ".id").value(studyDto.getId()));
+        actions.andExpect(jsonPath(prefix + ".title").value(studyDto.getTitle()));
+        actions.andExpect(jsonPath(prefix + ".institution").value(studyDto.getInstitution()));
+        actions.andExpect(jsonPath(prefix + ".description").value(studyDto.getDescription()));
+        actions.andExpect(jsonPath(prefix + ".type").value(studyDto.getType().name()));
+        actions.andExpect(jsonPath(prefix + ".startedAt").value(studyDto.getStartedAt().toString()));
+        actions.andExpect(jsonPath(prefix + ".finishedAt").value(studyDto.getFinishedAt().toString()));
+    }
+
+    private void assertStudyDtoJson(ResultActions actions, StudyDto studyDto) throws Exception {
+        actions.andExpect(jsonPath("$.id").value(studyDto.getId()))
+              .andExpect(jsonPath("$.title").value(studyDto.getTitle()))
+              .andExpect(jsonPath("$.institution").value(studyDto.getInstitution()))
+              .andExpect(jsonPath("$.description").value(studyDto.getDescription()))
+              .andExpect(jsonPath("$.type").value(studyDto.getType().name()))
+              .andExpect(jsonPath("$.startedAt").value(studyDto.getStartedAt().toString()))
+              .andExpect(jsonPath("$.finishedAt").value(studyDto.getFinishedAt().toString()));
     }
 }

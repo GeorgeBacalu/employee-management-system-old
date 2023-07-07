@@ -37,8 +37,16 @@ public class MentorMock {
               getMockedMentor28(), getMockedMentor29(), getMockedMentor30(), getMockedMentor31(), getMockedMentor32(), getMockedMentor33(), getMockedMentor34(), getMockedMentor35(), getMockedMentor36());
     }
 
-    public static List<Mentor> getMockedFilteredMentors() {
-        return List.of(getMockedMentor1(), getMockedMentor2(), getMockedMentor3(), getMockedMentor4());
+    public static List<Mentor> getMockedMentorsPage1() {
+        return List.of(getMockedMentor1(), getMockedMentor2());
+    }
+
+    public static List<Mentor> getMockedMentorsPage2() {
+        return List.of(getMockedMentor3(), getMockedMentor4());
+    }
+
+    public static List<Mentor> getMockedMentorsPage3() {
+        return List.of(getMockedMentor5(), getMockedMentor6());
     }
 
     public static Mentor getMockedMentor1() {

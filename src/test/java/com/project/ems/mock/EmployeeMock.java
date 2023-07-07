@@ -37,8 +37,16 @@ public class EmployeeMock {
               getMockedEmployee28(), getMockedEmployee29(), getMockedEmployee30(), getMockedEmployee31(), getMockedEmployee32(), getMockedEmployee33(), getMockedEmployee34(), getMockedEmployee35(), getMockedEmployee36());
     }
 
-    public static List<Employee> getMockedFilteredEmployees() {
-        return List.of(getMockedEmployee1(), getMockedEmployee2(), getMockedEmployee3(), getMockedEmployee4());
+    public static List<Employee> getMockedEmployeesPage1() {
+        return List.of(getMockedEmployee1(), getMockedEmployee2());
+    }
+
+    public static List<Employee> getMockedEmployeesPage2() {
+        return List.of(getMockedEmployee3(), getMockedEmployee4());
+    }
+
+    public static List<Employee> getMockedEmployeesPage3() {
+        return List.of(getMockedEmployee5(), getMockedEmployee6());
     }
 
     public static Employee getMockedEmployee1() {
