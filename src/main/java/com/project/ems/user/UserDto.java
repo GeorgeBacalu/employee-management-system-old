@@ -29,7 +29,7 @@ public class UserDto {
     private String email;
 
     @NotBlank(message = "User password must not be blank")
-    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+-=()])(?=\\S+$).{8,25}$")
+    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+-=()])(?=\\S+$).{8,30}$")
     private String password;
 
     @NotBlank(message = "User mobile must not be blank")

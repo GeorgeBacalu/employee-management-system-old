@@ -33,7 +33,7 @@ public class MentorDto {
     private String email;
 
     @NotBlank(message = "Mentor password must not be blank")
-    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+-=()])(?=\\S+$).{8,25}$")
+    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+-=()])(?=\\S+$).{8,30}$")
     private String password;
 
     @NotBlank(message = "Mentor mobile must not be blank")

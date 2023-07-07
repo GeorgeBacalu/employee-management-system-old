@@ -2,11 +2,13 @@ package com.project.ems.user;
 
 import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.role.RoleService;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND;
 import static com.project.ems.mapper.UserMapper.convertToDto;
@@ -15,7 +17,6 @@ import static com.project.ems.mapper.UserMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -25,7 +26,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
-        return convertToDtoList(modelMapper, users);
+        return !users.isEmpty() ? convertToDtoList(modelMapper, users) : new ArrayList<>();
     }
 
     @Override
@@ -53,6 +54,12 @@ public class UserServiceImpl implements UserService {
     public void deleteById(Integer id) {
         User userToDelete = findEntityById(id);
         userRepository.delete(userToDelete);
+    }
+
+    @Override
+    public Page<UserDto> findAllByKey(Pageable pageable, String key) {
+        Page<User> usersPage = key.trim().equals("") ? userRepository.findAll(pageable) : userRepository.findAllByKey(pageable, key.toLowerCase());
+        return usersPage.hasContent() ? usersPage.map(user -> convertToDto(modelMapper, user)) : Page.empty();
     }
 
     @Override

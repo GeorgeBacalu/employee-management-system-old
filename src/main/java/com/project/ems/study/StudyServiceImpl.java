@@ -5,9 +5,12 @@ import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.mentor.Mentor;
 import com.project.ems.mentor.MentorRepository;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUND;
@@ -27,7 +30,7 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public List<StudyDto> findAll() {
         List<Study> studies = studyRepository.findAll();
-        return convertToDtoList(modelMapper, studies);
+        return !studies.isEmpty() ? convertToDtoList(modelMapper, studies) : new ArrayList<>();
     }
 
     @Override
@@ -59,6 +62,12 @@ public class StudyServiceImpl implements StudyService {
         List<Mentor> mentors = mentorRepository.findAllByStudiesContains(studyToDelete);
         mentors.forEach(mentor -> mentor.getStudies().remove(studyToDelete));
         studyRepository.delete(studyToDelete);
+    }
+
+    @Override
+    public Page<StudyDto> findAllByKey(Pageable pageable, String key) {
+        Page<Study> studiesPage = key.trim().equals("") ? studyRepository.findAll(pageable) : studyRepository.findAllByKey(pageable, key.toLowerCase());
+        return studiesPage.hasContent() ? studiesPage.map(study -> convertToDto(modelMapper, study)) : Page.empty();
     }
 
     @Override

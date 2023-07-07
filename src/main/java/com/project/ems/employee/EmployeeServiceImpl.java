@@ -5,10 +5,13 @@ import com.project.ems.experience.ExperienceService;
 import com.project.ems.mentor.MentorService;
 import com.project.ems.role.RoleService;
 import com.project.ems.study.StudyService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.EMPLOYEE_NOT_FOUND;
@@ -30,7 +33,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeDto> findAll() {
         List<Employee> employees = employeeRepository.findAll();
-        return convertToDtoList(modelMapper, employees);
+        return !employees.isEmpty() ? convertToDtoList(modelMapper, employees) : new ArrayList<>();
     }
 
     @Override
@@ -58,6 +61,12 @@ public class EmployeeServiceImpl implements EmployeeService {
     public void deleteById(Integer id) {
         Employee employeeToDelete = findEntityById(id);
         employeeRepository.delete(employeeToDelete);
+    }
+
+    @Override
+    public Page<EmployeeDto> findAllByKey(Pageable pageable, String key) {
+        Page<Employee> employeesPage = key.trim().equals("") ? employeeRepository.findAll(pageable) : employeeRepository.findAllByKey(pageable, key.toLowerCase());
+        return employeesPage.hasContent() ? employeesPage.map(employee -> convertToDto(modelMapper, employee)) : Page.empty();
     }
 
     private Employee findEntityById(Integer id) {

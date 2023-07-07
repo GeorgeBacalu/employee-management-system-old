@@ -1,6 +1,8 @@
 package com.project.ems.mentor;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface MentorService {
 
@@ -13,6 +15,8 @@ public interface MentorService {
     MentorDto updateById(MentorDto mentorDto, Integer id);
 
     void deleteById(Integer id);
+
+    Page<MentorDto> findAllByKey(Pageable pageable, String key);
 
     Mentor findEntityById(Integer id);
 }

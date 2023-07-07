@@ -4,9 +4,12 @@ import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.user.UserService;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.FEEDBACK_NOT_FOUND;
@@ -26,7 +29,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public List<FeedbackDto> findAll() {
         List<Feedback> feedbacks = feedbackRepository.findAll();
-        return convertToDtoList(modelMapper, feedbacks);
+        return !feedbacks.isEmpty() ? convertToDtoList(modelMapper, feedbacks) : new ArrayList<>();
     }
 
     @Override
@@ -55,6 +58,12 @@ public class FeedbackServiceImpl implements FeedbackService {
     public void deleteById(Integer id) {
         Feedback feedbackToDelete = findEntityById(id);
         feedbackRepository.delete(feedbackToDelete);
+    }
+
+    @Override
+    public Page<FeedbackDto> findAllByKey(Pageable pageable, String key) {
+        Page<Feedback> feedbacksPage = key.trim().equals("") ? feedbackRepository.findAll(pageable) : feedbackRepository.findAllByKey(pageable, key.toLowerCase());
+        return feedbacksPage.hasContent() ? feedbacksPage.map(feedback -> convertToDto(modelMapper, feedback)) : Page.empty();
     }
 
     private Feedback findEntityById(Integer id) {

@@ -13,10 +13,16 @@ import com.project.ems.role.Role;
 import com.project.ems.role.RoleService;
 import com.project.ems.study.Study;
 import com.project.ems.study.StudyService;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Spy;
@@ -24,15 +30,24 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import static com.project.ems.constants.ExceptionMessageConstants.EMPLOYEE_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.EMPLOYEE_FILTER_KEY;
 import static com.project.ems.mapper.EmployeeMapper.convertToDto;
 import static com.project.ems.mapper.EmployeeMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee2;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployees;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage1;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage3;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences2;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
@@ -45,10 +60,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE)
 class EmployeeServiceIntegrationTest {
 
@@ -153,7 +170,7 @@ class EmployeeServiceIntegrationTest {
         given(employeeRepository.save(any(Employee.class))).willReturn(employee);
         EmployeeDto result = employeeService.updateById(employeeDto2, VALID_ID);
         verify(employeeRepository).save(employeeCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, employeeCaptor.getValue()));
+        assertThat(result).isEqualTo(convertToDto(modelMapper, employee));
     }
 
     @Test
@@ -177,5 +194,32 @@ class EmployeeServiceIntegrationTest {
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(String.format(EMPLOYEE_NOT_FOUND, INVALID_ID));
         verify(employeeRepository, never()).delete(any(Employee.class));
+    }
+
+    private Stream<Arguments> paginationArguments() {
+        List<Employee> employeesPage1 = getMockedEmployeesPage1();
+        List<Employee> employeesPage2 = getMockedEmployeesPage2();
+        List<Employee> employeesPage3 = getMockedEmployeesPage3();
+        List<EmployeeDto> employeeDtosPage1 = convertToDtoList(modelMapper, employeesPage1);
+        List<EmployeeDto> employeeDtosPage2 = convertToDtoList(modelMapper, employeesPage2);
+        List<EmployeeDto> employeeDtosPage3 = convertToDtoList(modelMapper, employeesPage3);
+        return Stream.of(Arguments.of(0, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeesPage1), new PageImpl<>(employeeDtosPage1)),
+                         Arguments.of(1, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeesPage2), new PageImpl<>(employeeDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
+                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(employeesPage1), new PageImpl<>(employeeDtosPage1)),
+                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(employeesPage2), new PageImpl<>(employeeDtosPage2)),
+                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(employeesPage3), new PageImpl<>(employeeDtosPage3)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("paginationArguments")
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<Employee> entityPage, PageImpl<EmployeeDto> dtoPage) {
+        if(key.trim().equals("")) {
+            given(employeeRepository.findAll(any(Pageable.class))).willReturn(entityPage);
+        } else {
+            given(employeeRepository.findAllByKey(any(Pageable.class), anyString())).willReturn(entityPage);
+        }
+        Page<EmployeeDto> result = employeeService.findAllByKey(PageRequest.of(page, size, Sort.Direction.ASC, sortField), key);
+        assertThat(result.getContent()).isEqualTo(dtoPage.getContent());
     }
 }

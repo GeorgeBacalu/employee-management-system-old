@@ -1,6 +1,7 @@
 package com.project.ems.role;
 
 import com.project.ems.exception.ResourceNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -21,7 +22,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public List<RoleDto> findAll() {
         List<Role> roles = roleRepository.findAll();
-        return convertToDtoList(modelMapper, roles);
+        return !roles.isEmpty() ? convertToDtoList(modelMapper, roles) : new ArrayList<>();
     }
 
     @Override

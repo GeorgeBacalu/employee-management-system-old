@@ -1,8 +1,12 @@
 package com.project.ems.employee;
 
+import com.project.ems.wrapper.PageWrapper;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -47,5 +52,11 @@ public class EmployeeRestController implements EmployeeApi {
     public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
         employeeService.deleteById(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @Override @GetMapping("/pagination")
+    public ResponseEntity<PageWrapper<EmployeeDto>> findAllByKey(@PageableDefault(size = 2, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
+                                                    @RequestParam(required = false, defaultValue = "") String key) {
+        return ResponseEntity.ok(new PageWrapper<>(employeeService.findAllByKey(pageable, key).getContent()));
     }
 }

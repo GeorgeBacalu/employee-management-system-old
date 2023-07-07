@@ -7,6 +7,7 @@ import com.project.ems.user.User;
 import com.project.ems.user.UserDto;
 import com.project.ems.user.UserRepository;
 import com.project.ems.user.UserServiceImpl;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,16 +20,25 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.USER_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
+import static com.project.ems.constants.PaginationConstants.pageable2;
+import static com.project.ems.constants.PaginationConstants.pageable3;
 import static com.project.ems.mapper.UserMapper.convertToDto;
 import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mock.RoleMock.getMockedRole2;
 import static com.project.ems.mock.UserMock.getMockedUser1;
 import static com.project.ems.mock.UserMock.getMockedUser2;
 import static com.project.ems.mock.UserMock.getMockedUsers;
+import static com.project.ems.mock.UserMock.getMockedUsersPage1;
+import static com.project.ems.mock.UserMock.getMockedUsersPage2;
+import static com.project.ems.mock.UserMock.getMockedUsersPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -58,20 +68,32 @@ class UserServiceImplTest {
     private User user1;
     private User user2;
     private List<User> users;
+    private List<User> usersPage1;
+    private List<User> usersPage2;
+    private List<User> usersPage3;
     private Role role;
     private UserDto userDto1;
     private UserDto userDto2;
     private List<UserDto> userDtos;
+    private List<UserDto> userDtosPage1;
+    private List<UserDto> userDtosPage2;
+    private List<UserDto> userDtosPage3;
 
     @BeforeEach
     void setUp() {
         user1 = getMockedUser1();
         user2 = getMockedUser2();
         users = getMockedUsers();
+        usersPage1 = getMockedUsersPage1();
+        usersPage2 = getMockedUsersPage2();
+        usersPage3 = getMockedUsersPage3();
         role = getMockedRole2();
         userDto1 = convertToDto(modelMapper, user1);
         userDto2 = convertToDto(modelMapper, user2);
         userDtos = convertToDtoList(modelMapper, users);
+        userDtosPage1 = convertToDtoList(modelMapper, usersPage1);
+        userDtosPage2 = convertToDtoList(modelMapper, usersPage2);
+        userDtosPage3 = convertToDtoList(modelMapper, usersPage3);
     }
 
     @Test
@@ -135,5 +157,47 @@ class UserServiceImplTest {
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(String.format(USER_NOT_FOUND, INVALID_ID));
         verify(userRepository, never()).delete(any(User.class));
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfUsersFilteredByKeyPage1() {
+        given(userRepository.findAllByKey(pageable, USER_FILTER_KEY)).willReturn(new PageImpl<>(usersPage1));
+        Page<UserDto> result = userService.findAllByKey(pageable, USER_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(userDtosPage1);
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfUsersFilteredByKeyPage2() {
+        given(userRepository.findAllByKey(pageable2, USER_FILTER_KEY)).willReturn(new PageImpl<>(usersPage2));
+        Page<UserDto> result = userService.findAllByKey(pageable2, USER_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(userDtosPage2);
+    }
+
+    @Test
+    void findAllByKey_withFilterKey_shouldReturnListOfUsersFilteredByKeyPage3() {
+        given(userRepository.findAllByKey(pageable3, USER_FILTER_KEY)).willReturn(new PageImpl<>(Collections.emptyList()));
+        Page<UserDto> result = userService.findAllByKey(pageable3, USER_FILTER_KEY);
+        assertThat(result.getContent()).isEqualTo(Collections.emptyList());
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfUsersPage1() {
+        given(userRepository.findAll(pageable)).willReturn(new PageImpl<>(usersPage1));
+        Page<UserDto> result = userService.findAllByKey(pageable, "");
+        assertThat(result.getContent()).isEqualTo(userDtosPage1);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfUsersPage2() {
+        given(userRepository.findAll(pageable2)).willReturn(new PageImpl<>(usersPage2));
+        Page<UserDto> result = userService.findAllByKey(pageable2, "");
+        assertThat(result.getContent()).isEqualTo(userDtosPage2);
+    }
+
+    @Test
+    void findAllByKey_withoutFilterKey_shouldReturnListOfUsersPage3() {
+        given(userRepository.findAll(pageable3)).willReturn(new PageImpl<>(usersPage3));
+        Page<UserDto> result = userService.findAllByKey(pageable3, "");
+        assertThat(result.getContent()).isEqualTo(userDtosPage3);
     }
 }

@@ -1,6 +1,8 @@
 package com.project.ems.experience;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ExperienceService {
     
@@ -13,6 +15,8 @@ public interface ExperienceService {
     ExperienceDto updateById(ExperienceDto experienceDto, Integer id);
     
     void deleteById(Integer id);
+
+    Page<ExperienceDto> findAllByKey(Pageable pageable, String key);
 
     Experience findEntityById(Integer id);
 }
