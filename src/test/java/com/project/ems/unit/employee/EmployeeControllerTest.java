@@ -9,6 +9,7 @@ import com.project.ems.experience.ExperienceService;
 import com.project.ems.mentor.MentorService;
 import com.project.ems.role.RoleService;
 import com.project.ems.study.StudyService;
+import com.project.ems.wrapper.SearchRequest;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,11 +19,15 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import static com.project.ems.constants.ExceptionMessageConstants.EMPLOYEE_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.EMPLOYEE_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEE_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_EMPLOYEES_VIEW;
@@ -30,7 +35,13 @@ import static com.project.ems.constants.ThymeleafViewConstants.SAVE_EMPLOYEE_VIE
 import static com.project.ems.mapper.EmployeeMapper.convertToDto;
 import static com.project.ems.mapper.EmployeeMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployees;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage1;
+import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
+import static com.project.ems.util.PageUtil.getSortDirection;
+import static com.project.ems.util.PageUtil.getSortField;
+import static com.project.ems.util.PageUtil.getStartIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -64,6 +75,9 @@ class EmployeeControllerTest {
     private Model model;
 
     @Spy
+    private RedirectAttributes redirectAttributes;
+
+    @Spy
     private ModelMapper modelMapper;
 
     private Employee employee;
@@ -74,18 +88,72 @@ class EmployeeControllerTest {
     @BeforeEach
     void setUp() {
         employee = getMockedEmployee1();
-        employees = getMockedEmployees();
+        employees = getMockedEmployeesPage1();
         employeeDto = convertToDto(modelMapper, employee);
         employeeDtos = convertToDtoList(modelMapper, employees);
     }
 
     @Test
     void getAllEmployeesPage_shouldReturnEmployeesPage() {
-        given(employeeService.findAll()).willReturn(employeeDtos);
-        given(model.getAttribute(anyString())).willReturn(employees);
-        String viewName = employeeController.getAllEmployeesPage(model);
+        PageImpl<EmployeeDto> employeeDtosPage = new PageImpl<>(employeeDtos);
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        long nrEmployees = employeeDtosPage.getTotalElements();
+        int nrPages = employeeDtosPage.getTotalPages();
+        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
+        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrEmployees);
+        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
+        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
+        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
+        given(employeeService.findAllByKey(pageable, EMPLOYEE_FILTER_KEY)).willReturn(employeeDtosPage);
+        given(model.getAttribute("employees")).willReturn(employees);
+        given(model.getAttribute("nrEmployees")).willReturn(nrEmployees);
+        given(model.getAttribute("nrPages")).willReturn(nrPages);
+        given(model.getAttribute("page")).willReturn(page);
+        given(model.getAttribute("size")).willReturn(size);
+        given(model.getAttribute("key")).willReturn(EMPLOYEE_FILTER_KEY);
+        given(model.getAttribute("field")).willReturn(field);
+        given(model.getAttribute("direction")).willReturn(direction);
+        given(model.getAttribute("startIndexCurrentPage")).willReturn(startIndexCurrentPage);
+        given(model.getAttribute("endIndexCurrentPage")).willReturn(endIndexCurrentPage);
+        given(model.getAttribute("startIndexPageNavigation")).willReturn(startIndexPageNavigation);
+        given(model.getAttribute("endIndexPageNavigation")).willReturn(endIndexPageNavigation);
+        given(model.getAttribute("searchRequest")).willReturn(searchRequest);
+        String viewName = employeeController.getAllEmployeesPage(model, pageable, EMPLOYEE_FILTER_KEY);
         assertThat(viewName).isEqualTo(EMPLOYEES_VIEW);
         assertThat(model.getAttribute("employees")).isEqualTo(employees);
+        assertThat(model.getAttribute("nrEmployees")).isEqualTo(nrEmployees);
+        assertThat(model.getAttribute("nrPages")).isEqualTo(nrPages);
+        assertThat(model.getAttribute("page")).isEqualTo(page);
+        assertThat(model.getAttribute("size")).isEqualTo(size);
+        assertThat(model.getAttribute("key")).isEqualTo(EMPLOYEE_FILTER_KEY);
+        assertThat(model.getAttribute("field")).isEqualTo(field);
+        assertThat(model.getAttribute("direction")).isEqualTo(direction);
+        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(startIndexCurrentPage);
+        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(endIndexCurrentPage);
+        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(startIndexPageNavigation);
+        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(endIndexPageNavigation);
+        assertThat(model.getAttribute("searchRequest")).isEqualTo(searchRequest);
+    }
+
+    @Test
+    void findAllByKey_shouldProcessSearchRequestAndReturnListOfEmployeesFilteredByKey() {
+        PageImpl<EmployeeDto> employeeDtosPage = new PageImpl<>(employeeDtos);
+        int page = employeeDtosPage.getNumber();
+        int size = employeeDtosPage.getSize();
+        String sort = getSortField(pageable) + ',' +  getSortDirection(pageable);
+        given(redirectAttributes.getAttribute("page")).willReturn(page);
+        given(redirectAttributes.getAttribute("size")).willReturn(size);
+        given(redirectAttributes.getAttribute("key")).willReturn(EMPLOYEE_FILTER_KEY);
+        given(redirectAttributes.getAttribute("sort")).willReturn(sort);
+        String viewName = employeeController.findAllByKey(new SearchRequest(page, size, EMPLOYEE_FILTER_KEY, sort), redirectAttributes);
+        assertThat(viewName).isEqualTo(REDIRECT_EMPLOYEES_VIEW);
+        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(page);
+        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(size);
+        assertThat(redirectAttributes.getAttribute("key")).isEqualTo(EMPLOYEE_FILTER_KEY);
+        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(sort);
     }
 
     @Test
@@ -161,16 +229,29 @@ class EmployeeControllerTest {
 
     @Test
     void deleteById_withValidId_shouldRemoveEmployeeWithGivenIdFromList() {
-        String viewName = employeeController.deleteById(VALID_ID);
-        assertThat(viewName).isEqualTo(REDIRECT_EMPLOYEES_VIEW);
+        PageImpl<EmployeeDto> employeeDtosPage = new PageImpl<>(employeeDtos);
+        int page = employeeDtosPage.getNumber();
+        int size = employeeDtosPage.getSize();
+        String sort = getSortField(pageable) + ',' +  getSortDirection(pageable);
+        given(employeeService.findAllByKey(pageable, EMPLOYEE_FILTER_KEY)).willReturn(employeeDtosPage);
+        given(redirectAttributes.getAttribute("page")).willReturn(page);
+        given(redirectAttributes.getAttribute("size")).willReturn(size);
+        given(redirectAttributes.getAttribute("key")).willReturn(EMPLOYEE_FILTER_KEY);
+        given(redirectAttributes.getAttribute("sort")).willReturn(sort);
+        String viewName = employeeController.deleteById(VALID_ID, redirectAttributes, pageable, EMPLOYEE_FILTER_KEY);
         verify(employeeService).deleteById(VALID_ID);
+        assertThat(viewName).isEqualTo(REDIRECT_EMPLOYEES_VIEW);
+        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(page);
+        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(size);
+        assertThat(redirectAttributes.getAttribute("key")).isEqualTo(EMPLOYEE_FILTER_KEY);
+        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(sort);
     }
 
     @Test
     void deleteById_withInvalidId_shouldThrowException() {
         String message = String.format(EMPLOYEE_NOT_FOUND, INVALID_ID);
         doThrow(new ResourceNotFoundException(message)).when(employeeService).deleteById(INVALID_ID);
-        assertThatThrownBy(() -> employeeController.deleteById(INVALID_ID))
+        assertThatThrownBy(() -> employeeController.deleteById(INVALID_ID, redirectAttributes, pageable, EMPLOYEE_FILTER_KEY))
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(message);
     }

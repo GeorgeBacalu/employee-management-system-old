@@ -5,6 +5,7 @@ import com.project.ems.study.Study;
 import com.project.ems.study.StudyController;
 import com.project.ems.study.StudyDto;
 import com.project.ems.study.StudyService;
+import com.project.ems.wrapper.SearchRequest;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,19 +15,29 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.STUDY_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_STUDIES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_STUDY_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.STUDIES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.STUDY_DETAILS_VIEW;
 import static com.project.ems.mapper.StudyMapper.convertToDto;
 import static com.project.ems.mapper.StudyMapper.convertToDtoList;
-import static com.project.ems.mock.StudyMock.getMockedStudies;
+import static com.project.ems.mock.StudyMock.getMockedStudiesPage1;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
+import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
+import static com.project.ems.util.PageUtil.getSortDirection;
+import static com.project.ems.util.PageUtil.getSortField;
+import static com.project.ems.util.PageUtil.getStartIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -48,6 +59,9 @@ class StudyControllerTest {
     private Model model;
 
     @Spy
+    private RedirectAttributes redirectAttributes;
+
+    @Spy
     private ModelMapper modelMapper;
 
     private Study study;
@@ -58,18 +72,72 @@ class StudyControllerTest {
     @BeforeEach
     void setUp() {
         study = getMockedStudy1();
-        studies = getMockedStudies();
+        studies = getMockedStudiesPage1();
         studyDto = convertToDto(modelMapper, study);
         studyDtos = convertToDtoList(modelMapper, studies);
     }
 
     @Test
     void getAllStudiesPage_shouldReturnStudiesPage() {
-        given(studyService.findAll()).willReturn(studyDtos);
-        given(model.getAttribute(anyString())).willReturn(studies);
-        String viewName = studyController.getAllStudiesPage(model);
+        PageImpl<StudyDto> studyDtosPage = new PageImpl<>(studyDtos);
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        long nrStudies = studyDtosPage.getTotalElements();
+        int nrPages = studyDtosPage.getTotalPages();
+        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
+        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrStudies);
+        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
+        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
+        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
+        given(studyService.findAllByKey(pageable, STUDY_FILTER_KEY)).willReturn(studyDtosPage);
+        given(model.getAttribute("studies")).willReturn(studies);
+        given(model.getAttribute("nrStudies")).willReturn(nrStudies);
+        given(model.getAttribute("nrPages")).willReturn(nrPages);
+        given(model.getAttribute("page")).willReturn(page);
+        given(model.getAttribute("size")).willReturn(size);
+        given(model.getAttribute("key")).willReturn(STUDY_FILTER_KEY);
+        given(model.getAttribute("field")).willReturn(field);
+        given(model.getAttribute("direction")).willReturn(direction);
+        given(model.getAttribute("startIndexCurrentPage")).willReturn(startIndexCurrentPage);
+        given(model.getAttribute("endIndexCurrentPage")).willReturn(endIndexCurrentPage);
+        given(model.getAttribute("startIndexPageNavigation")).willReturn(startIndexPageNavigation);
+        given(model.getAttribute("endIndexPageNavigation")).willReturn(endIndexPageNavigation);
+        given(model.getAttribute("searchRequest")).willReturn(searchRequest);
+        String viewName = studyController.getAllStudiesPage(model, pageable, STUDY_FILTER_KEY);
         assertThat(viewName).isEqualTo(STUDIES_VIEW);
         assertThat(model.getAttribute("studies")).isEqualTo(studies);
+        assertThat(model.getAttribute("nrStudies")).isEqualTo(nrStudies);
+        assertThat(model.getAttribute("nrPages")).isEqualTo(nrPages);
+        assertThat(model.getAttribute("page")).isEqualTo(page);
+        assertThat(model.getAttribute("size")).isEqualTo(size);
+        assertThat(model.getAttribute("key")).isEqualTo(STUDY_FILTER_KEY);
+        assertThat(model.getAttribute("field")).isEqualTo(field);
+        assertThat(model.getAttribute("direction")).isEqualTo(direction);
+        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(startIndexCurrentPage);
+        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(endIndexCurrentPage);
+        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(startIndexPageNavigation);
+        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(endIndexPageNavigation);
+        assertThat(model.getAttribute("searchRequest")).isEqualTo(searchRequest);
+    }
+
+    @Test
+    void findAllByKey_shouldProcessSearchRequestAndReturnListOfStudiesFilteredByKey() {
+        PageImpl<StudyDto> studyDtosPage = new PageImpl<>(studyDtos);
+        int page = studyDtosPage.getNumber();
+        int size = studyDtosPage.getSize();
+        String sort = getSortField(pageable) + ',' +  getSortDirection(pageable);
+        given(redirectAttributes.getAttribute("page")).willReturn(page);
+        given(redirectAttributes.getAttribute("size")).willReturn(size);
+        given(redirectAttributes.getAttribute("key")).willReturn(STUDY_FILTER_KEY);
+        given(redirectAttributes.getAttribute("sort")).willReturn(sort);
+        String viewName = studyController.findAllByKey(new SearchRequest(page, size, STUDY_FILTER_KEY, sort), redirectAttributes);
+        assertThat(viewName).isEqualTo(REDIRECT_STUDIES_VIEW);
+        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(page);
+        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(size);
+        assertThat(redirectAttributes.getAttribute("key")).isEqualTo(STUDY_FILTER_KEY);
+        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(sort);
     }
 
     @Test
@@ -145,16 +213,29 @@ class StudyControllerTest {
 
     @Test
     void deleteById_withValidId_shouldRemoveStudyWithGivenIdFromList() {
-        String viewName = studyController.deleteById(VALID_ID);
-        assertThat(viewName).isEqualTo(REDIRECT_STUDIES_VIEW);
+        PageImpl<StudyDto> studyDtosPage = new PageImpl<>(studyDtos);
+        int page = studyDtosPage.getNumber();
+        int size = studyDtosPage.getSize();
+        String sort = getSortField(pageable) + ',' +  getSortDirection(pageable);
+        given(studyService.findAllByKey(pageable, STUDY_FILTER_KEY)).willReturn(studyDtosPage);
+        given(redirectAttributes.getAttribute("page")).willReturn(page);
+        given(redirectAttributes.getAttribute("size")).willReturn(size);
+        given(redirectAttributes.getAttribute("key")).willReturn(STUDY_FILTER_KEY);
+        given(redirectAttributes.getAttribute("sort")).willReturn(sort);
+        String viewName = studyController.deleteById(VALID_ID, redirectAttributes, pageable, STUDY_FILTER_KEY);
         verify(studyService).deleteById(VALID_ID);
+        assertThat(viewName).isEqualTo(REDIRECT_STUDIES_VIEW);
+        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(page);
+        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(size);
+        assertThat(redirectAttributes.getAttribute("key")).isEqualTo(STUDY_FILTER_KEY);
+        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(sort);
     }
 
     @Test
     void deleteById_withInvalidId_shouldThrowException() {
         String message = String.format(STUDY_NOT_FOUND, INVALID_ID);
         doThrow(new ResourceNotFoundException(message)).when(studyService).deleteById(INVALID_ID);
-        assertThatThrownBy(() -> studyController.deleteById(INVALID_ID))
+        assertThatThrownBy(() -> studyController.deleteById(INVALID_ID, redirectAttributes, pageable, STUDY_FILTER_KEY))
               .isInstanceOf(ResourceNotFoundException.class)
               .hasMessage(message);
     }
