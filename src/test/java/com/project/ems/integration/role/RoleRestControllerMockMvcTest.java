@@ -75,9 +75,7 @@ class RoleRestControllerMockMvcTest {
         given(roleService.findAll()).willReturn(roleDtos);
         ResultActions actions = mockMvc.perform(get(API_ROLES)).andExpect(status().isOk());
         for(int i = 0; i < roleDtos.size(); i++) {
-            RoleDto roleDto = roleDtos.get(i);
-            actions.andExpect(jsonPath("$[" + i + "].id").value(roleDto.getId()));
-            actions.andExpect(jsonPath("$[" + i + "].authority").value(roleDto.getAuthority().toString()));
+            assertRoleDto(actions, "$[" + i + "]", roleDtos.get(i));
         }
         MvcResult result = actions.andReturn();
         List<RoleDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
@@ -87,13 +85,10 @@ class RoleRestControllerMockMvcTest {
     @Test
     void findById_withValidId_shouldReturnRoleWithGivenId() throws Exception {
         given(roleService.findById(anyInt())).willReturn(roleDto1);
-        MvcResult result = mockMvc.perform(get(API_ROLES + "/{id}", VALID_ID))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.id").value(roleDto1.getId()))
-              .andExpect(jsonPath("$.authority").value(roleDto1.getAuthority().toString()))
-              .andReturn();
+        ResultActions actions = mockMvc.perform(get(API_ROLES + "/{id}", VALID_ID)).andExpect(status().isOk());
         verify(roleService).findById(VALID_ID);
-        RoleDto response = objectMapper.readValue(result.getResponse().getContentAsString(), RoleDto.class);
+        assertRoleDtoJson(actions, roleDto1);
+        RoleDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), RoleDto.class);
         assertThat(response).isEqualTo(roleDto1);
     }
 
@@ -111,15 +106,13 @@ class RoleRestControllerMockMvcTest {
     @Test
     void save_shouldAddRoleToList() throws Exception {
         given(roleService.save(any(RoleDto.class))).willReturn(roleDto1);
-        MvcResult result = mockMvc.perform(post(API_ROLES)
+        ResultActions actions = mockMvc.perform(post(API_ROLES)
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(roleDto1)))
-              .andExpect(status().isCreated())
-              .andExpect(jsonPath("$.id").value(roleDto1.getId()))
-              .andExpect(jsonPath("$.authority").value(roleDto1.getAuthority().toString()))
-              .andReturn();
+              .andExpect(status().isCreated());
         verify(roleService).save(roleDto1);
-        RoleDto response = objectMapper.readValue(result.getResponse().getContentAsString(), RoleDto.class);
+        assertRoleDtoJson(actions, roleDto1);
+        RoleDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), RoleDto.class);
         assertThat(response).isEqualTo(roleDto1);
     }
 
@@ -127,15 +120,13 @@ class RoleRestControllerMockMvcTest {
     void updateById_withValidId_shouldUpdateRoleWithGivenId() throws Exception {
         RoleDto roleDto = roleDto2; roleDto.setId(VALID_ID);
         given(roleService.updateById(any(RoleDto.class), anyInt())).willReturn(roleDto);
-        MvcResult result = mockMvc.perform(put(API_ROLES + "/{id}", VALID_ID)
+        ResultActions actions = mockMvc.perform(put(API_ROLES + "/{id}", VALID_ID)
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(roleDto2)))
-              .andExpect(status().isOk())
-              .andExpect(jsonPath("$.id").value(roleDto.getId()))
-              .andExpect(jsonPath("$.authority").value(roleDto2.getAuthority().toString()))
-              .andReturn();
+              .andExpect(status().isOk());
         verify(roleService).updateById(roleDto2, VALID_ID);
-        RoleDto response = objectMapper.readValue(result.getResponse().getContentAsString(), RoleDto.class);
+        assertRoleDtoJson(actions, roleDto);
+        RoleDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), RoleDto.class);
         assertThat(response).isEqualTo(roleDto);
     }
 
@@ -150,5 +141,15 @@ class RoleRestControllerMockMvcTest {
               .andExpect(result -> assertTrue(result.getResolvedException() instanceof  ResourceNotFoundException))
               .andExpect(result -> assertThat(Objects.requireNonNull(result.getResolvedException()).getMessage()).isEqualTo(message));
         verify(roleService).updateById(roleDto2, INVALID_ID);
+    }
+
+    private void assertRoleDto(ResultActions actions, String prefix, RoleDto roleDto) throws Exception {
+        actions.andExpect(jsonPath(prefix + ".id").value(roleDto.getId()));
+        actions.andExpect(jsonPath(prefix + ".authority").value(roleDto.getAuthority().name()));
+    }
+
+    private void assertRoleDtoJson(ResultActions actions, RoleDto roleDto) throws Exception {
+        actions.andExpect(jsonPath("$.id").value(roleDto.getId()))
+              .andExpect(jsonPath("$.authority").value(roleDto.getAuthority().name()));
     }
 }

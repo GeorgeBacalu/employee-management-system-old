@@ -9,9 +9,9 @@
     <div class="card-body">
       <div class="row" style="font-size: 14px; line-height: 0.9">
         <div class="col-md-12">
-          <p>Feedback type: <span th:text="${feedback.type}"></span></p>
-          <p>Description: <span th:text="${feedback.description}"></span></p>
-          <p>User: <span th:text="${feedback.user.name}"></span></p>
+          <p>Feedback type: [[${feedback.type}]]</p>
+          <p>Description: [[${feedback.description}]]</p>
+          <p>User: [[${feedback.user.name}]]</p>
         </div>
         <a th:href="@{/feedbacks}" type="button" class="btn btn-secondary" style="width: 15%"><i class="fas fa-arrow-left"></i> Back</a>
       </div>

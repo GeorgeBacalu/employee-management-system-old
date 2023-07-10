@@ -9,12 +9,12 @@
     <div class="card-body">
       <div class="row" style="font-size: 14px; line-height: 0.9">
         <div class="col-md-12">
-          <p>Title: <span th:text="${experience.title}"></span></p>
-          <p>Organization: <span th:text="${experience.organization}"></span></p>
-          <p>Description: <span th:text="${experience.description}"></span></p>
-          <p>Experience type: <span th:text="${experience.type}"></span></p>
-          <p>Starting date: <span th:text="${experience.startedAt}"></span></p>
-          <p>Finishing date: <span th:text="${experience.finishedAt}"></span></p>
+          <p>Title: [[${experience.title}]]</p>
+          <p>Organization: [[${experience.organization}]]</p>
+          <p>Description: [[${experience.description}]]</p>
+          <p>Experience type: [[${experience.type}]]</p>
+          <p>Starting date: [[${experience.startedAt}]]</p>
+          <p>Finishing date: [[${experience.finishedAt}]]</p>
         </div>
         <a th:href="@{/experiences}" type="button" class="btn btn-secondary" style="width: 15%"><i class="fas fa-arrow-left"></i> Back</a>
       </div>
