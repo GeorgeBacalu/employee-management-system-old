@@ -7,6 +7,7 @@ import com.project.ems.user.User;
 import com.project.ems.user.UserController;
 import com.project.ems.user.UserDto;
 import com.project.ems.user.UserService;
+import com.project.ems.wrapper.SearchRequest;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -23,6 +26,8 @@ import static com.project.ems.constants.EndpointConstants.USERS;
 import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.USER_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_USERS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_USER_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.TEXT_HTML_UTF8;
@@ -31,10 +36,17 @@ import static com.project.ems.constants.ThymeleafViewConstants.USER_DETAILS_VIEW
 import static com.project.ems.mock.RoleMock.getMockedRole1;
 import static com.project.ems.mock.RoleMock.getMockedRole2;
 import static com.project.ems.mock.UserMock.*;
+import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
+import static com.project.ems.util.PageUtil.getSortDirection;
+import static com.project.ems.util.PageUtil.getSortField;
+import static com.project.ems.util.PageUtil.getStartIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -45,6 +57,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -136,6 +149,7 @@ class UserControllerMockMvcTest {
     private User user71;
     private User user72;
     private List<User> users;
+    private List<User> usersFirstPage;
     private Role role1;
     private Role role2;
     private UserDto userDto1;
@@ -211,6 +225,7 @@ class UserControllerMockMvcTest {
     private UserDto userDto71;
     private UserDto userDto72;
     private List<UserDto> userDtos;
+    private List<UserDto> userDtosFirstPage;
 
     @BeforeEach
     void setUp() {
@@ -287,6 +302,7 @@ class UserControllerMockMvcTest {
         user71 = getMockedUser71();
         user72 = getMockedUser72();
         users = getMockedUsers();
+        usersFirstPage = List.of(user1, user2, user3, user4, user5, user6, user7, user8, user9);
         role1 = getMockedRole1();
         role2 = getMockedRole2();
         userDto1 = convertToDto(user1);
@@ -367,6 +383,7 @@ class UserControllerMockMvcTest {
                            userDto37, userDto38, userDto39, userDto40, userDto41, userDto42, userDto43, userDto44, userDto45, userDto46, userDto47, userDto48,
                            userDto49, userDto50, userDto51, userDto52, userDto53, userDto54, userDto55, userDto56, userDto57, userDto58, userDto59, userDto60,
                            userDto61, userDto62, userDto63, userDto64, userDto65, userDto66, userDto67, userDto68, userDto69, userDto70, userDto71, userDto72);
+        userDtosFirstPage = List.of(userDto1, userDto2, userDto3, userDto4, userDto5, userDto6, userDto7, userDto8, userDto9);
 
         given(modelMapper.map(userDto1, User.class)).willReturn(user1);
         given(modelMapper.map(userDto2, User.class)).willReturn(user2);
@@ -517,13 +534,51 @@ class UserControllerMockMvcTest {
 
     @Test
     void getAllUsersPage_shouldReturnUsersPage() throws Exception {
-        given(userService.findAll()).willReturn(userDtos);
+        PageImpl<UserDto> userDtosPage = new PageImpl<>(userDtosFirstPage);
+        given(userService.findAllByKey(any(Pageable.class), anyString())).willReturn(userDtosPage);
+        int page = pageable.getPageNumber();
+        int size = userDtosFirstPage.size();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        long nrUsers = userDtosPage.getTotalElements();
+        int nrPages = userDtosPage.getTotalPages();
+        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
+        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrUsers);
+        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
+        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
+        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(USERS).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
               .andExpect(view().name(USERS_VIEW))
-              .andExpect(model().attribute("users", users));
-        verify(userService).findAll();
+              .andExpect(model().attribute("users", usersFirstPage))
+              .andExpect(model().attribute("nrUsers", nrUsers))
+              .andExpect(model().attribute("nrPages", nrPages))
+              .andExpect(model().attribute("page", page))
+              .andExpect(model().attribute("size", size))
+              .andExpect(model().attribute("key", ""))
+              .andExpect(model().attribute("field", field))
+              .andExpect(model().attribute("direction", direction))
+              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
+              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
+              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
+              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
+              .andExpect(model().attribute("searchRequest", searchRequest));
+    }
+
+    @Test
+    void findAllByKey_shouldProcessSearchRequestAndReturnListOfUsersFilteredByKey() throws Exception {
+        int page = pageable.getPageNumber();
+        int size = userDtosFirstPage.size();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        mockMvc.perform(post(USERS + "/search").accept(TEXT_HTML)
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size))
+                    .param("key", USER_FILTER_KEY)
+                    .param("sort", field + "," + direction))
+              .andExpect(status().is3xxRedirection())
+              .andExpect(redirectedUrlPattern(USERS + "?page=*&size=*&key=*&sort=*"));
     }
 
     @Test
@@ -616,10 +671,18 @@ class UserControllerMockMvcTest {
 
     @Test
     void deleteById_withValidId_shouldRemoveUserWithGivenIdFromList() throws Exception {
-        mockMvc.perform(get(USERS + "/delete/{id}", VALID_ID).accept(TEXT_HTML))
-              .andExpect(status().isFound())
-              .andExpect(view().name(REDIRECT_USERS_VIEW))
-              .andExpect(redirectedUrl(USERS));
+        PageImpl<UserDto> userDtosPage = new PageImpl<>(userDtosFirstPage);
+        given(userService.findAllByKey(any(Pageable.class), anyString())).willReturn(userDtosPage);
+        int page = pageable.getPageNumber();
+        int size = userDtosFirstPage.size();
+        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
+        mockMvc.perform(get(USERS + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size))
+                    .param("key", USER_FILTER_KEY)
+                    .param("sort", sort))
+              .andExpect(status().is3xxRedirection())
+              .andExpect(redirectedUrlPattern(USERS + "?page=*&size=*&key=*&sort=*"));
         verify(userService).deleteById(VALID_ID);
     }
 

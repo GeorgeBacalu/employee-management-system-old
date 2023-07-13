@@ -11,6 +11,7 @@ import com.project.ems.role.Role;
 import com.project.ems.role.RoleService;
 import com.project.ems.study.Study;
 import com.project.ems.study.StudyService;
+import com.project.ems.wrapper.SearchRequest;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -20,6 +21,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -28,6 +31,8 @@ import static com.project.ems.constants.EndpointConstants.MENTORS;
 import static com.project.ems.constants.ExceptionMessageConstants.MENTOR_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.MENTOR_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.ThymeleafViewConstants.MENTORS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.MENTOR_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_MENTORS_VIEW;
@@ -50,10 +55,17 @@ import static com.project.ems.mock.StudyMock.getMockedStudies3;
 import static com.project.ems.mock.StudyMock.getMockedStudies4;
 import static com.project.ems.mock.StudyMock.getMockedStudies5;
 import static com.project.ems.mock.StudyMock.getMockedStudies6;
+import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
+import static com.project.ems.util.PageUtil.getSortDirection;
+import static com.project.ems.util.PageUtil.getSortField;
+import static com.project.ems.util.PageUtil.getStartIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -64,6 +76,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -125,6 +138,7 @@ class MentorControllerMockMvcTest {
     private Mentor mentor35;
     private Mentor mentor36;
     private List<Mentor> mentors;
+    private List<Mentor> mentorsFirstPage;
 
     private Role role1;
     private Role role2;
@@ -180,6 +194,7 @@ class MentorControllerMockMvcTest {
     private MentorDto mentorDto35;
     private MentorDto mentorDto36;
     private List<MentorDto> mentorDtos;
+    private List<MentorDto> mentorDtosFirstPage;
 
     @BeforeEach
     void setUp() {
@@ -220,6 +235,7 @@ class MentorControllerMockMvcTest {
         mentor35 = getMockedMentor35();
         mentor36 = getMockedMentor36();
         mentors = getMockedMentors();
+        mentorsFirstPage = List.of(mentor1, mentor2, mentor3, mentor4, mentor5, mentor6, mentor7, mentor8, mentor9);
 
         role1 = getMockedRole1();
         role2 = getMockedRole2();
@@ -277,6 +293,7 @@ class MentorControllerMockMvcTest {
         mentorDtos = List.of(mentorDto1, mentorDto2, mentorDto3, mentorDto4, mentorDto5, mentorDto6, mentorDto7, mentorDto8, mentorDto9, mentorDto10, mentorDto11, mentorDto12,
                              mentorDto13, mentorDto14, mentorDto15, mentorDto16, mentorDto17, mentorDto18, mentorDto19, mentorDto20, mentorDto21, mentorDto22, mentorDto23, mentorDto24,
                              mentorDto25, mentorDto26, mentorDto27, mentorDto28, mentorDto29, mentorDto30, mentorDto31, mentorDto32, mentorDto33, mentorDto34, mentorDto35, mentorDto36);
+        mentorDtosFirstPage = List.of(mentorDto1, mentorDto2, mentorDto3, mentorDto4, mentorDto5, mentorDto6, mentorDto7, mentorDto8, mentorDto9);
 
         given(modelMapper.map(mentorDto1, Mentor.class)).willReturn(mentor1);
         given(modelMapper.map(mentorDto2, Mentor.class)).willReturn(mentor2);
@@ -538,13 +555,51 @@ class MentorControllerMockMvcTest {
 
     @Test
     void getAllMentorsPage_shouldReturnMentorsPage() throws Exception {
-        given(mentorService.findAll()).willReturn(mentorDtos);
+        PageImpl<MentorDto> mentorDtosPage = new PageImpl<>(mentorDtosFirstPage);
+        given(mentorService.findAllByKey(any(Pageable.class), anyString())).willReturn(mentorDtosPage);
+        int page = pageable.getPageNumber();
+        int size = mentorDtosFirstPage.size();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        long nrMentors = mentorDtosPage.getTotalElements();
+        int nrPages = mentorDtosPage.getTotalPages();
+        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
+        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrMentors);
+        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
+        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
+        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(MENTORS).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
               .andExpect(view().name(MENTORS_VIEW))
-              .andExpect(model().attribute("mentors", mentors));
-        verify(mentorService).findAll();
+              .andExpect(model().attribute("mentors", mentorsFirstPage))
+              .andExpect(model().attribute("nrMentors", nrMentors))
+              .andExpect(model().attribute("nrPages", nrPages))
+              .andExpect(model().attribute("page", page))
+              .andExpect(model().attribute("size", size))
+              .andExpect(model().attribute("key", ""))
+              .andExpect(model().attribute("field", field))
+              .andExpect(model().attribute("direction", direction))
+              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
+              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
+              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
+              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
+              .andExpect(model().attribute("searchRequest", searchRequest));
+    }
+
+    @Test
+    void findAllByKey_shouldProcessSearchRequestAndReturnListOfMentorsFilteredByKey() throws Exception {
+        int page = pageable.getPageNumber();
+        int size = mentorDtosFirstPage.size();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        mockMvc.perform(post(MENTORS + "/search").accept(TEXT_HTML)
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size))
+                    .param("key", MENTOR_FILTER_KEY)
+                    .param("sort", field + "," + direction))
+              .andExpect(status().is3xxRedirection())
+              .andExpect(redirectedUrlPattern(MENTORS + "?page=*&size=*&key=*&sort=*"));
     }
 
     @Test
@@ -637,10 +692,18 @@ class MentorControllerMockMvcTest {
 
     @Test
     void deleteById_withValidId_shouldRemoveMentorWithGivenIdFromList() throws Exception {
-        mockMvc.perform(get(MENTORS + "/delete/{id}", VALID_ID).accept(TEXT_HTML))
-              .andExpect(status().isFound())
-              .andExpect(view().name(REDIRECT_MENTORS_VIEW))
-              .andExpect(redirectedUrl(MENTORS));
+        PageImpl<MentorDto> mentorDtosPage = new PageImpl<>(mentorDtosFirstPage);
+        given(mentorService.findAllByKey(any(Pageable.class), anyString())).willReturn(mentorDtosPage);
+        int page = pageable.getPageNumber();
+        int size = mentorDtosFirstPage.size();
+        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
+        mockMvc.perform(get(MENTORS + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size))
+                    .param("key", MENTOR_FILTER_KEY)
+                    .param("sort", sort))
+              .andExpect(status().is3xxRedirection())
+              .andExpect(redirectedUrlPattern(MENTORS + "?page=*&size=*&key=*&sort=*"));
         verify(mentorService).deleteById(VALID_ID);
     }
 

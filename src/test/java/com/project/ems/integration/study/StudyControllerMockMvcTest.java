@@ -5,6 +5,7 @@ import com.project.ems.study.Study;
 import com.project.ems.study.StudyController;
 import com.project.ems.study.StudyDto;
 import com.project.ems.study.StudyService;
+import com.project.ems.wrapper.SearchRequest;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +14,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -21,6 +24,8 @@ import static com.project.ems.constants.EndpointConstants.STUDIES;
 import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.STUDY_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_STUDIES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_STUDY_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.STUDIES_VIEW;
@@ -39,10 +44,17 @@ import static com.project.ems.mock.StudyMock.getMockedStudy6;
 import static com.project.ems.mock.StudyMock.getMockedStudy7;
 import static com.project.ems.mock.StudyMock.getMockedStudy8;
 import static com.project.ems.mock.StudyMock.getMockedStudy9;
+import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
+import static com.project.ems.util.PageUtil.getSortDirection;
+import static com.project.ems.util.PageUtil.getSortField;
+import static com.project.ems.util.PageUtil.getStartIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -53,6 +65,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -81,6 +94,7 @@ class StudyControllerMockMvcTest {
     private Study study11;
     private Study study12;
     private List<Study> studies;
+    private List<Study> studiesFirstPage;
     private StudyDto studyDto1;
     private StudyDto studyDto2;
     private StudyDto studyDto3;
@@ -94,6 +108,7 @@ class StudyControllerMockMvcTest {
     private StudyDto studyDto11;
     private StudyDto studyDto12;
     private List<StudyDto> studyDtos;
+    private List<StudyDto> studyDtosFirstPage;
 
     @BeforeEach
     void setUp() {
@@ -110,6 +125,7 @@ class StudyControllerMockMvcTest {
         study11 = getMockedStudy11();
         study12 = getMockedStudy12();
         studies = getMockedStudies();
+        studiesFirstPage = List.of(study1, study2, study3, study4, study5, study6, study7, study8, study9);
         studyDto1 = convertToDto(study1);
         studyDto2 = convertToDto(study2);
         studyDto3 = convertToDto(study3);
@@ -123,6 +139,7 @@ class StudyControllerMockMvcTest {
         studyDto11 = convertToDto(study11);
         studyDto12 = convertToDto(study12);
         studyDtos = List.of(studyDto1, studyDto2, studyDto3, studyDto4, studyDto5, studyDto6, studyDto7, studyDto8, studyDto9, studyDto10, studyDto11, studyDto12);
+        studyDtosFirstPage = List.of(studyDto1, studyDto2, studyDto3, studyDto4, studyDto5, studyDto6, studyDto7, studyDto8, studyDto9);
 
         given(modelMapper.map(studyDto1, Study.class)).willReturn(study1);
         given(modelMapper.map(studyDto2, Study.class)).willReturn(study2);
@@ -140,13 +157,51 @@ class StudyControllerMockMvcTest {
 
     @Test
     void getAllStudiesPage_shouldReturnStudiesPage() throws Exception {
-        given(studyService.findAll()).willReturn(studyDtos);
+        PageImpl<StudyDto> studyDtosPage = new PageImpl<>(studyDtosFirstPage);
+        given(studyService.findAllByKey(any(Pageable.class), anyString())).willReturn(studyDtosPage);
+        int page = pageable.getPageNumber();
+        int size = studyDtosFirstPage.size();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        long nrStudies = studyDtosPage.getTotalElements();
+        int nrPages = studyDtosPage.getTotalPages();
+        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
+        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrStudies);
+        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
+        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
+        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(STUDIES).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
               .andExpect(view().name(STUDIES_VIEW))
-              .andExpect(model().attribute("studies", studies));
-        verify(studyService).findAll();
+              .andExpect(model().attribute("studies", studiesFirstPage))
+              .andExpect(model().attribute("nrStudies", nrStudies))
+              .andExpect(model().attribute("nrPages", nrPages))
+              .andExpect(model().attribute("page", page))
+              .andExpect(model().attribute("size", size))
+              .andExpect(model().attribute("key", ""))
+              .andExpect(model().attribute("field", field))
+              .andExpect(model().attribute("direction", direction))
+              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
+              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
+              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
+              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
+              .andExpect(model().attribute("searchRequest", searchRequest));
+    }
+
+    @Test
+    void findAllByKey_shouldProcessSearchRequestAndReturnListOfStudiesFilteredByKey() throws Exception {
+        int page = pageable.getPageNumber();
+        int size = studyDtosFirstPage.size();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        mockMvc.perform(post(STUDIES + "/search").accept(TEXT_HTML)
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size))
+                    .param("key", STUDY_FILTER_KEY)
+                    .param("sort", field + "," + direction))
+              .andExpect(status().is3xxRedirection())
+              .andExpect(redirectedUrlPattern(STUDIES + "?page=*&size=*&key=*&sort=*"));
     }
 
     @Test
@@ -239,10 +294,18 @@ class StudyControllerMockMvcTest {
 
     @Test
     void deleteById_withValidId_shouldRemoveStudyWithGivenIdFromList() throws Exception {
-        mockMvc.perform(get(STUDIES + "/delete/{id}", VALID_ID).accept(TEXT_HTML))
-              .andExpect(status().isFound())
-              .andExpect(view().name(REDIRECT_STUDIES_VIEW))
-              .andExpect(redirectedUrl(STUDIES));
+        PageImpl<StudyDto> studyDtosPage = new PageImpl<>(studyDtosFirstPage);
+        given(studyService.findAllByKey(any(Pageable.class), anyString())).willReturn(studyDtosPage);
+        int page = pageable.getPageNumber();
+        int size = studyDtosFirstPage.size();
+        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
+        mockMvc.perform(get(STUDIES + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size))
+                    .param("key", STUDY_FILTER_KEY)
+                    .param("sort", sort))
+              .andExpect(status().is3xxRedirection())
+              .andExpect(redirectedUrlPattern(STUDIES + "?page=*&size=*&key=*&sort=*"));
         verify(studyService).deleteById(VALID_ID);
     }
 
