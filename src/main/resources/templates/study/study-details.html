@@ -9,12 +9,12 @@
     <div class="card-body">
       <div class="row" style="font-size: 14px; line-height: 0.9">
         <div class="col-md-12">
-          <p>Title: <span th:text="${study.title}"></span></p>
-          <p>Institution: <span th:text="${study.institution}"></span></p>
-          <p>Description: <span th:text="${study.description}"></span></p>
-          <p>Study type: <span th:text="${study.type}"></span></p>
-          <p>Starting date: <span th:text="${study.startedAt}"></span></p>
-          <p>Finishing date: <span th:text="${study.finishedAt}"></span></p>
+          <p>Title: [[${study.title}]]</p>
+          <p>Institution: [[${study.institution}]]</p>
+          <p>Description: [[${study.description}]]</p>
+          <p>Study type: [[${study.type}]]</p>
+          <p>Starting date: [[${study.startedAt}]]</p>
+          <p>Finishing date: [[${study.finishedAt}]]</p>
         </div>
         <a th:href="@{/studies}" type="button" class="btn btn-secondary" style="width: 15%"><i class="fas fa-arrow-left"></i> Back</a>
       </div>

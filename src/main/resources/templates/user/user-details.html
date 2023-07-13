@@ -9,12 +9,12 @@
     <div class="card-body">
       <div class="row" style="font-size: 14px; line-height: 0.9">
         <div class="col-md-12">
-          <p>Name: <span th:text="${user.name}"></span></p>
-          <p>Email: <span th:text="${user.email}"></span></p>
-          <p>Mobile: <span th:text="${user.mobile}"></span></p>
-          <p>Address: <span th:text="${user.address}"></span></p>
-          <p>Birthday: <span th:text="${user.birthday}"></span></p>
-          <p>Role: <span th:text="${user.role.authority}"></span></p>
+          <p>Name: [[${user.name}]]</p>
+          <p>Email: [[${user.email}]]</p>
+          <p>Mobile: [[${user.mobile}]]</p>
+          <p>Address: [[${user.address}]]</p>
+          <p>Birthday: [[${user.birthday}]]</p>
+          <p>Role: [[${user.role.authority}]]</p>
         </div>
         <a th:href="@{/users}" type="button" class="btn btn-secondary" style="width: 15%"><i class="fas fa-arrow-left"></i> Back</a>
       </div>

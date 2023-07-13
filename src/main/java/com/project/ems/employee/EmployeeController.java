@@ -4,8 +4,13 @@ import com.project.ems.experience.ExperienceService;
 import com.project.ems.mentor.MentorService;
 import com.project.ems.role.RoleService;
 import com.project.ems.study.StudyService;
+import com.project.ems.wrapper.SearchRequest;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +18,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEE_DETAILS_VIEW;
@@ -20,6 +27,12 @@ import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_EMPLOYEE
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_EMPLOYEE_VIEW;
 import static com.project.ems.mapper.EmployeeMapper.convertToEntity;
 import static com.project.ems.mapper.EmployeeMapper.convertToEntityList;
+import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
+import static com.project.ems.util.PageUtil.getSortDirection;
+import static com.project.ems.util.PageUtil.getSortField;
+import static com.project.ems.util.PageUtil.getStartIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 
 @Controller
 @RequiredArgsConstructor
@@ -34,9 +47,37 @@ public class EmployeeController {
     private final ModelMapper modelMapper;
 
     @GetMapping
-    public String getAllEmployeesPage(Model model) {
-        model.addAttribute("employees", convertToEntityList(modelMapper, employeeService.findAll(), roleService, mentorService, studyService, experienceService));
+    public String getAllEmployeesPage(Model model, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+        Page<EmployeeDto> employeeDtosPage = employeeService.findAllByKey(pageable, key);
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        long nrEmployees = employeeDtosPage.getTotalElements();
+        int nrPages = employeeDtosPage.getTotalPages();
+        model.addAttribute("employees", convertToEntityList(modelMapper, employeeDtosPage.getContent(), roleService, mentorService, studyService, experienceService));
+        model.addAttribute("nrEmployees", nrEmployees);
+        model.addAttribute("nrPages", nrPages);
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
+        model.addAttribute("key", key);
+        model.addAttribute("field", field);
+        model.addAttribute("direction", direction);
+        model.addAttribute("startIndexCurrentPage", getStartIndexCurrentPage(page, size));
+        model.addAttribute("endIndexCurrentPage", getEndIndexCurrentPage(page, size, nrEmployees));
+        model.addAttribute("startIndexPageNavigation", getStartIndexPageNavigation(page, nrPages));
+        model.addAttribute("endIndexPageNavigation", getEndIndexPageNavigation(page, nrPages));
+        model.addAttribute("searchRequest", new SearchRequest(0, size, "", field + "," + direction));
         return EMPLOYEES_VIEW;
+    }
+
+    @PostMapping("/search")
+    public String findAllByKey(@ModelAttribute SearchRequest searchRequest, RedirectAttributes redirectAttributes) {
+        redirectAttributes.addAttribute("page", searchRequest.getPage());
+        redirectAttributes.addAttribute("size", searchRequest.getSize());
+        redirectAttributes.addAttribute("key", searchRequest.getKey());
+        redirectAttributes.addAttribute("sort", searchRequest.getSort());
+        return REDIRECT_EMPLOYEES_VIEW;
     }
 
     @GetMapping("/{id}")
@@ -63,8 +104,17 @@ public class EmployeeController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteById(@PathVariable Integer id) {
+    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         employeeService.deleteById(id);
+        Page<EmployeeDto> employeeDtosPage = employeeService.findAllByKey(pageable, key);
+        int page = pageable.getPageNumber();
+        int size = pageable.getPageSize();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        redirectAttributes.addAttribute("page", !employeeDtosPage.hasContent() && page > 0 ? page - 1 : page);
+        redirectAttributes.addAttribute("size", size);
+        redirectAttributes.addAttribute("key", key);
+        redirectAttributes.addAttribute("sort", field + "," + direction);
         return REDIRECT_EMPLOYEES_VIEW;
     }
 }

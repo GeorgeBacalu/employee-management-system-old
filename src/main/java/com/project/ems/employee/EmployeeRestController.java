@@ -56,7 +56,7 @@ public class EmployeeRestController implements EmployeeApi {
 
     @Override @GetMapping("/pagination")
     public ResponseEntity<PageWrapper<EmployeeDto>> findAllByKey(@PageableDefault(size = 2, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-                                                    @RequestParam(required = false, defaultValue = "") String key) {
+                                                                 @RequestParam(required = false, defaultValue = "") String key) {
         return ResponseEntity.ok(new PageWrapper<>(employeeService.findAllByKey(pageable, key).getContent()));
     }
 }

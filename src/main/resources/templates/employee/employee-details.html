@@ -9,38 +9,38 @@
     <div class="card-body">
       <div class="row" style="font-size: 14px; line-height: 0.9">
         <div class="col-md-6">
-          <p>Name: <span th:text="${employee.name}"></span></p>
-          <p>Email: <span th:text="${employee.email}"></span></p>
-          <p>Mobile: <span th:text="${employee.mobile}"></span></p>
-          <p>Address: <span th:text="${employee.address}"></span></p>
-          <p>Birthday: <span th:text="${employee.birthday}"></span></p>
+          <p>Name: [[${employee.name}]]</p>
+          <p>Email: [[${employee.email}]]</p>
+          <p>Mobile: [[${employee.mobile}]]</p>
+          <p>Address: [[${employee.address}]]</p>
+          <p>Birthday: [[${employee.birthday}]]</p>
           <p>Studies: </p>
           <ul th:each="study : ${employee.studies}">
             <li>
-              <p>Title: <span th:text="${study.title}"></span></p>
-              <p>Institution: <span th:text="${study.institution}"></span></p>
-              <p>Description: <span th:text="${study.description}"></span></p>
-              <p>Study type: <span th:text="${study.type}"></span></p>
-              <p>Starting date: <span th:text="${study.startedAt}"></span></p>
-              <p>Finishing date: <span th:text="${study.finishedAt}"></span></p>
+              <p>Title: [[${study.title}]]</p>
+              <p>Institution: [[${study.institution}]]</p>
+              <p>Description: [[${study.description}]]</p>
+              <p>Study type: [[${study.type}]]</p>
+              <p>Starting date: [[${study.startedAt}]]</p>
+              <p>Finishing date: [[${study.finishedAt}]]</p>
             </li>
           </ul>
         </div>
         <div class="col-md-6">
-          <p>Role: <span th:text="${employee.role.authority}"></span></p>
-          <p>Employment type: <span th:text="${employee.employmentType}"></span></p>
-          <p>Position: <span th:text="${employee.position}"></span></p>
-          <p>Grade: <span th:text="${employee.grade}"></span></p>
-          <p>Mentor: <span th:text="${employee.mentor.name}"></span></p>
+          <p>Role: [[${employee.role.authority}]]</p>
+          <p>Employment type: [[${employee.employmentType}]]</p>
+          <p>Position: [[${employee.position}]]</p>
+          <p>Grade: [[${employee.grade}]]</p>
+          <p>Mentor: [[${employee.mentor.name}]]</p>
           <p>Experiences: </p>
           <ul th:each="experience : ${employee.experiences}">
             <li>
-              <p>Title: <span th:text="${experience.title}"></span></p>
-              <p>Institution: <span th:text="${experience.organization}"></span></p>
-              <p>Description: <span th:text="${experience.description}"></span></p>
-              <p>Experience type: <span th:text="${experience.type}"></span></p>
-              <p>Starting date: <span th:text="${experience.startedAt}"></span></p>
-              <p>Finishing date: <span th:text="${experience.finishedAt}"></span></p>
+              <p>Title: [[${experience.title}]]</p>
+              <p>Institution: [[${experience.organization}]]</p>
+              <p>Description: [[${experience.description}]]</p>
+              <p>Experience type: [[${experience.type}]]</p>
+              <p>Starting date: [[${experience.startedAt}]]</p>
+              <p>Finishing date: [[${experience.finishedAt}]]</p>
             </li>
           </ul>
         </div>

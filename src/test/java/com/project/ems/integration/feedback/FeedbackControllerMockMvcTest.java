@@ -7,6 +7,7 @@ import com.project.ems.feedback.FeedbackDto;
 import com.project.ems.feedback.FeedbackService;
 import com.project.ems.user.User;
 import com.project.ems.user.UserService;
+import com.project.ems.wrapper.SearchRequest;
 import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -23,6 +26,8 @@ import static com.project.ems.constants.EndpointConstants.FEEDBACKS;
 import static com.project.ems.constants.ExceptionMessageConstants.FEEDBACK_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
+import static com.project.ems.constants.PaginationConstants.FEEDBACK_FILTER_KEY;
+import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.ThymeleafViewConstants.FEEDBACKS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.FEEDBACK_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_FEEDBACKS_VIEW;
@@ -53,10 +58,17 @@ import static com.project.ems.mock.UserMock.getMockedUser6;
 import static com.project.ems.mock.UserMock.getMockedUser7;
 import static com.project.ems.mock.UserMock.getMockedUser8;
 import static com.project.ems.mock.UserMock.getMockedUser9;
+import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
+import static com.project.ems.util.PageUtil.getSortDirection;
+import static com.project.ems.util.PageUtil.getSortField;
+import static com.project.ems.util.PageUtil.getStartIndexCurrentPage;
+import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -67,6 +79,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.model;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
@@ -98,6 +111,7 @@ class FeedbackControllerMockMvcTest {
     private Feedback feedback11;
     private Feedback feedback12;
     private List<Feedback> feedbacks;
+    private List<Feedback> feedbacksFirstPage;
     private User user1;
     private User user2;
     private User user3;
@@ -123,6 +137,7 @@ class FeedbackControllerMockMvcTest {
     private FeedbackDto feedbackDto11;
     private FeedbackDto feedbackDto12;
     private List<FeedbackDto> feedbackDtos;
+    private List<FeedbackDto> feedbackDtosFirstPage;
 
     @BeforeEach
     void setUp() {
@@ -139,6 +154,7 @@ class FeedbackControllerMockMvcTest {
         feedback11 = getMockedFeedback11();
         feedback12 = getMockedFeedback12();
         feedbacks = getMockedFeedbacks();
+        feedbacksFirstPage = List.of(feedback1, feedback2, feedback3, feedback4, feedback5, feedback6, feedback7, feedback8, feedback9);
         user1 = getMockedUser1();
         user2 = getMockedUser2();
         user3 = getMockedUser3();
@@ -164,6 +180,7 @@ class FeedbackControllerMockMvcTest {
         feedbackDto11 = convertToDto(feedback11);
         feedbackDto12 = convertToDto(feedback12);
         feedbackDtos = List.of(feedbackDto1, feedbackDto2, feedbackDto3, feedbackDto4, feedbackDto5, feedbackDto6, feedbackDto7, feedbackDto8, feedbackDto9, feedbackDto10, feedbackDto11, feedbackDto12);
+        feedbackDtosFirstPage = List.of(feedbackDto1, feedbackDto2, feedbackDto3, feedbackDto4, feedbackDto5, feedbackDto6, feedbackDto7, feedbackDto8, feedbackDto9);
 
         given(modelMapper.map(feedbackDto1, Feedback.class)).willReturn(feedback1);
         given(modelMapper.map(feedbackDto2, Feedback.class)).willReturn(feedback2);
@@ -194,13 +211,51 @@ class FeedbackControllerMockMvcTest {
 
     @Test
     void getAllFeedbacksPage_shouldReturnFeedbacksPage() throws Exception {
-        given(feedbackService.findAll()).willReturn(feedbackDtos);
+        PageImpl<FeedbackDto> feedbackDtosPage = new PageImpl<>(feedbackDtosFirstPage);
+        given(feedbackService.findAllByKey(any(Pageable.class), anyString())).willReturn(feedbackDtosPage);
+        int page = pageable.getPageNumber();
+        int size = feedbackDtosFirstPage.size();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        long nrFeedbacks = feedbackDtosPage.getTotalElements();
+        int nrPages = feedbackDtosPage.getTotalPages();
+        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
+        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrFeedbacks);
+        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
+        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
+        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(FEEDBACKS).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
               .andExpect(view().name(FEEDBACKS_VIEW))
-              .andExpect(model().attribute("feedbacks", feedbacks));
-        verify(feedbackService).findAll();
+              .andExpect(model().attribute("feedbacks", feedbacksFirstPage))
+              .andExpect(model().attribute("nrFeedbacks", nrFeedbacks))
+              .andExpect(model().attribute("nrPages", nrPages))
+              .andExpect(model().attribute("page", page))
+              .andExpect(model().attribute("size", size))
+              .andExpect(model().attribute("key", ""))
+              .andExpect(model().attribute("field", field))
+              .andExpect(model().attribute("direction", direction))
+              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
+              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
+              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
+              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
+              .andExpect(model().attribute("searchRequest", searchRequest));
+    }
+
+    @Test
+    void findAllByKey_shouldProcessSearchRequestAndReturnListOfFeedbacksFilteredByKey() throws Exception {
+        int page = pageable.getPageNumber();
+        int size = feedbackDtosFirstPage.size();
+        String field = getSortField(pageable);
+        String direction = getSortDirection(pageable);
+        mockMvc.perform(post(FEEDBACKS + "/search").accept(TEXT_HTML)
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size))
+                    .param("key", FEEDBACK_FILTER_KEY)
+                    .param("sort", field + "," + direction))
+              .andExpect(status().is3xxRedirection())
+              .andExpect(redirectedUrlPattern(FEEDBACKS + "?page=*&size=*&key=*&sort=*"));
     }
 
     @Test
@@ -293,10 +348,18 @@ class FeedbackControllerMockMvcTest {
 
     @Test
     void deleteById_withValidId_shouldRemoveFeedbackWithGivenIdFromList() throws Exception {
-        mockMvc.perform(get(FEEDBACKS + "/delete/{id}", VALID_ID).accept(TEXT_HTML))
-              .andExpect(status().isFound())
-              .andExpect(view().name(REDIRECT_FEEDBACKS_VIEW))
-              .andExpect(redirectedUrl(FEEDBACKS));
+        PageImpl<FeedbackDto> feedbackDtosPage = new PageImpl<>(feedbackDtosFirstPage);
+        given(feedbackService.findAllByKey(any(Pageable.class), anyString())).willReturn(feedbackDtosPage);
+        int page = pageable.getPageNumber();
+        int size = feedbackDtosFirstPage.size();
+        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
+        mockMvc.perform(get(FEEDBACKS + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
+                    .param("page", String.valueOf(page))
+                    .param("size", String.valueOf(size))
+                    .param("key", FEEDBACK_FILTER_KEY)
+                    .param("sort", sort))
+              .andExpect(status().is3xxRedirection())
+              .andExpect(redirectedUrlPattern(FEEDBACKS + "?page=*&size=*&key=*&sort=*"));
         verify(feedbackService).deleteById(VALID_ID);
     }
 
