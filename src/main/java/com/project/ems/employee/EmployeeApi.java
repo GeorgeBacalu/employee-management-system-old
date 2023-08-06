@@ -46,5 +46,5 @@ public interface EmployeeApi {
           @ApiResponse(responseCode = "200", description = "Successful operation"),
           @ApiResponse(responseCode = "500", description = "Internal server error")})
     ResponseEntity<PageWrapper<EmployeeDto>> findAllByKey(@Parameter(name = "pageable", description = "Pageable object for paging and sorting") Pageable pageable,
-                                             @Parameter(name = "key", description = "Key to filter by") String key);
+                                                          @Parameter(name = "key", description = "Key to filter by") String key);
 }

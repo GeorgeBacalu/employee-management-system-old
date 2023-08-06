@@ -3,13 +3,15 @@
 <head th:replace="~{/_fragments/layout :: head('Users')}"></head>
 <body>
 <header th:replace="~{/_fragments/layout :: header}"></header>
-<main class="mt-1 mx-auto text-left" style="width: 98%; font-size: 14px">
+<main class="mt-1 mx-auto text-left page-container">
   <h3>Users List</h3>
   <div class="my-2 d-flex justify-content-between">
     <a th:href="@{/users/save/-1}" class="btn btn-primary"><i class="fas fa-plus"></i> Save User</a>
     <form class="justify-content-end" th:action="@{/users/search}" method="post" th:object="${searchRequest}">
       <div class="input-group">
-        <div class="form-outline rounded-left"><input type="search" id="key" th:field="*{key}" placeholder="Enter key" class="form-control"></div>
+        <div class="form-outline rounded-left">
+          <input type="search" id="key" th:field="*{key}" placeholder="Enter key" class="form-control">
+        </div>
         <button type="submit" class="btn btn-dark rounded-right"><i class="fas fa-search"></i></button>
       </div>
       <input type="hidden" th:field="*{page}">
@@ -30,11 +32,11 @@
     </thead>
     <tbody>
     <tr th:each="user : ${users}">
-      <td th:text="${user.name}"></td>
-      <td th:text="${user.email}"></td>
-      <td th:text="${user.mobile}"></td>
-      <td th:text="${user.address}"></td>
-      <td th:text="${user.role.authority}"></td>
+      <td>[[${user.name}]]</td>
+      <td>[[${user.email}]]</td>
+      <td>[[${user.mobile}]]</td>
+      <td>[[${user.address}]]</td>
+      <td>[[${user.role.authority}]]</td>
       <td>
         <a th:href="@{'/users/save/' + ${user.id}}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i> Update</a>
         <a th:href="@{'/users/delete/' + ${user.id} + '?page=' + ${page} + '&size=' + ${size} + '&key=' + ${key} + '&sort=' + ${field} + '%2C' + ${direction}}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete</a>
@@ -53,9 +55,6 @@
         <li class="page-item" th:if="${page > 0}">
           <th:block th:replace="~{/_fragments/layout :: paginationLink('users', ${page - 1}, ${size}, ${key}, ${field}, ${direction}, 'Previous')}"></th:block>
         </li>
-        <!-- If the current page is the first page (index 0), it shows the first three pages. If there are less than three pages, it shows all of them. -->
-        <!-- If the current page is in the middle (not first and not last), it shows the current page and one page before and after. -->
-        <!-- If the current page is one of the last two pages, it shows the last three pages .-->
         <th:block th:each="index : ${#numbers.sequence(startIndexPageNavigation, endIndexPageNavigation)}">
           <th:block th:replace="~{/_fragments/layout :: paginationItem('users', ${page}, ${size}, ${key}, ${field}, ${direction}, ${index})}"></th:block>
         </th:block>

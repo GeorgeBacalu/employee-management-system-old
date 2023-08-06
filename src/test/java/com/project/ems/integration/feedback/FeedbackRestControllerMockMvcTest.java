@@ -24,10 +24,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.project.ems.constants.EndpointConstants.API_FEEDBACKS;
@@ -95,8 +95,7 @@ class FeedbackRestControllerMockMvcTest {
         for(int i = 0; i < feedbackDtos.size(); i++) {
             assertFeedbackDto(actions, "$[" + i + "]", feedbackDtos.get(i));
         }
-        MvcResult result = actions.andReturn();
-        List<FeedbackDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<FeedbackDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response).isEqualTo(feedbackDtos);
     }
 
@@ -104,10 +103,10 @@ class FeedbackRestControllerMockMvcTest {
     void findById_withValidId_shouldReturnFeedbackWithGivenId() throws Exception {
         given(feedbackService.findById(anyInt())).willReturn(feedbackDto1);
         ResultActions actions = mockMvc.perform(get(API_FEEDBACKS + "/{id}", VALID_ID)).andExpect(status().isOk());
-        verify(feedbackService).findById(VALID_ID);
         assertFeedbackDtoJson(actions, feedbackDto1);
         FeedbackDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), FeedbackDto.class);
         assertThat(response).isEqualTo(feedbackDto1);
+        verify(feedbackService).findById(VALID_ID);
     }
 
     @Test
@@ -128,10 +127,10 @@ class FeedbackRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(feedbackDto1)))
               .andExpect(status().isCreated());
-        verify(feedbackService).save(feedbackDto1);
         assertFeedbackDtoJson(actions, feedbackDto1);
         FeedbackDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), FeedbackDto.class);
         assertThat(response).isEqualTo(feedbackDto1);
+        verify(feedbackService).save(feedbackDto1);
     }
 
     @Test
@@ -142,10 +141,10 @@ class FeedbackRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(feedbackDto2)))
               .andExpect(status().isOk());
-        verify(feedbackService).updateById(feedbackDto2, VALID_ID);
         assertFeedbackDtoJson(actions, feedbackDto);
         FeedbackDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), FeedbackDto.class);
         assertThat(response).isEqualTo(feedbackDto);
+        verify(feedbackService).updateById(feedbackDto2, VALID_ID);
     }
 
     @Test
@@ -179,20 +178,21 @@ class FeedbackRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<FeedbackDto> feedbackDtosPage1 = convertToDtoList(modelMapper, getMockedFeedbacksPage1());
-        List<FeedbackDto> feedbackDtosPage2 = convertToDtoList(modelMapper, getMockedFeedbacksPage2());
-        List<FeedbackDto> feedbackDtosPage3 = convertToDtoList(modelMapper, getMockedFeedbacksPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(feedbackDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(feedbackDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(feedbackDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(feedbackDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(feedbackDtosPage3)));
+        Page<FeedbackDto> feedbackDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedFeedbacksPage1()));
+        Page<FeedbackDto> feedbackDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedFeedbacksPage2()));
+        Page<FeedbackDto> feedbackDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedFeedbacksPage3()));
+        Page<FeedbackDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", FEEDBACK_FILTER_KEY, feedbackDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", FEEDBACK_FILTER_KEY, feedbackDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", FEEDBACK_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", feedbackDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", feedbackDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", feedbackDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<FeedbackDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<FeedbackDto> expectedPage) throws Exception {
         given(feedbackService.findAllByKey(any(Pageable.class), anyString())).willReturn(expectedPage);
         ResultActions actions = mockMvc.perform(get(API_FEEDBACKS + API_PAGINATION, page, size, sortField, sortDirection, key)
                     .contentType(APPLICATION_JSON_VALUE)
@@ -201,17 +201,16 @@ class FeedbackRestControllerMockMvcTest {
         for(int i = 0; i < expectedPage.getContent().size(); i++) {
             assertFeedbackDto(actions, "$.content[" + i + "]", expectedPage.getContent().get(i));
         }
-        MvcResult result = actions.andReturn();
-        PageWrapper<FeedbackDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        PageWrapper<FeedbackDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response.getContent()).isEqualTo(expectedPage.getContent());
     }
 
     private void assertFeedbackDto(ResultActions actions, String prefix, FeedbackDto feedbackDto) throws Exception {
-        actions.andExpect(jsonPath(prefix + ".id").value(feedbackDto.getId()));
-        actions.andExpect(jsonPath(prefix + ".type").value(feedbackDto.getType().name()));
-        actions.andExpect(jsonPath(prefix + ".description").value(feedbackDto.getDescription()));
-        actions.andExpect(jsonPath(prefix + ".sentAt").value(feedbackDto.getSentAt() + ":00"));
-        actions.andExpect(jsonPath(prefix + ".userId").value(feedbackDto.getUserId()));
+        actions.andExpect(jsonPath(prefix + ".id").value(feedbackDto.getId()))
+              .andExpect(jsonPath(prefix + ".type").value(feedbackDto.getType().name()))
+              .andExpect(jsonPath(prefix + ".description").value(feedbackDto.getDescription()))
+              .andExpect(jsonPath(prefix + ".sentAt").value(feedbackDto.getSentAt() + ":00"))
+              .andExpect(jsonPath(prefix + ".userId").value(feedbackDto.getUserId()));
     }
 
     private void assertFeedbackDtoJson(ResultActions actions, FeedbackDto feedbackDto) throws Exception {

@@ -13,9 +13,12 @@ import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -25,11 +28,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import static com.project.ems.constants.ExceptionMessageConstants.FEEDBACK_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
-import static com.project.ems.constants.PaginationConstants.FEEDBACK_FILTER_KEY;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
@@ -46,6 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -76,32 +80,19 @@ class FeedbackServiceImplTest {
     private Feedback feedback1;
     private Feedback feedback2;
     private List<Feedback> feedbacks;
-    private List<Feedback> feedbacksPage1;
-    private List<Feedback> feedbacksPage2;
-    private List<Feedback> feedbacksPage3;
     private User user;
     private FeedbackDto feedbackDto1;
     private FeedbackDto feedbackDto2;
     private List<FeedbackDto> feedbackDtos;
-    private List<FeedbackDto> feedbackDtosPage1;
-    private List<FeedbackDto> feedbackDtosPage2;
-    private List<FeedbackDto> feedbackDtosPage3;
-
     @BeforeEach
     void setUp() {
         feedback1 = getMockedFeedback1();
         feedback2 = getMockedFeedback2();
         feedbacks = getMockedFeedbacks();
-        feedbacksPage1 = getMockedFeedbacksPage1();
-        feedbacksPage2 = getMockedFeedbacksPage2();
-        feedbacksPage3 = getMockedFeedbacksPage3();
         user = getMockedUser2();
         feedbackDto1 = convertToDto(modelMapper, feedback1);
         feedbackDto2 = convertToDto(modelMapper, feedback2);
         feedbackDtos = convertToDtoList(modelMapper, feedbacks);
-        feedbackDtosPage1 = convertToDtoList(modelMapper, feedbacksPage1);
-        feedbackDtosPage2 = convertToDtoList(modelMapper, feedbacksPage2);
-        feedbackDtosPage3 = convertToDtoList(modelMapper, feedbacksPage3);
     }
 
     @Test
@@ -171,45 +162,26 @@ class FeedbackServiceImplTest {
         verify(feedbackRepository, never()).delete(any(Feedback.class));
     }
 
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfFeedbacksFilteredByKeyPage1() {
-        given(feedbackRepository.findAllByKey(pageable, FEEDBACK_FILTER_KEY)).willReturn(new PageImpl<>(feedbacksPage1));
-        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable, FEEDBACK_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(feedbackDtosPage1);
+    @ParameterizedTest
+    @CsvSource({ "1, ${FEEDBACK_FILTER_KEY}", "2, ${FEEDBACK_FILTER_KEY}", "3, ${FEEDBACK_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
+    void findAllByKey_shouldReturnListOfFeedbacksFilteredByKey(int page, String key) {
+        Pair<List<Feedback>, Pageable> pair = getFilteredFeedbacksAndPageable(page, key);
+        Page<Feedback> filteredFeedbacksPage = new PageImpl<>(pair.getLeft());
+        if(key.equals("")) {
+            given(feedbackRepository.findAll(any(Pageable.class))).willReturn(filteredFeedbacksPage);
+        } else {
+            given(feedbackRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredFeedbacksPage);
+        }
+        Page<FeedbackDto> result = feedbackService.findAllByKey(pair.getRight(), key);
+        assertThat(result.getContent()).isEqualTo(convertToDtoList(modelMapper, pair.getLeft()));
     }
 
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfFeedbacksFilteredByKeyPage2() {
-        given(feedbackRepository.findAllByKey(pageable2, FEEDBACK_FILTER_KEY)).willReturn(new PageImpl<>(feedbacksPage2));
-        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable2, FEEDBACK_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(feedbackDtosPage2);
-    }
-
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfFeedbacksFilteredByKeyPage3() {
-        given(feedbackRepository.findAllByKey(pageable3, FEEDBACK_FILTER_KEY)).willReturn(new PageImpl<>(Collections.emptyList()));
-        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable3, FEEDBACK_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(Collections.emptyList());
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfFeedbacksPage1() {
-        given(feedbackRepository.findAll(pageable)).willReturn(new PageImpl<>(feedbacksPage1));
-        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable, "");
-        assertThat(result.getContent()).isEqualTo(feedbackDtosPage1);
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfFeedbacksPage2() {
-        given(feedbackRepository.findAll(pageable2)).willReturn(new PageImpl<>(feedbacksPage2));
-        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable2, "");
-        assertThat(result.getContent()).isEqualTo(feedbackDtosPage2);
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfFeedbacksPage3() {
-        given(feedbackRepository.findAll(pageable3)).willReturn(new PageImpl<>(feedbacksPage3));
-        Page<FeedbackDto> result = feedbackService.findAllByKey(pageable3, "");
-        assertThat(result.getContent()).isEqualTo(feedbackDtosPage3);
+    private Pair<List<Feedback>, Pageable> getFilteredFeedbacksAndPageable(int page, String key) {
+        return switch(page) {
+            case 1 -> Pair.of(getMockedFeedbacksPage1(), pageable);
+            case 2 -> Pair.of(getMockedFeedbacksPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedFeedbacksPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
     }
 }

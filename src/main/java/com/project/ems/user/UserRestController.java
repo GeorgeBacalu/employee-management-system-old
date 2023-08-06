@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,8 +54,7 @@ public class UserRestController implements UserApi {
     }
 
     @Override @GetMapping("/pagination")
-    public ResponseEntity<PageWrapper<UserDto>> findAllByKey(@PageableDefault(size = 2, sort = "id", direction = Sort.Direction.ASC) Pageable pageable,
-                                                             @RequestParam(required = false, defaultValue = "") String key) {
+    public ResponseEntity<PageWrapper<UserDto>> findAllByKey(@PageableDefault(size = 2, sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         return ResponseEntity.ok(new PageWrapper<>(userService.findAllByKey(pageable, key).getContent()));
     }
 }

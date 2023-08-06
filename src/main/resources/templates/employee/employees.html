@@ -3,13 +3,15 @@
 <head th:replace="~{/_fragments/layout :: head('Employees')}"></head>
 <body>
 <header th:replace="~{/_fragments/layout :: header}"></header>
-<main class="mt-1 mx-auto text-left" style="width: 98%; font-size: 14px">
+<main class="mt-1 mx-auto text-left page-container">
   <h3>Employees List</h3>
   <div class="my-2 d-flex justify-content-between">
     <a th:href="@{/employees/save/-1}" class="btn btn-primary"><i class="fas fa-plus"></i> Save Employee</a>
     <form class="justify-content-end" th:action="@{/employees/search}" method="post" th:object="${searchRequest}">
       <div class="input-group">
-        <div class="form-outline rounded-left"><input type="search" id="key" th:field="*{key}" placeholder="Enter key" class="form-control"></div>
+        <div class="form-outline rounded-left">
+          <input type="search" id="key" th:field="*{key}" placeholder="Enter key" class="form-control">
+        </div>
         <button type="submit" class="btn btn-dark rounded-right"><i class="fas fa-search"></i></button>
       </div>
       <input type="hidden" th:field="*{page}">
@@ -33,14 +35,14 @@
     </thead>
     <tbody>
     <tr th:each="employee : ${employees}">
-      <td th:text="${employee.name}"></td>
-      <td th:text="${employee.email}"></td>
-      <td th:text="${employee.mobile}"></td>
-      <td th:text="${employee.address}"></td>
-      <td th:text="${employee.employmentType}"></td>
-      <td th:text="${employee.position}"></td>
-      <td th:text="${employee.grade}"></td>
-      <td th:text="${employee.mentor.name}"></td>
+      <td>[[${employee.name}]]</td>
+      <td>[[${employee.email}]]</td>
+      <td>[[${employee.mobile}]]</td>
+      <td>[[${employee.address}]]</td>
+      <td>[[${employee.employmentType}]]</td>
+      <td>[[${employee.position}]]</td>
+      <td>[[${employee.grade}]]</td>
+      <td>[[${employee.mentor.name}]]</td>
       <td>
         <a th:href="@{'/employees/save/' + ${employee.id}}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i> Update</a>
         <a th:href="@{'/employees/delete/' + ${employee.id} + '?page=' + ${page} + '&size=' + ${size} + '&key=' + ${key} + '&sort=' + ${field} + '%2C' + ${direction}}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete</a>
@@ -59,7 +61,7 @@
         <li class="page-item" th:if="${page > 0}">
           <th:block th:replace="~{/_fragments/layout :: paginationLink('employees', ${page - 1}, ${size}, ${key}, ${field}, ${direction}, 'Previous')}"></th:block>
         </li>
-        <!-- If the current page is the first page (index 0), it shows the first three pages. If there are less than three pages, it shows all of them. -->
+        <!-- If the current page is the first page (index 0), it shows the first three pages. If there are less than four pages, it shows all of them. -->
         <!-- If the current page is in the middle (not first and not last), it shows the current page and one page before and after. -->
         <!-- If the current page is one of the last two pages, it shows the last three pages .-->
         <th:block th:each="index : ${#numbers.sequence(startIndexPageNavigation, endIndexPageNavigation)}">

@@ -277,7 +277,7 @@ class EmployeeControllerMockMvcTest {
         employee35 = getMockedEmployee35();
         employee36 = getMockedEmployee36();
         employees = getMockedEmployees();
-        employeesFirstPage = List.of(employee1, employee2, employee3, employee4, employee5, employee6, employee7, employee8, employee9);
+        employeesFirstPage = List.of(employee1, employee2, employee3, employee4, employee5, employee6, employee7, employee8, employee9, employee10);
 
         role1 = getMockedRole1();
         role2 = getMockedRole2();
@@ -371,7 +371,7 @@ class EmployeeControllerMockMvcTest {
         employeeDtos = List.of(employeeDto1, employeeDto2, employeeDto3, employeeDto4, employeeDto5, employeeDto6, employeeDto7, employeeDto8, employeeDto9, employeeDto10, employeeDto11, employeeDto12,
                                employeeDto13, employeeDto14, employeeDto15, employeeDto16, employeeDto17, employeeDto18, employeeDto19, employeeDto20, employeeDto21, employeeDto22, employeeDto23, employeeDto24,
                                employeeDto25, employeeDto26, employeeDto27, employeeDto28, employeeDto29, employeeDto30, employeeDto31, employeeDto32, employeeDto33, employeeDto34, employeeDto35, employeeDto36);
-        employeeDtosFirstPage = List.of(employeeDto1, employeeDto2, employeeDto3, employeeDto4, employeeDto5, employeeDto6, employeeDto7, employeeDto8, employeeDto9);
+        employeeDtosFirstPage = List.of(employeeDto1, employeeDto2, employeeDto3, employeeDto4, employeeDto5, employeeDto6, employeeDto7, employeeDto8, employeeDto9, employeeDto10);
 
         given(modelMapper.map(employeeDto1, Employee.class)).willReturn(employee1);
         given(modelMapper.map(employeeDto2, Employee.class)).willReturn(employee2);
@@ -641,11 +641,6 @@ class EmployeeControllerMockMvcTest {
         String direction = getSortDirection(pageable);
         long nrEmployees = employeeDtosPage.getTotalElements();
         int nrPages = employeeDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrEmployees);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
-        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(EMPLOYEES).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
@@ -658,24 +653,20 @@ class EmployeeControllerMockMvcTest {
               .andExpect(model().attribute("key", ""))
               .andExpect(model().attribute("field", field))
               .andExpect(model().attribute("direction", direction))
-              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
-              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
-              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
-              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
-              .andExpect(model().attribute("searchRequest", searchRequest));
+              .andExpect(model().attribute("startIndexCurrentPage", getStartIndexCurrentPage(page, size)))
+              .andExpect(model().attribute("endIndexCurrentPage", getEndIndexCurrentPage(page, size, nrEmployees)))
+              .andExpect(model().attribute("startIndexPageNavigation", getStartIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("endIndexPageNavigation", getEndIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("searchRequest", new SearchRequest(0, size, "", field + "," + direction)));
     }
 
     @Test
     void findAllByKey_shouldProcessSearchRequestAndReturnListOfEmployeesFilteredByKey() throws Exception {
-        int page = pageable.getPageNumber();
-        int size = employeeDtosFirstPage.size();
-        String field = getSortField(pageable);
-        String direction = getSortDirection(pageable);
         mockMvc.perform(post(EMPLOYEES + "/search").accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(employeeDtosFirstPage.size()))
                     .param("key", EMPLOYEE_FILTER_KEY)
-                    .param("sort", field + "," + direction))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(EMPLOYEES + "?page=*&size=*&key=*&sort=*"));
     }
@@ -772,14 +763,11 @@ class EmployeeControllerMockMvcTest {
     void deleteById_withValidId_shouldRemoveEmployeeWithGivenIdFromList() throws Exception {
         PageImpl<EmployeeDto> employeeDtosPage = new PageImpl<>(employeeDtosFirstPage);
         given(employeeService.findAllByKey(any(Pageable.class), anyString())).willReturn(employeeDtosPage);
-        int page = pageable.getPageNumber();
-        int size = employeeDtosFirstPage.size();
-        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
         mockMvc.perform(get(EMPLOYEES + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(employeeDtosFirstPage.size()))
                     .param("key", EMPLOYEE_FILTER_KEY)
-                    .param("sort", sort))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(EMPLOYEES + "?page=*&size=*&key=*&sort=*"));
         verify(employeeService).deleteById(VALID_ID);
@@ -805,9 +793,9 @@ class EmployeeControllerMockMvcTest {
         params.add("address", employeeDto.getAddress());
         params.add("birthday", employeeDto.getBirthday().toString());
         params.add("roleId", employeeDto.getRoleId().toString());
-        params.add("employmentType", employeeDto.getEmploymentType().toString());
-        params.add("position", employeeDto.getPosition().toString());
-        params.add("grade", employeeDto.getGrade().toString());
+        params.add("employmentType", employeeDto.getEmploymentType().name());
+        params.add("position", employeeDto.getPosition().name());
+        params.add("grade", employeeDto.getGrade().name());
         params.add("mentorId", employeeDto.getMentorId().toString());
         params.add("studiesIds", employeeDto.getStudiesIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
         params.add("experiencesIds", employeeDto.getExperiencesIds().stream().map(String::valueOf).collect(Collectors.joining(",")));

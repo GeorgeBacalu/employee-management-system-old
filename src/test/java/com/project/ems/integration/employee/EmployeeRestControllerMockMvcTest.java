@@ -24,10 +24,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.project.ems.constants.EndpointConstants.API_EMPLOYEES;
@@ -96,8 +96,7 @@ class EmployeeRestControllerMockMvcTest {
         for(int i = 0; i < employeeDtos.size(); i++) {
             assertEmployeeDto(actions, "$[" + i + "]", employeeDtos.get(i));
         }
-        MvcResult result = actions.andReturn();
-        List<EmployeeDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<EmployeeDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response).isEqualTo(employeeDtos);
     }
 
@@ -105,10 +104,10 @@ class EmployeeRestControllerMockMvcTest {
     void findById_withValidId_shouldReturnEmployeeWithGivenId() throws Exception {
         given(employeeService.findById(anyInt())).willReturn(employeeDto1);
         ResultActions actions = mockMvc.perform(get(API_EMPLOYEES + "/{id}", VALID_ID)).andExpect(status().isOk());
-        verify(employeeService).findById(VALID_ID);
         assertEmployeeDtoJson(actions, employeeDto1);
         EmployeeDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), EmployeeDto.class);
         assertThat(response).isEqualTo(employeeDto1);
+        verify(employeeService).findById(VALID_ID);
     }
 
     @Test
@@ -129,10 +128,10 @@ class EmployeeRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(employeeDto1)))
               .andExpect(status().isCreated());
-        verify(employeeService).save(employeeDto1);
         assertEmployeeDtoJson(actions, employeeDto1);
         EmployeeDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), EmployeeDto.class);
         assertThat(response).isEqualTo(employeeDto1);
+        verify(employeeService).save(employeeDto1);
     }
 
     @Test
@@ -143,10 +142,10 @@ class EmployeeRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(employeeDto2)))
               .andExpect(status().isOk());
-        verify(employeeService).updateById(employeeDto2, VALID_ID);
         assertEmployeeDtoJson(actions, employeeDto);
         EmployeeDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), EmployeeDto.class);
         assertThat(response).isEqualTo(employeeDto);
+        verify(employeeService).updateById(employeeDto2, VALID_ID);
     }
 
     @Test
@@ -180,20 +179,21 @@ class EmployeeRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<EmployeeDto> employeeDtosPage1 = convertToDtoList(modelMapper, getMockedEmployeesPage1());
-        List<EmployeeDto> employeeDtosPage2 = convertToDtoList(modelMapper, getMockedEmployeesPage2());
-        List<EmployeeDto> employeeDtosPage3 = convertToDtoList(modelMapper, getMockedEmployeesPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeeDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeeDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(employeeDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(employeeDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(employeeDtosPage3)));
+        Page<EmployeeDto> employeeDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage1()));
+        Page<EmployeeDto> employeeDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage2()));
+        Page<EmployeeDto> employeeDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage3()));
+        Page<EmployeeDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", EMPLOYEE_FILTER_KEY, employeeDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", EMPLOYEE_FILTER_KEY, employeeDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", EMPLOYEE_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", employeeDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", employeeDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", employeeDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<EmployeeDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<EmployeeDto> expectedPage) throws Exception {
         given(employeeService.findAllByKey(any(Pageable.class), anyString())).willReturn(expectedPage);
         ResultActions actions = mockMvc.perform(get(API_EMPLOYEES + API_PAGINATION, page, size, sortField, sortDirection, key)
                     .contentType(APPLICATION_JSON_VALUE)
@@ -202,24 +202,23 @@ class EmployeeRestControllerMockMvcTest {
         for(int i = 0; i < expectedPage.getContent().size(); i++) {
             assertEmployeeDto(actions, "$.content[" + i + "]", expectedPage.getContent().get(i));
         }
-        MvcResult result = actions.andReturn();
-        PageWrapper<EmployeeDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        PageWrapper<EmployeeDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response.getContent()).isEqualTo(expectedPage.getContent());
     }
 
     private void assertEmployeeDto(ResultActions actions, String prefix, EmployeeDto employeeDto) throws Exception {
-        actions.andExpect(jsonPath(prefix + ".id").value(employeeDto.getId()));
-        actions.andExpect(jsonPath(prefix + ".name").value(employeeDto.getName()));
-        actions.andExpect(jsonPath(prefix + ".email").value(employeeDto.getEmail()));
-        actions.andExpect(jsonPath(prefix + ".password").value(employeeDto.getPassword()));
-        actions.andExpect(jsonPath(prefix + ".mobile").value(employeeDto.getMobile()));
-        actions.andExpect(jsonPath(prefix + ".address").value(employeeDto.getAddress()));
-        actions.andExpect(jsonPath(prefix + ".birthday").value(employeeDto.getBirthday().toString()));
-        actions.andExpect(jsonPath(prefix + ".roleId").value(employeeDto.getRoleId()));
-        actions.andExpect(jsonPath(prefix + ".employmentType").value(employeeDto.getEmploymentType().name()));
-        actions.andExpect(jsonPath(prefix + ".position").value(employeeDto.getPosition().name()));
-        actions.andExpect(jsonPath(prefix + ".grade").value(employeeDto.getGrade().name()));
-        actions.andExpect(jsonPath(prefix + ".mentorId").value(employeeDto.getMentorId()));
+        actions.andExpect(jsonPath(prefix + ".id").value(employeeDto.getId()))
+              .andExpect(jsonPath(prefix + ".name").value(employeeDto.getName()))
+              .andExpect(jsonPath(prefix + ".email").value(employeeDto.getEmail()))
+              .andExpect(jsonPath(prefix + ".password").value(employeeDto.getPassword()))
+              .andExpect(jsonPath(prefix + ".mobile").value(employeeDto.getMobile()))
+              .andExpect(jsonPath(prefix + ".address").value(employeeDto.getAddress()))
+              .andExpect(jsonPath(prefix + ".birthday").value(employeeDto.getBirthday().toString()))
+              .andExpect(jsonPath(prefix + ".roleId").value(employeeDto.getRoleId()))
+              .andExpect(jsonPath(prefix + ".employmentType").value(employeeDto.getEmploymentType().name()))
+              .andExpect(jsonPath(prefix + ".position").value(employeeDto.getPosition().name()))
+              .andExpect(jsonPath(prefix + ".grade").value(employeeDto.getGrade().name()))
+              .andExpect(jsonPath(prefix + ".mentorId").value(employeeDto.getMentorId()));
         for(int j = 0; j < employeeDto.getStudiesIds().size(); j++) {
             actions.andExpect(jsonPath(prefix + ".studiesIds[" + j + "]").value(employeeDto.getStudiesIds().get(j)));
         }

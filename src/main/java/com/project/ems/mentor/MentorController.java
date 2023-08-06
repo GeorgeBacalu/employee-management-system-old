@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -45,7 +44,7 @@ public class MentorController {
     private final ModelMapper modelMapper;
 
     @GetMapping
-    public String getAllMentorsPage(Model model, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String getAllMentorsPage(Model model, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         Page<MentorDto> mentorDtosPage = mentorService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
@@ -102,7 +101,7 @@ public class MentorController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         mentorService.deleteById(id);
         Page<MentorDto> mentorDtosPage = mentorService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();

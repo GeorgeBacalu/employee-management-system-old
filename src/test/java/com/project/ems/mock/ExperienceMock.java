@@ -13,9 +13,7 @@ import lombok.NoArgsConstructor;
 public class ExperienceMock {
 
     public static List<Experience> getMockedExperiences() {
-        return Stream.of(getMockedExperiences1(), getMockedExperiences2(), getMockedExperiences3(), getMockedExperiences4(), getMockedExperiences5(), getMockedExperiences6(), getMockedExperiences7(), getMockedExperiences8())
-              .flatMap(List::stream)
-              .toList();
+        return Stream.of(getMockedExperiences1(), getMockedExperiences2(), getMockedExperiences3(), getMockedExperiences4(), getMockedExperiences5(), getMockedExperiences6(), getMockedExperiences7(), getMockedExperiences8()).flatMap(List::stream).toList();
     }
 
     public static List<Experience> getMockedExperiencesPage1() {

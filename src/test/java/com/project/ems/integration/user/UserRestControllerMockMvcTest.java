@@ -2,6 +2,7 @@ package com.project.ems.integration.user;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.ems.employee.EmployeeDto;
 import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.user.UserDto;
 import com.project.ems.user.UserRestController;
@@ -24,10 +25,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.project.ems.constants.EndpointConstants.API_PAGINATION;
@@ -95,8 +96,7 @@ class UserRestControllerMockMvcTest {
         for(int i = 0; i < userDtos.size(); i++) {
            assertUserDto(actions, "$[" + i + "]", userDtos.get(i));
         }
-        MvcResult result = actions.andReturn();
-        List<UserDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<UserDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response).isEqualTo(userDtos);
     }
 
@@ -104,10 +104,10 @@ class UserRestControllerMockMvcTest {
     void findById_withValidId_shouldReturnUserWithGivenId() throws Exception {
         given(userService.findById(anyInt())).willReturn(userDto1);
         ResultActions actions = mockMvc.perform(get(API_USERS + "/{id}", VALID_ID)).andExpect(status().isOk());
-        verify(userService).findById(VALID_ID);
         assertUserDtoJson(actions, userDto1);
         UserDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), UserDto.class);
         assertThat(response).isEqualTo(userDto1);
+        verify(userService).findById(VALID_ID);
     }
 
     @Test
@@ -128,10 +128,10 @@ class UserRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(userDto1)))
               .andExpect(status().isCreated());
-        verify(userService).save(userDto1);
         assertUserDtoJson(actions, userDto1);
         UserDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), UserDto.class);
         assertThat(response).isEqualTo(userDto1);
+        verify(userService).save(userDto1);
     }
 
     @Test
@@ -142,10 +142,10 @@ class UserRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(userDto2)))
               .andExpect(status().isOk());
-        verify(userService).updateById(userDto2, VALID_ID);
         assertUserDtoJson(actions, userDto);
         UserDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), UserDto.class);
         assertThat(response).isEqualTo(userDto);
+        verify(userService).updateById(userDto2, VALID_ID);
     }
 
     @Test
@@ -179,20 +179,21 @@ class UserRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<UserDto> userDtosPage1 = convertToDtoList(modelMapper, getMockedUsersPage1());
-        List<UserDto> userDtosPage2 = convertToDtoList(modelMapper, getMockedUsersPage2());
-        List<UserDto> userDtosPage3 = convertToDtoList(modelMapper, getMockedUsersPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", USER_FILTER_KEY, new PageImpl<>(userDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", USER_FILTER_KEY, new PageImpl<>(userDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", USER_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(userDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(userDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(userDtosPage3)));
+        Page<UserDto> userDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage1()));
+        Page<UserDto> userDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage2()));
+        Page<UserDto> userDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage3()));
+        Page<EmployeeDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", USER_FILTER_KEY, userDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", USER_FILTER_KEY, userDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", USER_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", userDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", userDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", userDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<UserDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<UserDto> expectedPage) throws Exception {
         given(userService.findAllByKey(any(Pageable.class), anyString())).willReturn(expectedPage);
         ResultActions actions = mockMvc.perform(get(API_USERS + API_PAGINATION, page, size, sortField, sortDirection, key)
                     .contentType(APPLICATION_JSON_VALUE)
@@ -201,20 +202,19 @@ class UserRestControllerMockMvcTest {
         for(int i = 0; i < expectedPage.getContent().size(); i++) {
             assertUserDto(actions, "$.content[" + i + "]", expectedPage.getContent().get(i));
         }
-        MvcResult result = actions.andReturn();
-        PageWrapper<UserDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        PageWrapper<UserDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response.getContent()).isEqualTo(expectedPage.getContent());
     }
 
     private void assertUserDto(ResultActions actions, String prefix, UserDto userDto) throws Exception {
-        actions.andExpect(jsonPath(prefix + ".id").value(userDto.getId()));
-        actions.andExpect(jsonPath(prefix + ".name").value(userDto.getName()));
-        actions.andExpect(jsonPath(prefix + ".email").value(userDto.getEmail()));
-        actions.andExpect(jsonPath(prefix + ".password").value(userDto.getPassword()));
-        actions.andExpect(jsonPath(prefix + ".mobile").value(userDto.getMobile()));
-        actions.andExpect(jsonPath(prefix + ".address").value(userDto.getAddress()));
-        actions.andExpect(jsonPath(prefix + ".birthday").value(userDto.getBirthday().toString()));
-        actions.andExpect(jsonPath(prefix + ".roleId").value(userDto.getRoleId()));
+        actions.andExpect(jsonPath(prefix + ".id").value(userDto.getId()))
+              .andExpect(jsonPath(prefix + ".name").value(userDto.getName()))
+              .andExpect(jsonPath(prefix + ".email").value(userDto.getEmail()))
+              .andExpect(jsonPath(prefix + ".password").value(userDto.getPassword()))
+              .andExpect(jsonPath(prefix + ".mobile").value(userDto.getMobile()))
+              .andExpect(jsonPath(prefix + ".address").value(userDto.getAddress()))
+              .andExpect(jsonPath(prefix + ".birthday").value(userDto.getBirthday().toString()))
+              .andExpect(jsonPath(prefix + ".roleId").value(userDto.getRoleId()));
     }
 
     private void assertUserDtoJson(ResultActions actions, UserDto userDto) throws Exception {

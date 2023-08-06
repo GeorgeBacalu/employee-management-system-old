@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -39,7 +38,7 @@ public class StudyController {
     private final ModelMapper modelMapper;
 
     @GetMapping
-    public String getAllStudiesPage(Model model, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String getAllStudiesPage(Model model, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         Page<StudyDto> studyDtosPage = studyService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
@@ -96,7 +95,7 @@ public class StudyController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         studyService.deleteById(id);
         Page<StudyDto> studyDtosPage = studyService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();

@@ -235,7 +235,7 @@ class MentorControllerMockMvcTest {
         mentor35 = getMockedMentor35();
         mentor36 = getMockedMentor36();
         mentors = getMockedMentors();
-        mentorsFirstPage = List.of(mentor1, mentor2, mentor3, mentor4, mentor5, mentor6, mentor7, mentor8, mentor9);
+        mentorsFirstPage = List.of(mentor1, mentor2, mentor3, mentor4, mentor5, mentor6, mentor7, mentor8, mentor9, mentor10);
 
         role1 = getMockedRole1();
         role2 = getMockedRole2();
@@ -293,7 +293,7 @@ class MentorControllerMockMvcTest {
         mentorDtos = List.of(mentorDto1, mentorDto2, mentorDto3, mentorDto4, mentorDto5, mentorDto6, mentorDto7, mentorDto8, mentorDto9, mentorDto10, mentorDto11, mentorDto12,
                              mentorDto13, mentorDto14, mentorDto15, mentorDto16, mentorDto17, mentorDto18, mentorDto19, mentorDto20, mentorDto21, mentorDto22, mentorDto23, mentorDto24,
                              mentorDto25, mentorDto26, mentorDto27, mentorDto28, mentorDto29, mentorDto30, mentorDto31, mentorDto32, mentorDto33, mentorDto34, mentorDto35, mentorDto36);
-        mentorDtosFirstPage = List.of(mentorDto1, mentorDto2, mentorDto3, mentorDto4, mentorDto5, mentorDto6, mentorDto7, mentorDto8, mentorDto9);
+        mentorDtosFirstPage = List.of(mentorDto1, mentorDto2, mentorDto3, mentorDto4, mentorDto5, mentorDto6, mentorDto7, mentorDto8, mentorDto9, mentorDto10);
 
         given(modelMapper.map(mentorDto1, Mentor.class)).willReturn(mentor1);
         given(modelMapper.map(mentorDto2, Mentor.class)).willReturn(mentor2);
@@ -563,11 +563,6 @@ class MentorControllerMockMvcTest {
         String direction = getSortDirection(pageable);
         long nrMentors = mentorDtosPage.getTotalElements();
         int nrPages = mentorDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrMentors);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
-        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(MENTORS).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
@@ -580,24 +575,20 @@ class MentorControllerMockMvcTest {
               .andExpect(model().attribute("key", ""))
               .andExpect(model().attribute("field", field))
               .andExpect(model().attribute("direction", direction))
-              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
-              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
-              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
-              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
-              .andExpect(model().attribute("searchRequest", searchRequest));
+              .andExpect(model().attribute("startIndexCurrentPage", getStartIndexCurrentPage(page, size)))
+              .andExpect(model().attribute("endIndexCurrentPage", getEndIndexCurrentPage(page, size, nrMentors)))
+              .andExpect(model().attribute("startIndexPageNavigation", getStartIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("endIndexPageNavigation", getEndIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("searchRequest", new SearchRequest(0, size, "", field + "," + direction)));
     }
 
     @Test
     void findAllByKey_shouldProcessSearchRequestAndReturnListOfMentorsFilteredByKey() throws Exception {
-        int page = pageable.getPageNumber();
-        int size = mentorDtosFirstPage.size();
-        String field = getSortField(pageable);
-        String direction = getSortDirection(pageable);
         mockMvc.perform(post(MENTORS + "/search").accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(mentorDtosFirstPage.size()))
                     .param("key", MENTOR_FILTER_KEY)
-                    .param("sort", field + "," + direction))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(MENTORS + "?page=*&size=*&key=*&sort=*"));
     }
@@ -694,14 +685,11 @@ class MentorControllerMockMvcTest {
     void deleteById_withValidId_shouldRemoveMentorWithGivenIdFromList() throws Exception {
         PageImpl<MentorDto> mentorDtosPage = new PageImpl<>(mentorDtosFirstPage);
         given(mentorService.findAllByKey(any(Pageable.class), anyString())).willReturn(mentorDtosPage);
-        int page = pageable.getPageNumber();
-        int size = mentorDtosFirstPage.size();
-        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
         mockMvc.perform(get(MENTORS + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(mentorDtosFirstPage.size()))
                     .param("key", MENTOR_FILTER_KEY)
-                    .param("sort", sort))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(MENTORS + "?page=*&size=*&key=*&sort=*"));
         verify(mentorService).deleteById(VALID_ID);
@@ -728,9 +716,9 @@ class MentorControllerMockMvcTest {
         params.add("address", mentorDto.getAddress());
         params.add("birthday", mentorDto.getBirthday().toString());
         params.add("roleId", mentorDto.getRoleId().toString());
-        params.add("employmentType", mentorDto.getEmploymentType().toString());
-        params.add("position", mentorDto.getPosition().toString());
-        params.add("grade", mentorDto.getGrade().toString());
+        params.add("employmentType", mentorDto.getEmploymentType().name());
+        params.add("position", mentorDto.getPosition().name());
+        params.add("grade", mentorDto.getGrade().name());
         params.add("supervisingMentorId", supervisingMentorId != null ? mentorDto.getSupervisingMentorId().toString() : null);
         params.add("studiesIds", mentorDto.getStudiesIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
         params.add("experiencesIds", mentorDto.getExperiencesIds().stream().map(String::valueOf).collect(Collectors.joining(",")));

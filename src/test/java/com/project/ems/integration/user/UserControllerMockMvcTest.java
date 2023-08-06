@@ -302,7 +302,7 @@ class UserControllerMockMvcTest {
         user71 = getMockedUser71();
         user72 = getMockedUser72();
         users = getMockedUsers();
-        usersFirstPage = List.of(user1, user2, user3, user4, user5, user6, user7, user8, user9);
+        usersFirstPage = List.of(user1, user2, user3, user4, user5, user6, user7, user8, user9, user10);
         role1 = getMockedRole1();
         role2 = getMockedRole2();
         userDto1 = convertToDto(user1);
@@ -383,7 +383,7 @@ class UserControllerMockMvcTest {
                            userDto37, userDto38, userDto39, userDto40, userDto41, userDto42, userDto43, userDto44, userDto45, userDto46, userDto47, userDto48,
                            userDto49, userDto50, userDto51, userDto52, userDto53, userDto54, userDto55, userDto56, userDto57, userDto58, userDto59, userDto60,
                            userDto61, userDto62, userDto63, userDto64, userDto65, userDto66, userDto67, userDto68, userDto69, userDto70, userDto71, userDto72);
-        userDtosFirstPage = List.of(userDto1, userDto2, userDto3, userDto4, userDto5, userDto6, userDto7, userDto8, userDto9);
+        userDtosFirstPage = List.of(userDto1, userDto2, userDto3, userDto4, userDto5, userDto6, userDto7, userDto8, userDto9, userDto10);
 
         given(modelMapper.map(userDto1, User.class)).willReturn(user1);
         given(modelMapper.map(userDto2, User.class)).willReturn(user2);
@@ -542,11 +542,6 @@ class UserControllerMockMvcTest {
         String direction = getSortDirection(pageable);
         long nrUsers = userDtosPage.getTotalElements();
         int nrPages = userDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrUsers);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
-        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(USERS).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
@@ -559,24 +554,20 @@ class UserControllerMockMvcTest {
               .andExpect(model().attribute("key", ""))
               .andExpect(model().attribute("field", field))
               .andExpect(model().attribute("direction", direction))
-              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
-              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
-              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
-              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
-              .andExpect(model().attribute("searchRequest", searchRequest));
+              .andExpect(model().attribute("startIndexCurrentPage", getStartIndexCurrentPage(page, size)))
+              .andExpect(model().attribute("endIndexCurrentPage", getEndIndexCurrentPage(page, size, nrUsers)))
+              .andExpect(model().attribute("startIndexPageNavigation", getStartIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("endIndexPageNavigation", getEndIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("searchRequest", new SearchRequest(0, size, "", field + "," + direction)));
     }
 
     @Test
     void findAllByKey_shouldProcessSearchRequestAndReturnListOfUsersFilteredByKey() throws Exception {
-        int page = pageable.getPageNumber();
-        int size = userDtosFirstPage.size();
-        String field = getSortField(pageable);
-        String direction = getSortDirection(pageable);
         mockMvc.perform(post(USERS + "/search").accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(userDtosFirstPage.size()))
                     .param("key", USER_FILTER_KEY)
-                    .param("sort", field + "," + direction))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(USERS + "?page=*&size=*&key=*&sort=*"));
     }
@@ -673,14 +664,11 @@ class UserControllerMockMvcTest {
     void deleteById_withValidId_shouldRemoveUserWithGivenIdFromList() throws Exception {
         PageImpl<UserDto> userDtosPage = new PageImpl<>(userDtosFirstPage);
         given(userService.findAllByKey(any(Pageable.class), anyString())).willReturn(userDtosPage);
-        int page = pageable.getPageNumber();
-        int size = userDtosFirstPage.size();
-        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
         mockMvc.perform(get(USERS + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(userDtosFirstPage.size()))
                     .param("key", USER_FILTER_KEY)
-                    .param("sort", sort))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(USERS + "?page=*&size=*&key=*&sort=*"));
         verify(userService).deleteById(VALID_ID);

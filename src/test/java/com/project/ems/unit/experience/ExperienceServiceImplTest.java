@@ -12,9 +12,12 @@ import com.project.ems.mentor.MentorRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -24,11 +27,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import static com.project.ems.constants.ExceptionMessageConstants.EXPERIENCE_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
-import static com.project.ems.constants.PaginationConstants.EXPERIENCE_FILTER_KEY;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
@@ -46,6 +49,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -74,34 +78,22 @@ class ExperienceServiceImplTest {
     private Experience experience1;
     private Experience experience2;
     private List<Experience> experiences;
-    private List<Experience> experiencesPage1;
-    private List<Experience> experiencesPage2;
-    private List<Experience> experiencesPage3;
     private Employee employee;
     private Mentor mentor;
     private ExperienceDto experienceDto1;
     private ExperienceDto experienceDto2;
     private List<ExperienceDto> experienceDtos;
-    private List<ExperienceDto> experienceDtosPage1;
-    private List<ExperienceDto> experienceDtosPage2;
-    private List<ExperienceDto> experienceDtosPage3;
 
     @BeforeEach
     void setUp() {
         experience1 = getMockedExperience1();
         experience2 = getMockedExperience2();
         experiences = getMockedExperiences();
-        experiencesPage1 = getMockedExperiencesPage1();
-        experiencesPage2 = getMockedExperiencesPage2();
-        experiencesPage3 = getMockedExperiencesPage3();
         employee = getMockedEmployee1();
         mentor = getMockedMentor1();
         experienceDto1 = convertToDto(modelMapper, experience1);
         experienceDto2 = convertToDto(modelMapper, experience2);
         experienceDtos = convertToDtoList(modelMapper, experiences);
-        experienceDtosPage1 = convertToDtoList(modelMapper, experiencesPage1);
-        experienceDtosPage2 = convertToDtoList(modelMapper, experiencesPage2);
-        experienceDtosPage3 = convertToDtoList(modelMapper, experiencesPage3);
     }
 
     @Test
@@ -168,45 +160,26 @@ class ExperienceServiceImplTest {
         verify(experienceRepository, never()).delete(any(Experience.class));
     }
 
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfExperiencesFilteredByKeyPage1() {
-        given(experienceRepository.findAllByKey(pageable, EXPERIENCE_FILTER_KEY)).willReturn(new PageImpl<>(experiencesPage1));
-        Page<ExperienceDto> result = experienceService.findAllByKey(pageable, EXPERIENCE_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(experienceDtosPage1);
+    @ParameterizedTest
+    @CsvSource({ "1, ${EXPERIENCE_FILTER_KEY}", "2, ${EXPERIENCE_FILTER_KEY}", "3, ${EXPERIENCE_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
+    void findAllByKey_shouldReturnListOfExperiencesFilteredByKey(int page, String key) {
+        Pair<List<Experience>, Pageable> pair = getFilteredExperiencesAndPageable(page, key);
+        Page<Experience> filteredExperiencesPage = new PageImpl<>(pair.getLeft());
+        if(key.equals("")) {
+            given(experienceRepository.findAll(any(Pageable.class))).willReturn(filteredExperiencesPage);
+        } else {
+            given(experienceRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredExperiencesPage);
+        }
+        Page<ExperienceDto> result = experienceService.findAllByKey(pair.getRight(), key);
+        assertThat(result.getContent()).isEqualTo(convertToDtoList(modelMapper, pair.getLeft()));
     }
 
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfExperiencesFilteredByKeyPage2() {
-        given(experienceRepository.findAllByKey(pageable2, EXPERIENCE_FILTER_KEY)).willReturn(new PageImpl<>(experiencesPage2));
-        Page<ExperienceDto> result = experienceService.findAllByKey(pageable2, EXPERIENCE_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(experienceDtosPage2);
-    }
-
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfExperiencesFilteredByKeyPage3() {
-        given(experienceRepository.findAllByKey(pageable3, EXPERIENCE_FILTER_KEY)).willReturn(new PageImpl<>(Collections.emptyList()));
-        Page<ExperienceDto> result = experienceService.findAllByKey(pageable3, EXPERIENCE_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(Collections.emptyList());
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfExperiencesPage1() {
-        given(experienceRepository.findAll(pageable)).willReturn(new PageImpl<>(experiencesPage1));
-        Page<ExperienceDto> result = experienceService.findAllByKey(pageable, "");
-        assertThat(result.getContent()).isEqualTo(experienceDtosPage1);
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfExperiencesPage2() {
-        given(experienceRepository.findAll(pageable2)).willReturn(new PageImpl<>(experiencesPage2));
-        Page<ExperienceDto> result = experienceService.findAllByKey(pageable2, "");
-        assertThat(result.getContent()).isEqualTo(experienceDtosPage2);
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfExperiencesPage3() {
-        given(experienceRepository.findAll(pageable3)).willReturn(new PageImpl<>(experiencesPage3));
-        Page<ExperienceDto> result = experienceService.findAllByKey(pageable3, "");
-        assertThat(result.getContent()).isEqualTo(experienceDtosPage3);
+    private Pair<List<Experience>, Pageable> getFilteredExperiencesAndPageable(int page, String key) {
+        return switch(page) {
+            case 1 -> Pair.of(getMockedExperiencesPage1(), pageable);
+            case 2 -> Pair.of(getMockedExperiencesPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedExperiencesPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
     }
 }

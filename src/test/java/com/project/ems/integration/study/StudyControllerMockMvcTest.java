@@ -125,7 +125,7 @@ class StudyControllerMockMvcTest {
         study11 = getMockedStudy11();
         study12 = getMockedStudy12();
         studies = getMockedStudies();
-        studiesFirstPage = List.of(study1, study2, study3, study4, study5, study6, study7, study8, study9);
+        studiesFirstPage = List.of(study1, study2, study3, study4, study5, study6, study7, study8, study9, study10);
         studyDto1 = convertToDto(study1);
         studyDto2 = convertToDto(study2);
         studyDto3 = convertToDto(study3);
@@ -139,7 +139,7 @@ class StudyControllerMockMvcTest {
         studyDto11 = convertToDto(study11);
         studyDto12 = convertToDto(study12);
         studyDtos = List.of(studyDto1, studyDto2, studyDto3, studyDto4, studyDto5, studyDto6, studyDto7, studyDto8, studyDto9, studyDto10, studyDto11, studyDto12);
-        studyDtosFirstPage = List.of(studyDto1, studyDto2, studyDto3, studyDto4, studyDto5, studyDto6, studyDto7, studyDto8, studyDto9);
+        studyDtosFirstPage = List.of(studyDto1, studyDto2, studyDto3, studyDto4, studyDto5, studyDto6, studyDto7, studyDto8, studyDto9, studyDto10);
 
         given(modelMapper.map(studyDto1, Study.class)).willReturn(study1);
         given(modelMapper.map(studyDto2, Study.class)).willReturn(study2);
@@ -165,11 +165,6 @@ class StudyControllerMockMvcTest {
         String direction = getSortDirection(pageable);
         long nrStudies = studyDtosPage.getTotalElements();
         int nrPages = studyDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrStudies);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
-        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(STUDIES).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
@@ -182,24 +177,20 @@ class StudyControllerMockMvcTest {
               .andExpect(model().attribute("key", ""))
               .andExpect(model().attribute("field", field))
               .andExpect(model().attribute("direction", direction))
-              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
-              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
-              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
-              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
-              .andExpect(model().attribute("searchRequest", searchRequest));
+              .andExpect(model().attribute("startIndexCurrentPage", getStartIndexCurrentPage(page, size)))
+              .andExpect(model().attribute("endIndexCurrentPage", getEndIndexCurrentPage(page, size, nrStudies)))
+              .andExpect(model().attribute("startIndexPageNavigation", getStartIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("endIndexPageNavigation", getEndIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("searchRequest", new SearchRequest(0, size, "", field + "," + direction)));
     }
 
     @Test
     void findAllByKey_shouldProcessSearchRequestAndReturnListOfStudiesFilteredByKey() throws Exception {
-        int page = pageable.getPageNumber();
-        int size = studyDtosFirstPage.size();
-        String field = getSortField(pageable);
-        String direction = getSortDirection(pageable);
         mockMvc.perform(post(STUDIES + "/search").accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(studyDtosFirstPage.size()))
                     .param("key", STUDY_FILTER_KEY)
-                    .param("sort", field + "," + direction))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(STUDIES + "?page=*&size=*&key=*&sort=*"));
     }
@@ -296,14 +287,11 @@ class StudyControllerMockMvcTest {
     void deleteById_withValidId_shouldRemoveStudyWithGivenIdFromList() throws Exception {
         PageImpl<StudyDto> studyDtosPage = new PageImpl<>(studyDtosFirstPage);
         given(studyService.findAllByKey(any(Pageable.class), anyString())).willReturn(studyDtosPage);
-        int page = pageable.getPageNumber();
-        int size = studyDtosFirstPage.size();
-        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
         mockMvc.perform(get(STUDIES + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(studyDtosFirstPage.size()))
                     .param("key", STUDY_FILTER_KEY)
-                    .param("sort", sort))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(STUDIES + "?page=*&size=*&key=*&sort=*"));
         verify(studyService).deleteById(VALID_ID);
@@ -325,7 +313,7 @@ class StudyControllerMockMvcTest {
         params.add("title", studyDto.getTitle());
         params.add("institution", studyDto.getInstitution());
         params.add("description", studyDto.getDescription());
-        params.add("type", studyDto.getType().toString());
+        params.add("type", studyDto.getType().name());
         params.add("startedAt", studyDto.getStartedAt().toString());
         params.add("finishedAt", studyDto.getFinishedAt().toString());
         return params;

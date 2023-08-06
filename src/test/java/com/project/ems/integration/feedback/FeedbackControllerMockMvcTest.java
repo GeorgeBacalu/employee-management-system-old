@@ -154,7 +154,7 @@ class FeedbackControllerMockMvcTest {
         feedback11 = getMockedFeedback11();
         feedback12 = getMockedFeedback12();
         feedbacks = getMockedFeedbacks();
-        feedbacksFirstPage = List.of(feedback1, feedback2, feedback3, feedback4, feedback5, feedback6, feedback7, feedback8, feedback9);
+        feedbacksFirstPage = List.of(feedback1, feedback2, feedback3, feedback4, feedback5, feedback6, feedback7, feedback8, feedback9, feedback10);
         user1 = getMockedUser1();
         user2 = getMockedUser2();
         user3 = getMockedUser3();
@@ -180,7 +180,7 @@ class FeedbackControllerMockMvcTest {
         feedbackDto11 = convertToDto(feedback11);
         feedbackDto12 = convertToDto(feedback12);
         feedbackDtos = List.of(feedbackDto1, feedbackDto2, feedbackDto3, feedbackDto4, feedbackDto5, feedbackDto6, feedbackDto7, feedbackDto8, feedbackDto9, feedbackDto10, feedbackDto11, feedbackDto12);
-        feedbackDtosFirstPage = List.of(feedbackDto1, feedbackDto2, feedbackDto3, feedbackDto4, feedbackDto5, feedbackDto6, feedbackDto7, feedbackDto8, feedbackDto9);
+        feedbackDtosFirstPage = List.of(feedbackDto1, feedbackDto2, feedbackDto3, feedbackDto4, feedbackDto5, feedbackDto6, feedbackDto7, feedbackDto8, feedbackDto9, feedbackDto10);
 
         given(modelMapper.map(feedbackDto1, Feedback.class)).willReturn(feedback1);
         given(modelMapper.map(feedbackDto2, Feedback.class)).willReturn(feedback2);
@@ -219,11 +219,6 @@ class FeedbackControllerMockMvcTest {
         String direction = getSortDirection(pageable);
         long nrFeedbacks = feedbackDtosPage.getTotalElements();
         int nrPages = feedbackDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrFeedbacks);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
-        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(FEEDBACKS).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
@@ -236,24 +231,20 @@ class FeedbackControllerMockMvcTest {
               .andExpect(model().attribute("key", ""))
               .andExpect(model().attribute("field", field))
               .andExpect(model().attribute("direction", direction))
-              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
-              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
-              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
-              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
-              .andExpect(model().attribute("searchRequest", searchRequest));
+              .andExpect(model().attribute("startIndexCurrentPage", getStartIndexCurrentPage(page, size)))
+              .andExpect(model().attribute("endIndexCurrentPage", getEndIndexCurrentPage(page, size, nrFeedbacks)))
+              .andExpect(model().attribute("startIndexPageNavigation", getStartIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("endIndexPageNavigation", getEndIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("searchRequest", new SearchRequest(0, size, "", field + "," + direction)));
     }
 
     @Test
     void findAllByKey_shouldProcessSearchRequestAndReturnListOfFeedbacksFilteredByKey() throws Exception {
-        int page = pageable.getPageNumber();
-        int size = feedbackDtosFirstPage.size();
-        String field = getSortField(pageable);
-        String direction = getSortDirection(pageable);
         mockMvc.perform(post(FEEDBACKS + "/search").accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(feedbackDtosFirstPage.size()))
                     .param("key", FEEDBACK_FILTER_KEY)
-                    .param("sort", field + "," + direction))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(FEEDBACKS + "?page=*&size=*&key=*&sort=*"));
     }
@@ -350,14 +341,11 @@ class FeedbackControllerMockMvcTest {
     void deleteById_withValidId_shouldRemoveFeedbackWithGivenIdFromList() throws Exception {
         PageImpl<FeedbackDto> feedbackDtosPage = new PageImpl<>(feedbackDtosFirstPage);
         given(feedbackService.findAllByKey(any(Pageable.class), anyString())).willReturn(feedbackDtosPage);
-        int page = pageable.getPageNumber();
-        int size = feedbackDtosFirstPage.size();
-        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
         mockMvc.perform(get(FEEDBACKS + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(feedbackDtosFirstPage.size()))
                     .param("key", FEEDBACK_FILTER_KEY)
-                    .param("sort", sort))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(FEEDBACKS + "?page=*&size=*&key=*&sort=*"));
         verify(feedbackService).deleteById(VALID_ID);
@@ -376,7 +364,7 @@ class FeedbackControllerMockMvcTest {
 
     private MultiValueMap<String, String> convertToMultiValueMap(FeedbackDto feedbackDto) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("type", feedbackDto.getType().toString());
+        params.add("type", feedbackDto.getType().name());
         params.add("description", feedbackDto.getDescription());
         params.add("userId", feedbackDto.getUserId().toString());
         return params;

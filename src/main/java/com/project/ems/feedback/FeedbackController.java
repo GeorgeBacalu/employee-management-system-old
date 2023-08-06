@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -41,7 +40,7 @@ public class FeedbackController {
     private final ModelMapper modelMapper;
 
     @GetMapping
-    public String getAllFeedbacksPage(Model model, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String getAllFeedbacksPage(Model model, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         Page<FeedbackDto> feedbackDtosPage = feedbackService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
@@ -98,7 +97,7 @@ public class FeedbackController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         feedbackService.deleteById(id);
         Page<FeedbackDto> feedbackDtosPage = feedbackService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();

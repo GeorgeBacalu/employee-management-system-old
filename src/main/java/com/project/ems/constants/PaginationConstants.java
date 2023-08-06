@@ -18,7 +18,7 @@ public class PaginationConstants {
 
     public static final String EMPLOYEE_FILTER_KEY = "front";
     public static final String EXPERIENCE_FILTER_KEY = "intern";
-    public static final String FEEDBACK_FILTER_KEY = "optimization";
+    public static final String FEEDBACK_FILTER_KEY = "optim";
     public static final String MENTOR_FILTER_KEY = "front";
     public static final String STUDY_FILTER_KEY = "special";
     public static final String USER_FILTER_KEY = "admin";

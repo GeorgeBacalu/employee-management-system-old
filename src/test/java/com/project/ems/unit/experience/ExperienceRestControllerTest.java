@@ -6,20 +6,24 @@ import com.project.ems.experience.ExperienceService;
 import com.project.ems.wrapper.PageWrapper;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
-import static com.project.ems.constants.PaginationConstants.EXPERIENCE_FILTER_KEY;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
@@ -34,6 +38,7 @@ import static com.project.ems.mock.ExperienceMock.getMockedExperiencesPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -52,18 +57,12 @@ class ExperienceRestControllerTest {
     private ExperienceDto experienceDto1;
     private ExperienceDto experienceDto2;
     private List<ExperienceDto> experienceDtos;
-    private List<ExperienceDto> experienceDtosPage1;
-    private List<ExperienceDto> experienceDtosPage2;
-    private List<ExperienceDto> experienceDtosPage3;
 
     @BeforeEach
     void setUp() {
         experienceDto1 = convertToDto(modelMapper, getMockedExperience1());
         experienceDto2 = convertToDto(modelMapper, getMockedExperience2());
         experienceDtos = convertToDtoList(modelMapper, getMockedExperiences());
-        experienceDtosPage1 = convertToDtoList(modelMapper, getMockedExperiencesPage1());
-        experienceDtosPage2 = convertToDtoList(modelMapper, getMockedExperiencesPage2());
-        experienceDtosPage3 = convertToDtoList(modelMapper, getMockedExperiencesPage3());
     }
 
     @Test
@@ -111,63 +110,24 @@ class ExperienceRestControllerTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
     }
 
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfExperiencesFilteredByKeyPage1() {
-        PageImpl<ExperienceDto> filteredExperienceDtosPage = new PageImpl<>(experienceDtosPage1);
-        given(experienceService.findAllByKey(pageable, EXPERIENCE_FILTER_KEY)).willReturn(filteredExperienceDtosPage);
-        ResponseEntity<PageWrapper<ExperienceDto>> response = experienceRestController.findAllByKey(pageable, EXPERIENCE_FILTER_KEY);
+    @ParameterizedTest
+    @CsvSource({ "1, ${EXPERIENCE_FILTER_KEY}", "2, ${EXPERIENCE_FILTER_KEY}", "3, ${EXPERIENCE_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
+    void findAllByKey_shouldReturnListOfExperiencesFilteredByKey(int page, String key) {
+        Pair<List<ExperienceDto>, Pageable> pair = getFilteredExperienceDtosAndPageable(page, key);
+        Page<ExperienceDto> filteredExperienceDtosPage = new PageImpl<>(pair.getLeft());
+        given(experienceService.findAllByKey(any(Pageable.class), eq(key))).willReturn(filteredExperienceDtosPage);
+        ResponseEntity<PageWrapper<ExperienceDto>> response = experienceRestController.findAllByKey(pair.getRight(), key);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(new PageWrapper<>(filteredExperienceDtosPage.getContent()));
     }
 
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfExperiencesFilteredByKeyPage2() {
-        PageImpl<ExperienceDto> filteredExperienceDtosPage = new PageImpl<>(experienceDtosPage2);
-        given(experienceService.findAllByKey(pageable2, EXPERIENCE_FILTER_KEY)).willReturn(filteredExperienceDtosPage);
-        ResponseEntity<PageWrapper<ExperienceDto>> response = experienceRestController.findAllByKey(pageable2, EXPERIENCE_FILTER_KEY);
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(new PageWrapper<>(filteredExperienceDtosPage.getContent()));
-    }
-
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfExperiencesFilteredByKeyPage3() {
-        PageImpl<ExperienceDto> filteredExperienceDtosPage = new PageImpl<>(Collections.emptyList());
-        given(experienceService.findAllByKey(pageable3, EXPERIENCE_FILTER_KEY)).willReturn(filteredExperienceDtosPage);
-        ResponseEntity<PageWrapper<ExperienceDto>> response = experienceRestController.findAllByKey(pageable3, EXPERIENCE_FILTER_KEY);
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(new PageWrapper<>(filteredExperienceDtosPage.getContent()));
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfExperiencesPage1() {
-        PageImpl<ExperienceDto> filteredExperienceDtosPage = new PageImpl<>(experienceDtosPage1);
-        given(experienceService.findAllByKey(pageable, "")).willReturn(filteredExperienceDtosPage);
-        ResponseEntity<PageWrapper<ExperienceDto>> response = experienceRestController.findAllByKey(pageable, "");
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(new PageWrapper<>(filteredExperienceDtosPage.getContent()));
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfExperiencesPage2() {
-        PageImpl<ExperienceDto> filteredExperienceDtosPage = new PageImpl<>(experienceDtosPage2);
-        given(experienceService.findAllByKey(pageable2, "")).willReturn(filteredExperienceDtosPage);
-        ResponseEntity<PageWrapper<ExperienceDto>> response = experienceRestController.findAllByKey(pageable2, "");
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(new PageWrapper<>(filteredExperienceDtosPage.getContent()));
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfExperiencesPage3() {
-        PageImpl<ExperienceDto> filteredExperienceDtosPage = new PageImpl<>(experienceDtosPage3);
-        given(experienceService.findAllByKey(pageable3, "")).willReturn(filteredExperienceDtosPage);
-        ResponseEntity<PageWrapper<ExperienceDto>> response = experienceRestController.findAllByKey(pageable3, "");
-        assertThat(response).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).isEqualTo(new PageWrapper<>(filteredExperienceDtosPage.getContent()));
+    private Pair<List<ExperienceDto>, Pageable> getFilteredExperienceDtosAndPageable(int page, String key) {
+        return switch(page) {
+            case 1 -> Pair.of(convertToDtoList(modelMapper, getMockedExperiencesPage1()), pageable);
+            case 2 -> Pair.of(convertToDtoList(modelMapper, getMockedExperiencesPage2()), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : convertToDtoList(modelMapper, getMockedExperiencesPage3()), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
     }
 }

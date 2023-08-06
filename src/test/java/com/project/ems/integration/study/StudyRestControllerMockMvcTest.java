@@ -24,10 +24,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.project.ems.constants.EndpointConstants.API_PAGINATION;
@@ -95,8 +95,7 @@ class StudyRestControllerMockMvcTest {
         for(int i = 0; i < studyDtos.size(); i++) {
             assertStudyDto(actions, "$[" + i + "]", studyDtos.get(i));
         }
-        MvcResult result = actions.andReturn();
-        List<StudyDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<StudyDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response).isEqualTo(studyDtos);
     }
 
@@ -104,10 +103,10 @@ class StudyRestControllerMockMvcTest {
     void findById_withValidId_shouldReturnStudyWithGivenId() throws Exception {
         given(studyService.findById(anyInt())).willReturn(studyDto1);
         ResultActions actions = mockMvc.perform(get(API_STUDIES + "/{id}", VALID_ID)).andExpect(status().isOk());
-        verify(studyService).findById(VALID_ID);
         assertStudyDtoJson(actions, studyDto1);
         StudyDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), StudyDto.class);
         assertThat(response).isEqualTo(studyDto1);
+        verify(studyService).findById(VALID_ID);
     }
 
     @Test
@@ -128,10 +127,10 @@ class StudyRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(studyDto1)))
               .andExpect(status().isCreated());
-        verify(studyService).save(studyDto1);
         assertStudyDtoJson(actions, studyDto1);
         StudyDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), StudyDto.class);
         assertThat(response).isEqualTo(studyDto1);
+        verify(studyService).save(studyDto1);
     }
 
     @Test
@@ -142,10 +141,10 @@ class StudyRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(studyDto2)))
               .andExpect(status().isOk());
-        verify(studyService).updateById(studyDto2, VALID_ID);
         assertStudyDtoJson(actions, studyDto);
         StudyDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), StudyDto.class);
         assertThat(response).isEqualTo(studyDto);
+        verify(studyService).updateById(studyDto2, VALID_ID);
     }
 
     @Test
@@ -179,20 +178,21 @@ class StudyRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<StudyDto> studyDtosPage1 = convertToDtoList(modelMapper, getMockedStudiesPage1());
-        List<StudyDto> studyDtosPage2 = convertToDtoList(modelMapper, getMockedStudiesPage2());
-        List<StudyDto> studyDtosPage3 = convertToDtoList(modelMapper, getMockedStudiesPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studyDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studyDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(studyDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(studyDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(studyDtosPage3)));
+        Page<StudyDto> studyDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage1()));
+        Page<StudyDto> studyDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage2()));
+        Page<StudyDto> studyDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage3()));
+        Page<StudyDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", STUDY_FILTER_KEY, studyDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", STUDY_FILTER_KEY, studyDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", STUDY_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", studyDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", studyDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", studyDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<StudyDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<StudyDto> expectedPage) throws Exception {
         given(studyService.findAllByKey(any(Pageable.class), anyString())).willReturn(expectedPage);
         ResultActions actions = mockMvc.perform(get(API_STUDIES + API_PAGINATION, page, size, sortField, sortDirection, key)
                     .contentType(APPLICATION_JSON_VALUE)
@@ -201,19 +201,18 @@ class StudyRestControllerMockMvcTest {
         for(int i = 0; i < expectedPage.getContent().size(); i++) {
             assertStudyDto(actions, "$.content[" + i + "]", expectedPage.getContent().get(i));
         }
-        MvcResult result = actions.andReturn();
-        PageWrapper<StudyDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        PageWrapper<StudyDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response.getContent()).isEqualTo(expectedPage.getContent());
     }
 
     private void assertStudyDto(ResultActions actions, String prefix, StudyDto studyDto) throws Exception {
-        actions.andExpect(jsonPath(prefix + ".id").value(studyDto.getId()));
-        actions.andExpect(jsonPath(prefix + ".title").value(studyDto.getTitle()));
-        actions.andExpect(jsonPath(prefix + ".institution").value(studyDto.getInstitution()));
-        actions.andExpect(jsonPath(prefix + ".description").value(studyDto.getDescription()));
-        actions.andExpect(jsonPath(prefix + ".type").value(studyDto.getType().name()));
-        actions.andExpect(jsonPath(prefix + ".startedAt").value(studyDto.getStartedAt().toString()));
-        actions.andExpect(jsonPath(prefix + ".finishedAt").value(studyDto.getFinishedAt().toString()));
+        actions.andExpect(jsonPath(prefix + ".id").value(studyDto.getId()))
+              .andExpect(jsonPath(prefix + ".title").value(studyDto.getTitle()))
+              .andExpect(jsonPath(prefix + ".institution").value(studyDto.getInstitution()))
+              .andExpect(jsonPath(prefix + ".description").value(studyDto.getDescription()))
+              .andExpect(jsonPath(prefix + ".type").value(studyDto.getType().name()))
+              .andExpect(jsonPath(prefix + ".startedAt").value(studyDto.getStartedAt().toString()))
+              .andExpect(jsonPath(prefix + ".finishedAt").value(studyDto.getFinishedAt().toString()));
     }
 
     private void assertStudyDtoJson(ResultActions actions, StudyDto studyDto) throws Exception {

@@ -50,7 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -163,27 +163,29 @@ class StudyServiceIntegrationTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<Study> studiesPage1 = getMockedStudiesPage1();
-        List<Study> studiesPage2 = getMockedStudiesPage2();
-        List<Study> studiesPage3 = getMockedStudiesPage3();
-        List<StudyDto> studyDtosPage1 = convertToDtoList(modelMapper, studiesPage1);
-        List<StudyDto> studyDtosPage2 = convertToDtoList(modelMapper, studiesPage2);
-        List<StudyDto> studyDtosPage3 = convertToDtoList(modelMapper, studiesPage3);
-        return Stream.of(Arguments.of(0, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studiesPage1), new PageImpl<>(studyDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studiesPage2), new PageImpl<>(studyDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(studiesPage1), new PageImpl<>(studyDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(studiesPage2), new PageImpl<>(studyDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(studiesPage3), new PageImpl<>(studyDtosPage3)));
+        Page<Study> studiesPage1 = new PageImpl<>(getMockedStudiesPage1());
+        Page<Study> studiesPage2 = new PageImpl<>(getMockedStudiesPage2());
+        Page<Study> studiesPage3 = new PageImpl<>(getMockedStudiesPage3());
+        Page<Study> emptyPage = new PageImpl<>(Collections.emptyList());
+        Page<StudyDto> studyDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage1()));
+        Page<StudyDto> studyDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage2()));
+        Page<StudyDto> studyDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage3()));
+        Page<StudyDto> emptyDtoPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", STUDY_FILTER_KEY, studiesPage1, studyDtosPage1),
+                         Arguments.of(1, 2, "id", STUDY_FILTER_KEY, studiesPage2, studyDtosPage2),
+                         Arguments.of(2, 2, "id", STUDY_FILTER_KEY, emptyPage, emptyDtoPage),
+                         Arguments.of(0, 2, "id", "", studiesPage1, studyDtosPage1),
+                         Arguments.of(1, 2, "id", "", studiesPage2, studyDtosPage2),
+                         Arguments.of(2, 2, "id", "", studiesPage3, studyDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<Study> entityPage, PageImpl<StudyDto> dtoPage) {
+    void testFindAllByKey(int page, int size, String sortField, String key, Page<Study> entityPage, Page<StudyDto> dtoPage) {
         if(key.trim().equals("")) {
             given(studyRepository.findAll(any(Pageable.class))).willReturn(entityPage);
         } else {
-            given(studyRepository.findAllByKey(any(Pageable.class), anyString())).willReturn(entityPage);
+            given(studyRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(entityPage);
         }
         Page<StudyDto> result = studyService.findAllByKey(PageRequest.of(page, size, Sort.Direction.ASC, sortField), key);
         assertThat(result.getContent()).isEqualTo(dtoPage.getContent());

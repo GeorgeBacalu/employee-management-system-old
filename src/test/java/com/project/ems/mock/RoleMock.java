@@ -14,10 +14,10 @@ public class RoleMock {
     }
 
     public static Role getMockedRole1() {
-        return Role.builder().id(1).authority(Authority.USER).build();
+        return new Role(1, Authority.USER);
     }
 
     public static Role getMockedRole2() {
-        return Role.builder().id(2).authority(Authority.ADMIN).build();
+        return new Role(2, Authority.ADMIN);
     }
 }

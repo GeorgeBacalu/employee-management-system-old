@@ -86,10 +86,6 @@ class ExperienceControllerTest {
         String direction = getSortDirection(pageable);
         long nrExperiences = experienceDtosPage.getTotalElements();
         int nrPages = experienceDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrExperiences);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
         SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         given(experienceService.findAllByKey(pageable, EXPERIENCE_FILTER_KEY)).willReturn(experienceDtosPage);
         given(model.getAttribute("experiences")).willReturn(experiences);
@@ -100,10 +96,10 @@ class ExperienceControllerTest {
         given(model.getAttribute("key")).willReturn(EXPERIENCE_FILTER_KEY);
         given(model.getAttribute("field")).willReturn(field);
         given(model.getAttribute("direction")).willReturn(direction);
-        given(model.getAttribute("startIndexCurrentPage")).willReturn(startIndexCurrentPage);
-        given(model.getAttribute("endIndexCurrentPage")).willReturn(endIndexCurrentPage);
-        given(model.getAttribute("startIndexPageNavigation")).willReturn(startIndexPageNavigation);
-        given(model.getAttribute("endIndexPageNavigation")).willReturn(endIndexPageNavigation);
+        given(model.getAttribute("startIndexCurrentPage")).willReturn(getStartIndexCurrentPage(page, size));
+        given(model.getAttribute("endIndexCurrentPage")).willReturn(getEndIndexCurrentPage(page, size, nrExperiences));
+        given(model.getAttribute("startIndexPageNavigation")).willReturn(getStartIndexPageNavigation(page, nrPages));
+        given(model.getAttribute("endIndexPageNavigation")).willReturn(getEndIndexPageNavigation(page, nrPages));
         given(model.getAttribute("searchRequest")).willReturn(searchRequest);
         String viewName = experienceController.getAllExperiencesPage(model, pageable, EXPERIENCE_FILTER_KEY);
         assertThat(viewName).isEqualTo(EXPERIENCES_VIEW);
@@ -115,10 +111,10 @@ class ExperienceControllerTest {
         assertThat(model.getAttribute("key")).isEqualTo(EXPERIENCE_FILTER_KEY);
         assertThat(model.getAttribute("field")).isEqualTo(field);
         assertThat(model.getAttribute("direction")).isEqualTo(direction);
-        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(startIndexCurrentPage);
-        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(endIndexCurrentPage);
-        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(startIndexPageNavigation);
-        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(endIndexPageNavigation);
+        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(getStartIndexCurrentPage(page, size));
+        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(getEndIndexCurrentPage(page, size, nrExperiences));
+        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(getStartIndexPageNavigation(page, nrPages));
+        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(getEndIndexPageNavigation(page, nrPages));
         assertThat(model.getAttribute("searchRequest")).isEqualTo(searchRequest);
     }
 
@@ -214,21 +210,18 @@ class ExperienceControllerTest {
     @Test
     void deleteById_withValidId_shouldRemoveExperienceWithGivenIdFromList() {
         PageImpl<ExperienceDto> experienceDtosPage = new PageImpl<>(experienceDtos);
-        int page = experienceDtosPage.getNumber();
-        int size = experienceDtosPage.getSize();
-        String sort = getSortField(pageable) + ',' +  getSortDirection(pageable);
         given(experienceService.findAllByKey(pageable, EXPERIENCE_FILTER_KEY)).willReturn(experienceDtosPage);
-        given(redirectAttributes.getAttribute("page")).willReturn(page);
-        given(redirectAttributes.getAttribute("size")).willReturn(size);
+        given(redirectAttributes.getAttribute("page")).willReturn(experienceDtosPage.getNumber());
+        given(redirectAttributes.getAttribute("size")).willReturn(experienceDtosPage.getSize());
         given(redirectAttributes.getAttribute("key")).willReturn(EXPERIENCE_FILTER_KEY);
-        given(redirectAttributes.getAttribute("sort")).willReturn(sort);
+        given(redirectAttributes.getAttribute("sort")).willReturn(getSortField(pageable) + ',' +  getSortDirection(pageable));
         String viewName = experienceController.deleteById(VALID_ID, redirectAttributes, pageable, EXPERIENCE_FILTER_KEY);
         verify(experienceService).deleteById(VALID_ID);
         assertThat(viewName).isEqualTo(REDIRECT_EXPERIENCES_VIEW);
-        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(page);
-        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(size);
+        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(experienceDtosPage.getNumber());
+        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(experienceDtosPage.getSize());
         assertThat(redirectAttributes.getAttribute("key")).isEqualTo(EXPERIENCE_FILTER_KEY);
-        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(sort);
+        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(getSortField(pageable) + ',' +  getSortDirection(pageable));
     }
 
     @Test

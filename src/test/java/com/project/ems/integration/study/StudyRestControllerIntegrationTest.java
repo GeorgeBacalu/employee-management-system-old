@@ -18,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -158,20 +159,21 @@ class StudyRestControllerIntegrationTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<StudyDto> studyDtosPage1 = convertToDtoList(modelMapper, getMockedStudiesPage1());
-        List<StudyDto> studyDtosPage2 = convertToDtoList(modelMapper, getMockedStudiesPage2());
-        List<StudyDto> studyDtosPage3 = convertToDtoList(modelMapper, getMockedStudiesPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studyDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(studyDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", STUDY_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(studyDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(studyDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(studyDtosPage3)));
+        Page<StudyDto> studyDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage1()));
+        Page<StudyDto> studyDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage2()));
+        Page<StudyDto> studyDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage3()));
+        Page<StudyDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", STUDY_FILTER_KEY, studyDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", STUDY_FILTER_KEY, studyDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", STUDY_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", studyDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", studyDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", studyDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<StudyDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<StudyDto> expectedPage) throws Exception {
         ResponseEntity<String> response = template.getForEntity(API_STUDIES + String.format(API_PAGINATION_V2, page, size, sortField, sortDirection, key), String.class);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

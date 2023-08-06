@@ -5,7 +5,7 @@
 <header th:replace="~{/_fragments/layout :: header}"></header>
 <div class="container my-2">
   <div class="card px-3">
-    <h3 class="text-center" th:text="${(id == -1) ? 'Save' : 'Update'} + ' Feedback'"></h3>
+    <h3 class="text-center">[[${(id == -1) ? 'Save' : 'Update'}]] Feedback</h3>
     <div class="card-body">
       <form th:action="@{'/feedbacks/save/' + ${id}}" method="post" th:object="${feedbackDto}">
         <div class="row mb-3">
@@ -19,8 +19,8 @@
           <label for="user-id" class="mt-2">User ID <span class="text-danger font-weight-bold">*</span></label>
           <input type="number" id="user-id" th:field="*{userId}" placeholder="Enter user ID" class="form-control" required>
         </div>
-        <button type="submit" class="btn btn-success" style="width: 15%"><i class="fa fa-save"></i> <span th:text="${(id == -1) ? 'Save' : 'Update'}"></span></button>
-        <a th:href="@{/feedbacks}" type="button" class="btn btn-danger ml-2" style="width: 15%"><i class="fa fa-times"></i> Cancel</a>
+        <button type="submit" class="btn btn-success btn-container"><i class="fa fa-save"></i> [[${(id == -1) ? 'Save' : 'Update'}]]</button>
+        <a th:href="@{/feedbacks}" type="button" class="btn btn-danger btn-container ml-2"><i class="fa fa-times"></i> Cancel</a>
       </form>
     </div>
   </div>

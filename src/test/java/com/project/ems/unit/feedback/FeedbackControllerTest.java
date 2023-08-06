@@ -90,10 +90,6 @@ class FeedbackControllerTest {
         String direction = getSortDirection(pageable);
         long nrFeedbacks = feedbackDtosPage.getTotalElements();
         int nrPages = feedbackDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrFeedbacks);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
         SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         given(feedbackService.findAllByKey(pageable, FEEDBACK_FILTER_KEY)).willReturn(feedbackDtosPage);
         given(model.getAttribute("feedbacks")).willReturn(feedbacks);
@@ -104,10 +100,10 @@ class FeedbackControllerTest {
         given(model.getAttribute("key")).willReturn(FEEDBACK_FILTER_KEY);
         given(model.getAttribute("field")).willReturn(field);
         given(model.getAttribute("direction")).willReturn(direction);
-        given(model.getAttribute("startIndexCurrentPage")).willReturn(startIndexCurrentPage);
-        given(model.getAttribute("endIndexCurrentPage")).willReturn(endIndexCurrentPage);
-        given(model.getAttribute("startIndexPageNavigation")).willReturn(startIndexPageNavigation);
-        given(model.getAttribute("endIndexPageNavigation")).willReturn(endIndexPageNavigation);
+        given(model.getAttribute("startIndexCurrentPage")).willReturn(getStartIndexCurrentPage(page, size));
+        given(model.getAttribute("endIndexCurrentPage")).willReturn(getEndIndexCurrentPage(page, size, nrFeedbacks));
+        given(model.getAttribute("startIndexPageNavigation")).willReturn(getStartIndexPageNavigation(page, nrPages));
+        given(model.getAttribute("endIndexPageNavigation")).willReturn(getEndIndexPageNavigation(page, nrPages));
         given(model.getAttribute("searchRequest")).willReturn(searchRequest);
         String viewName = feedbackController.getAllFeedbacksPage(model, pageable, FEEDBACK_FILTER_KEY);
         assertThat(viewName).isEqualTo(FEEDBACKS_VIEW);
@@ -119,10 +115,10 @@ class FeedbackControllerTest {
         assertThat(model.getAttribute("key")).isEqualTo(FEEDBACK_FILTER_KEY);
         assertThat(model.getAttribute("field")).isEqualTo(field);
         assertThat(model.getAttribute("direction")).isEqualTo(direction);
-        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(startIndexCurrentPage);
-        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(endIndexCurrentPage);
-        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(startIndexPageNavigation);
-        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(endIndexPageNavigation);
+        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(getStartIndexCurrentPage(page, size));
+        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(getEndIndexCurrentPage(page, size, nrFeedbacks));
+        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(getStartIndexPageNavigation(page, nrPages));
+        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(getEndIndexPageNavigation(page, nrPages));
         assertThat(model.getAttribute("searchRequest")).isEqualTo(searchRequest);
     }
 
@@ -218,21 +214,18 @@ class FeedbackControllerTest {
     @Test
     void deleteById_withValidId_shouldRemoveFeedbackWithGivenIdFromList() {
         PageImpl<FeedbackDto> feedbackDtosPage = new PageImpl<>(feedbackDtos);
-        int page = feedbackDtosPage.getNumber();
-        int size = feedbackDtosPage.getSize();
-        String sort = getSortField(pageable) + ',' +  getSortDirection(pageable);
         given(feedbackService.findAllByKey(pageable, FEEDBACK_FILTER_KEY)).willReturn(feedbackDtosPage);
-        given(redirectAttributes.getAttribute("page")).willReturn(page);
-        given(redirectAttributes.getAttribute("size")).willReturn(size);
+        given(redirectAttributes.getAttribute("page")).willReturn(feedbackDtosPage.getNumber());
+        given(redirectAttributes.getAttribute("size")).willReturn(feedbackDtosPage.getSize());
         given(redirectAttributes.getAttribute("key")).willReturn(FEEDBACK_FILTER_KEY);
-        given(redirectAttributes.getAttribute("sort")).willReturn(sort);
+        given(redirectAttributes.getAttribute("sort")).willReturn(getSortField(pageable) + ',' +  getSortDirection(pageable));
         String viewName = feedbackController.deleteById(VALID_ID, redirectAttributes, pageable, FEEDBACK_FILTER_KEY);
         verify(feedbackService).deleteById(VALID_ID);
         assertThat(viewName).isEqualTo(REDIRECT_FEEDBACKS_VIEW);
-        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(page);
-        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(size);
+        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(feedbackDtosPage.getNumber());
+        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(feedbackDtosPage.getSize());
         assertThat(redirectAttributes.getAttribute("key")).isEqualTo(FEEDBACK_FILTER_KEY);
-        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(sort);
+        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(getSortField(pageable) + ',' +  getSortDirection(pageable));
     }
 
     @Test

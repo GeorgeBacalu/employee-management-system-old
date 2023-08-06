@@ -25,15 +25,15 @@ public class UserDto {
     private String name;
 
     @NotBlank(message = "User email must not be blank")
-    @Email
+    @Email(message = "The provided email must be valid")
     private String email;
 
     @NotBlank(message = "User password must not be blank")
-    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+-=()])(?=\\S+$).{8,30}$")
+    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+-=()])(?=\\S+$).{8,30}$", message = "The provided password must be valid")
     private String password;
 
     @NotBlank(message = "User mobile must not be blank")
-    @Pattern(regexp = "^(00|\\+?40|0)(7\\d{2}|\\d{2}[13]|[2-37]\\d|8[02-9]|9[0-2])\\s?\\d{3}\\s?\\d{3}$")
+    @Pattern(regexp = "^(00|\\+?40|0)(7\\d{2}|\\d{2}[13]|[2-37]\\d|8[02-9]|9[0-2])\\s?\\d{3}\\s?\\d{3}$", message = "The provided mobile must be valid")
     private String mobile;
 
     @NotBlank(message = "User address must not be blank")

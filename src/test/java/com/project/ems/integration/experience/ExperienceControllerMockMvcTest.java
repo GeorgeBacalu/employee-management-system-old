@@ -141,7 +141,7 @@ class ExperienceControllerMockMvcTest {
         experience15 = getMockedExperience15();
         experience16 = getMockedExperience16();
         experiences = getMockedExperiences();
-        experiencesFirstPage = List.of(experience1, experience2, experience3, experience4, experience5, experience6, experience7, experience8, experience9);
+        experiencesFirstPage = List.of(experience1, experience2, experience3, experience4, experience5, experience6, experience7, experience8, experience9, experience10);
         experienceDto1 = convertToDto(experience1);
         experienceDto2 = convertToDto(experience2);
         experienceDto3 = convertToDto(experience3);
@@ -160,7 +160,7 @@ class ExperienceControllerMockMvcTest {
         experienceDto16 = convertToDto(experience16);
         experienceDtos = List.of(experienceDto1, experienceDto2, experienceDto3, experienceDto4, experienceDto5, experienceDto6, experienceDto7, experienceDto8,
                                  experienceDto9, experienceDto10, experienceDto11, experienceDto12, experienceDto13, experienceDto14, experienceDto15, experienceDto16);
-        experienceDtosFirstPage = List.of(experienceDto1, experienceDto2, experienceDto3, experienceDto4, experienceDto5, experienceDto6, experienceDto7, experienceDto8, experienceDto9);
+        experienceDtosFirstPage = List.of(experienceDto1, experienceDto2, experienceDto3, experienceDto4, experienceDto5, experienceDto6, experienceDto7, experienceDto8, experienceDto9, experienceDto10);
 
         given(modelMapper.map(experienceDto1, Experience.class)).willReturn(experience1);
         given(modelMapper.map(experienceDto2, Experience.class)).willReturn(experience2);
@@ -190,11 +190,6 @@ class ExperienceControllerMockMvcTest {
         String direction = getSortDirection(pageable);
         long nrExperiences = experienceDtosPage.getTotalElements();
         int nrPages = experienceDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrExperiences);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
-        SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         mockMvc.perform(get(EXPERIENCES).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
@@ -207,24 +202,20 @@ class ExperienceControllerMockMvcTest {
               .andExpect(model().attribute("key", ""))
               .andExpect(model().attribute("field", field))
               .andExpect(model().attribute("direction", direction))
-              .andExpect(model().attribute("startIndexCurrentPage", startIndexCurrentPage))
-              .andExpect(model().attribute("endIndexCurrentPage", endIndexCurrentPage))
-              .andExpect(model().attribute("startIndexPageNavigation", startIndexPageNavigation))
-              .andExpect(model().attribute("endIndexPageNavigation", endIndexPageNavigation))
-              .andExpect(model().attribute("searchRequest", searchRequest));
+              .andExpect(model().attribute("startIndexCurrentPage", getStartIndexCurrentPage(page, size)))
+              .andExpect(model().attribute("endIndexCurrentPage", getEndIndexCurrentPage(page, size, nrExperiences)))
+              .andExpect(model().attribute("startIndexPageNavigation", getStartIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("endIndexPageNavigation", getEndIndexPageNavigation(page, nrPages)))
+              .andExpect(model().attribute("searchRequest", new SearchRequest(0, size, "", field + "," + direction)));
     }
 
     @Test
     void findAllByKey_shouldProcessSearchRequestAndReturnListOfExperiencesFilteredByKey() throws Exception {
-        int page = pageable.getPageNumber();
-        int size = experienceDtosFirstPage.size();
-        String field = getSortField(pageable);
-        String direction = getSortDirection(pageable);
         mockMvc.perform(post(EXPERIENCES + "/search").accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(experienceDtosFirstPage.size()))
                     .param("key", EXPERIENCE_FILTER_KEY)
-                    .param("sort", field + "," + direction))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(EXPERIENCES + "?page=*&size=*&key=*&sort=*"));
     }
@@ -321,14 +312,11 @@ class ExperienceControllerMockMvcTest {
     void deleteById_withValidId_shouldRemoveExperienceWithGivenIdFromList() throws Exception {
         PageImpl<ExperienceDto> experienceDtosPage = new PageImpl<>(experienceDtosFirstPage);
         given(experienceService.findAllByKey(any(Pageable.class), anyString())).willReturn(experienceDtosPage);
-        int page = pageable.getPageNumber();
-        int size = experienceDtosFirstPage.size();
-        String sort = getSortField(pageable) + "," + getSortDirection(pageable);
         mockMvc.perform(get(EXPERIENCES + "/delete/{id}", VALID_ID).accept(TEXT_HTML)
-                    .param("page", String.valueOf(page))
-                    .param("size", String.valueOf(size))
+                    .param("page", String.valueOf(pageable.getPageNumber()))
+                    .param("size", String.valueOf(experienceDtosFirstPage.size()))
                     .param("key", EXPERIENCE_FILTER_KEY)
-                    .param("sort", sort))
+                    .param("sort", getSortField(pageable) + "," + getSortDirection(pageable)))
               .andExpect(status().is3xxRedirection())
               .andExpect(redirectedUrlPattern(EXPERIENCES + "?page=*&size=*&key=*&sort=*"));
         verify(experienceService).deleteById(VALID_ID);
@@ -350,7 +338,7 @@ class ExperienceControllerMockMvcTest {
         params.add("title", experienceDto.getTitle());
         params.add("organization", experienceDto.getOrganization());
         params.add("description", experienceDto.getDescription());
-        params.add("type", experienceDto.getType().toString());
+        params.add("type", experienceDto.getType().name());
         params.add("startedAt", experienceDto.getStartedAt().toString());
         params.add("finishedAt", experienceDto.getFinishedAt().toString());
         return params;

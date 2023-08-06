@@ -10,9 +10,12 @@ import com.project.ems.user.UserServiceImpl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -22,11 +25,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
-import static com.project.ems.constants.PaginationConstants.USER_FILTER_KEY;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
@@ -43,6 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -68,32 +72,20 @@ class UserServiceImplTest {
     private User user1;
     private User user2;
     private List<User> users;
-    private List<User> usersPage1;
-    private List<User> usersPage2;
-    private List<User> usersPage3;
     private Role role;
     private UserDto userDto1;
     private UserDto userDto2;
     private List<UserDto> userDtos;
-    private List<UserDto> userDtosPage1;
-    private List<UserDto> userDtosPage2;
-    private List<UserDto> userDtosPage3;
 
     @BeforeEach
     void setUp() {
         user1 = getMockedUser1();
         user2 = getMockedUser2();
         users = getMockedUsers();
-        usersPage1 = getMockedUsersPage1();
-        usersPage2 = getMockedUsersPage2();
-        usersPage3 = getMockedUsersPage3();
         role = getMockedRole2();
         userDto1 = convertToDto(modelMapper, user1);
         userDto2 = convertToDto(modelMapper, user2);
         userDtos = convertToDtoList(modelMapper, users);
-        userDtosPage1 = convertToDtoList(modelMapper, usersPage1);
-        userDtosPage2 = convertToDtoList(modelMapper, usersPage2);
-        userDtosPage3 = convertToDtoList(modelMapper, usersPage3);
     }
 
     @Test
@@ -159,45 +151,26 @@ class UserServiceImplTest {
         verify(userRepository, never()).delete(any(User.class));
     }
 
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfUsersFilteredByKeyPage1() {
-        given(userRepository.findAllByKey(pageable, USER_FILTER_KEY)).willReturn(new PageImpl<>(usersPage1));
-        Page<UserDto> result = userService.findAllByKey(pageable, USER_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(userDtosPage1);
+    @ParameterizedTest
+    @CsvSource({ "1, ${USER_FILTER_KEY}", "2, ${USER_FILTER_KEY}", "3, ${USER_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
+    void findAllByKey_shouldReturnListOfUsersFilteredByKey(int page, String key) {
+        Pair<List<User>, Pageable> pair = getFilteredUsersAndPageable(page, key);
+        Page<User> filteredUsersPage = new PageImpl<>(pair.getLeft());
+        if(key.equals("")) {
+            given(userRepository.findAll(any(Pageable.class))).willReturn(filteredUsersPage);
+        } else {
+            given(userRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredUsersPage);
+        }
+        Page<UserDto> result = userService.findAllByKey(pair.getRight(), key);
+        assertThat(result.getContent()).isEqualTo(convertToDtoList(modelMapper, pair.getLeft()));
     }
 
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfUsersFilteredByKeyPage2() {
-        given(userRepository.findAllByKey(pageable2, USER_FILTER_KEY)).willReturn(new PageImpl<>(usersPage2));
-        Page<UserDto> result = userService.findAllByKey(pageable2, USER_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(userDtosPage2);
-    }
-
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfUsersFilteredByKeyPage3() {
-        given(userRepository.findAllByKey(pageable3, USER_FILTER_KEY)).willReturn(new PageImpl<>(Collections.emptyList()));
-        Page<UserDto> result = userService.findAllByKey(pageable3, USER_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(Collections.emptyList());
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfUsersPage1() {
-        given(userRepository.findAll(pageable)).willReturn(new PageImpl<>(usersPage1));
-        Page<UserDto> result = userService.findAllByKey(pageable, "");
-        assertThat(result.getContent()).isEqualTo(userDtosPage1);
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfUsersPage2() {
-        given(userRepository.findAll(pageable2)).willReturn(new PageImpl<>(usersPage2));
-        Page<UserDto> result = userService.findAllByKey(pageable2, "");
-        assertThat(result.getContent()).isEqualTo(userDtosPage2);
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfUsersPage3() {
-        given(userRepository.findAll(pageable3)).willReturn(new PageImpl<>(usersPage3));
-        Page<UserDto> result = userService.findAllByKey(pageable3, "");
-        assertThat(result.getContent()).isEqualTo(userDtosPage3);
+    private Pair<List<User>, Pageable> getFilteredUsersAndPageable(int page, String key) {
+        return switch(page) {
+            case 1 -> Pair.of(getMockedUsersPage1(), pageable);
+            case 2 -> Pair.of(getMockedUsersPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedUsersPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
     }
 }

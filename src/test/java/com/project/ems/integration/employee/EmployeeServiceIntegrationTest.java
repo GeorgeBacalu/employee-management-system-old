@@ -60,7 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -197,27 +197,29 @@ class EmployeeServiceIntegrationTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<Employee> employeesPage1 = getMockedEmployeesPage1();
-        List<Employee> employeesPage2 = getMockedEmployeesPage2();
-        List<Employee> employeesPage3 = getMockedEmployeesPage3();
-        List<EmployeeDto> employeeDtosPage1 = convertToDtoList(modelMapper, employeesPage1);
-        List<EmployeeDto> employeeDtosPage2 = convertToDtoList(modelMapper, employeesPage2);
-        List<EmployeeDto> employeeDtosPage3 = convertToDtoList(modelMapper, employeesPage3);
-        return Stream.of(Arguments.of(0, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeesPage1), new PageImpl<>(employeeDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeesPage2), new PageImpl<>(employeeDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(employeesPage1), new PageImpl<>(employeeDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(employeesPage2), new PageImpl<>(employeeDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(employeesPage3), new PageImpl<>(employeeDtosPage3)));
+        Page<Employee> employeesPage1 = new PageImpl<>(getMockedEmployeesPage1());
+        Page<Employee> employeesPage2 = new PageImpl<>(getMockedEmployeesPage2());
+        Page<Employee> employeesPage3 = new PageImpl<>(getMockedEmployeesPage3());
+        Page<Employee> emptyPage = new PageImpl<>(Collections.emptyList());
+        Page<EmployeeDto> employeeDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage1()));
+        Page<EmployeeDto> employeeDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage2()));
+        Page<EmployeeDto> employeeDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage3()));
+        Page<EmployeeDto> emptyDtoPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", EMPLOYEE_FILTER_KEY, employeesPage1, employeeDtosPage1),
+                         Arguments.of(1, 2, "id", EMPLOYEE_FILTER_KEY, employeesPage2, employeeDtosPage2),
+                         Arguments.of(2, 2, "id", EMPLOYEE_FILTER_KEY, emptyPage, emptyDtoPage),
+                         Arguments.of(0, 2, "id", "", employeesPage1, employeeDtosPage1),
+                         Arguments.of(1, 2, "id", "", employeesPage2, employeeDtosPage2),
+                         Arguments.of(2, 2, "id", "", employeesPage3, employeeDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<Employee> entityPage, PageImpl<EmployeeDto> dtoPage) {
+    void testFindAllByKey(int page, int size, String sortField, String key, Page<Employee> entityPage, Page<EmployeeDto> dtoPage) {
         if(key.trim().equals("")) {
             given(employeeRepository.findAll(any(Pageable.class))).willReturn(entityPage);
         } else {
-            given(employeeRepository.findAllByKey(any(Pageable.class), anyString())).willReturn(entityPage);
+            given(employeeRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(entityPage);
         }
         Page<EmployeeDto> result = employeeService.findAllByKey(PageRequest.of(page, size, Sort.Direction.ASC, sortField), key);
         assertThat(result.getContent()).isEqualTo(dtoPage.getContent());

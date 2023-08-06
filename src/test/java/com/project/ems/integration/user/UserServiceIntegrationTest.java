@@ -47,7 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -154,27 +154,29 @@ class UserServiceIntegrationTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<User> usersPage1 = getMockedUsersPage1();
-        List<User> usersPage2 = getMockedUsersPage2();
-        List<User> usersPage3 = getMockedUsersPage3();
-        List<UserDto> userDtosPage1 = convertToDtoList(modelMapper, usersPage1);
-        List<UserDto> userDtosPage2 = convertToDtoList(modelMapper, usersPage2);
-        List<UserDto> userDtosPage3 = convertToDtoList(modelMapper, usersPage3);
-        return Stream.of(Arguments.of(0, 2, "id", "asc", USER_FILTER_KEY, new PageImpl<>(usersPage1), new PageImpl<>(userDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", USER_FILTER_KEY, new PageImpl<>(usersPage2), new PageImpl<>(userDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", USER_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(usersPage1), new PageImpl<>(userDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(usersPage2), new PageImpl<>(userDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(usersPage3), new PageImpl<>(userDtosPage3)));
+        Page<User> usersPage1 = new PageImpl<>(getMockedUsersPage1());
+        Page<User> usersPage2 = new PageImpl<>(getMockedUsersPage2());
+        Page<User> usersPage3 = new PageImpl<>(getMockedUsersPage3());
+        Page<User> emptyPage = new PageImpl<>(Collections.emptyList());
+        Page<UserDto> userDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage1()));
+        Page<UserDto> userDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage2()));
+        Page<UserDto> userDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage3()));
+        Page<UserDto> emptyDtoPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", USER_FILTER_KEY, usersPage1, userDtosPage1),
+                         Arguments.of(1, 2, "id", USER_FILTER_KEY, usersPage2, userDtosPage2),
+                         Arguments.of(2, 2, "id", USER_FILTER_KEY, emptyPage, emptyDtoPage),
+                         Arguments.of(0, 2, "id", "", usersPage1, userDtosPage1),
+                         Arguments.of(1, 2, "id", "", usersPage2, userDtosPage2),
+                         Arguments.of(2, 2, "id", "", usersPage3, userDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<User> entityPage, PageImpl<UserDto> dtoPage) {
+    void testFindAllByKey(int page, int size, String sortField, String key, Page<User> entityPage, Page<UserDto> dtoPage) {
         if(key.trim().equals("")) {
             given(userRepository.findAll(any(Pageable.class))).willReturn(entityPage);
         } else {
-            given(userRepository.findAllByKey(any(Pageable.class), anyString())).willReturn(entityPage);
+            given(userRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(entityPage);
         }
         Page<UserDto> result = userService.findAllByKey(PageRequest.of(page, size, Sort.Direction.ASC, sortField), key);
         assertThat(result.getContent()).isEqualTo(dtoPage.getContent());

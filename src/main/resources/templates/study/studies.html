@@ -3,13 +3,15 @@
 <head th:replace="~{/_fragments/layout :: head('Studies')}"></head>
 <body>
 <header th:replace="~{/_fragments/layout :: header}"></header>
-<main class="mt-1 mx-auto text-left" style="width: 98%; font-size: 14px">
+<main class="mt-1 mx-auto text-left page-container">
   <h3>Studies List</h3>
   <div class="my-2 d-flex justify-content-between">
     <a th:href="@{/studies/save/-1}" class="btn btn-primary"><i class="fas fa-plus"></i> Save Study</a>
     <form class="justify-content-end" th:action="@{/studies/search}" method="post" th:object="${searchRequest}">
       <div class="input-group">
-        <div class="form-outline rounded-left"><input type="search" id="key" th:field="*{key}" placeholder="Enter key" class="form-control"></div>
+        <div class="form-outline rounded-left">
+          <input type="search" id="key" th:field="*{key}" placeholder="Enter key" class="form-control">
+        </div>
         <button type="submit" class="btn btn-dark rounded-right"><i class="fas fa-search"></i></button>
       </div>
       <input type="hidden" th:field="*{page}">
@@ -31,12 +33,12 @@
     </thead>
     <tbody>
     <tr th:each="study : ${studies}">
-      <td th:text="${study.title}"></td>
-      <td th:text="${study.institution}"></td>
-      <td th:text="${study.description.length() > 60 ? study.description.substring(0, 60) + '...' : study.description}"></td>
-      <td th:text="${study.type}"></td>
-      <td th:text="${study.startedAt}"></td>
-      <td th:text="${study.finishedAt}"></td>
+      <td>[[${study.title}]]</td>
+      <td>[[${study.institution}]]</td>
+      <td>[[${study.description.length() > 60 ? study.description.substring(0, 60) + '...' : study.description}]]</td>
+      <td>[[${study.type}]]</td>
+      <td>[[${study.startedAt}]]</td>
+      <td>[[${study.finishedAt}]]</td>
       <td>
         <a th:href="@{'/studies/save/' + ${study.id}}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i> Update</a>
         <a th:href="@{'/studies/delete/' + ${study.id} + '?page=' + ${page} + '&size=' + ${size} + '&key=' + ${key} + '&sort=' + ${field} + '%2C' + ${direction}}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete</a>
@@ -55,9 +57,6 @@
         <li class="page-item" th:if="${page > 0}">
           <th:block th:replace="~{/_fragments/layout :: paginationLink('studies', ${page - 1}, ${size}, ${key}, ${field}, ${direction}, 'Previous')}"></th:block>
         </li>
-        <!-- If the current page is the first page (index 0), it shows the first three pages. If there are less than three pages, it shows all of them. -->
-        <!-- If the current page is in the middle (not first and not last), it shows the current page and one page before and after. -->
-        <!-- If the current page is one of the last two pages, it shows the last three pages .-->
         <th:block th:each="index : ${#numbers.sequence(startIndexPageNavigation, endIndexPageNavigation)}">
           <th:block th:replace="~{/_fragments/layout :: paginationItem('studies', ${page}, ${size}, ${key}, ${field}, ${direction}, ${index})}"></th:block>
         </th:block>

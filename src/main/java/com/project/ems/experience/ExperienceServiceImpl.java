@@ -1,9 +1,7 @@
 package com.project.ems.experience;
 
-import com.project.ems.employee.Employee;
 import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
-import com.project.ems.mentor.Mentor;
 import com.project.ems.mentor.MentorRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,10 +55,8 @@ public class ExperienceServiceImpl implements ExperienceService {
     @Override
     public void deleteById(Integer id) {
         Experience experienceToDelete = findEntityById(id);
-        List<Employee> employees = employeeRepository.findAllByExperiencesContains(experienceToDelete);
-        employees.forEach(employee -> employee.getExperiences().remove(experienceToDelete));
-        List<Mentor> mentors = mentorRepository.findAllByExperiencesContains(experienceToDelete);
-        mentors.forEach(mentor -> mentor.getExperiences().remove(experienceToDelete));
+        employeeRepository.findAllByExperiencesContains(experienceToDelete).forEach(employee -> employee.getExperiences().remove(experienceToDelete));
+        mentorRepository.findAllByExperiencesContains(experienceToDelete).forEach(mentor -> mentor.getExperiences().remove(experienceToDelete));
         experienceRepository.delete(experienceToDelete);
     }
 

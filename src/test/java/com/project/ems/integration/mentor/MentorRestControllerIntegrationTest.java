@@ -18,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -161,20 +162,21 @@ class MentorRestControllerIntegrationTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<MentorDto> mentorDtosPage1 = convertToDtoList(modelMapper, getMockedMentorsPage1());
-        List<MentorDto> mentorDtosPage2 = convertToDtoList(modelMapper, getMockedMentorsPage2());
-        List<MentorDto> mentorDtosPage3 = convertToDtoList(modelMapper, getMockedMentorsPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", MENTOR_FILTER_KEY, new PageImpl<>(mentorDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", MENTOR_FILTER_KEY, new PageImpl<>(mentorDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", MENTOR_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(mentorDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(mentorDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(mentorDtosPage3)));
+        Page<MentorDto> mentorDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedMentorsPage1()));
+        Page<MentorDto> mentorDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedMentorsPage2()));
+        Page<MentorDto> mentorDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedMentorsPage3()));
+        Page<MentorDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", MENTOR_FILTER_KEY, mentorDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", MENTOR_FILTER_KEY, mentorDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", MENTOR_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", mentorDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", mentorDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", mentorDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<MentorDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<MentorDto> expectedPage) throws Exception {
         ResponseEntity<String> response = template.getForEntity(API_MENTORS + String.format(API_PAGINATION_V2, page, size, sortField, sortDirection, key), String.class);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

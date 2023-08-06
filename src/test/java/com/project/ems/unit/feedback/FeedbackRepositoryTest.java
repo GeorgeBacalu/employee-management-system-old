@@ -20,6 +20,7 @@ class FeedbackRepositoryTest {
 
     @Mock
     private Query query;
+
     @Test
     void findAllByKey_shouldReturnListOfFeedbacksPaginatedSortedAndFilteredByKey() {
         String param = "%" + FEEDBACK_FILTER_KEY + "%";

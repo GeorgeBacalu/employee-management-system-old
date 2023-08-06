@@ -98,10 +98,6 @@ class MentorControllerTest {
         String direction = getSortDirection(pageable);
         long nrMentors = mentorDtosPage.getTotalElements();
         int nrPages = mentorDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrMentors);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
         SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         given(mentorService.findAllByKey(pageable, MENTOR_FILTER_KEY)).willReturn(mentorDtosPage);
         given(model.getAttribute("mentors")).willReturn(mentors);
@@ -112,10 +108,10 @@ class MentorControllerTest {
         given(model.getAttribute("key")).willReturn(MENTOR_FILTER_KEY);
         given(model.getAttribute("field")).willReturn(field);
         given(model.getAttribute("direction")).willReturn(direction);
-        given(model.getAttribute("startIndexCurrentPage")).willReturn(startIndexCurrentPage);
-        given(model.getAttribute("endIndexCurrentPage")).willReturn(endIndexCurrentPage);
-        given(model.getAttribute("startIndexPageNavigation")).willReturn(startIndexPageNavigation);
-        given(model.getAttribute("endIndexPageNavigation")).willReturn(endIndexPageNavigation);
+        given(model.getAttribute("startIndexCurrentPage")).willReturn(getStartIndexCurrentPage(page, size));
+        given(model.getAttribute("endIndexCurrentPage")).willReturn(getEndIndexCurrentPage(page, size, nrMentors));
+        given(model.getAttribute("startIndexPageNavigation")).willReturn(getStartIndexPageNavigation(page, nrPages));
+        given(model.getAttribute("endIndexPageNavigation")).willReturn(getEndIndexPageNavigation(page, nrPages));
         given(model.getAttribute("searchRequest")).willReturn(searchRequest);
         String viewName = mentorController.getAllMentorsPage(model, pageable, MENTOR_FILTER_KEY);
         assertThat(viewName).isEqualTo(MENTORS_VIEW);
@@ -127,10 +123,10 @@ class MentorControllerTest {
         assertThat(model.getAttribute("key")).isEqualTo(MENTOR_FILTER_KEY);
         assertThat(model.getAttribute("field")).isEqualTo(field);
         assertThat(model.getAttribute("direction")).isEqualTo(direction);
-        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(startIndexCurrentPage);
-        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(endIndexCurrentPage);
-        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(startIndexPageNavigation);
-        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(endIndexPageNavigation);
+        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(getStartIndexCurrentPage(page, size));
+        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(getEndIndexCurrentPage(page, size, nrMentors));
+        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(getStartIndexPageNavigation(page, nrPages));
+        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(getEndIndexPageNavigation(page, nrPages));
         assertThat(model.getAttribute("searchRequest")).isEqualTo(searchRequest);
     }
 
@@ -226,21 +222,18 @@ class MentorControllerTest {
     @Test
     void deleteById_withValidId_shouldRemoveMentorWithGivenIdFromList() {
         PageImpl<MentorDto> mentorDtosPage = new PageImpl<>(mentorDtos);
-        int page = mentorDtosPage.getNumber();
-        int size = mentorDtosPage.getSize();
-        String sort = getSortField(pageable) + ',' +  getSortDirection(pageable);
         given(mentorService.findAllByKey(pageable, MENTOR_FILTER_KEY)).willReturn(mentorDtosPage);
-        given(redirectAttributes.getAttribute("page")).willReturn(page);
-        given(redirectAttributes.getAttribute("size")).willReturn(size);
+        given(redirectAttributes.getAttribute("page")).willReturn(mentorDtosPage.getNumber());
+        given(redirectAttributes.getAttribute("size")).willReturn(mentorDtosPage.getSize());
         given(redirectAttributes.getAttribute("key")).willReturn(MENTOR_FILTER_KEY);
-        given(redirectAttributes.getAttribute("sort")).willReturn(sort);
+        given(redirectAttributes.getAttribute("sort")).willReturn(getSortField(pageable) + ',' +  getSortDirection(pageable));
         String viewName = mentorController.deleteById(VALID_ID, redirectAttributes, pageable, MENTOR_FILTER_KEY);
         verify(mentorService).deleteById(VALID_ID);
         assertThat(viewName).isEqualTo(REDIRECT_MENTORS_VIEW);
-        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(page);
-        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(size);
+        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(mentorDtosPage.getNumber());
+        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(mentorDtosPage.getSize());
         assertThat(redirectAttributes.getAttribute("key")).isEqualTo(MENTOR_FILTER_KEY);
-        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(sort);
+        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(getSortField(pageable) + ',' +  getSortDirection(pageable));
     }
 
     @Test

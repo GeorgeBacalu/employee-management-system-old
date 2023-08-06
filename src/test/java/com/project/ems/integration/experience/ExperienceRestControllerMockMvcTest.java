@@ -24,10 +24,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.project.ems.constants.EndpointConstants.API_EXPERIENCES;
@@ -95,8 +95,7 @@ class ExperienceRestControllerMockMvcTest {
         for(int i = 0; i < experienceDtos.size(); i++) {
             assertExperienceDto(actions, "$[" + i + "]", experienceDtos.get(i));
         }
-        MvcResult result = actions.andReturn();
-        List<ExperienceDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<ExperienceDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response).isEqualTo(experienceDtos);
     }
 
@@ -104,10 +103,10 @@ class ExperienceRestControllerMockMvcTest {
     void findById_withValidId_shouldReturnExperienceWithGivenId() throws Exception {
         given(experienceService.findById(anyInt())).willReturn(experienceDto1);
         ResultActions actions = mockMvc.perform(get(API_EXPERIENCES + "/{id}", VALID_ID)).andExpect(status().isOk());
-        verify(experienceService).findById(VALID_ID);
         assertExperienceDtoJson(actions, experienceDto1);
         ExperienceDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), ExperienceDto.class);
         assertThat(response).isEqualTo(experienceDto1);
+        verify(experienceService).findById(VALID_ID);
     }
 
     @Test
@@ -128,10 +127,10 @@ class ExperienceRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(experienceDto1)))
               .andExpect(status().isCreated());
-        verify(experienceService).save(experienceDto1);
         assertExperienceDtoJson(actions, experienceDto1);
         ExperienceDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), ExperienceDto.class);
         assertThat(response).isEqualTo(experienceDto1);
+        verify(experienceService).save(experienceDto1);
     }
 
     @Test
@@ -142,10 +141,10 @@ class ExperienceRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(experienceDto2)))
               .andExpect(status().isOk());
-        verify(experienceService).updateById(experienceDto2, VALID_ID);
         assertExperienceDtoJson(actions, experienceDto);
         ExperienceDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), ExperienceDto.class);
         assertThat(response).isEqualTo(experienceDto);
+        verify(experienceService).updateById(experienceDto2, VALID_ID);
     }
 
     @Test
@@ -179,20 +178,21 @@ class ExperienceRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<ExperienceDto> experienceDtosPage1 = convertToDtoList(modelMapper, getMockedExperiencesPage1());
-        List<ExperienceDto> experienceDtosPage2 = convertToDtoList(modelMapper, getMockedExperiencesPage2());
-        List<ExperienceDto> experienceDtosPage3 = convertToDtoList(modelMapper, getMockedExperiencesPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(experienceDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(experienceDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(experienceDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(experienceDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(experienceDtosPage3)));
+        Page<ExperienceDto> experienceDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedExperiencesPage1()));
+        Page<ExperienceDto> experienceDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedExperiencesPage2()));
+        Page<ExperienceDto> experienceDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedExperiencesPage3()));
+        Page<ExperienceDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", EXPERIENCE_FILTER_KEY, experienceDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", EXPERIENCE_FILTER_KEY, experienceDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", EXPERIENCE_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", experienceDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", experienceDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", experienceDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<ExperienceDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<ExperienceDto> expectedPage) throws Exception {
         given(experienceService.findAllByKey(any(Pageable.class), anyString())).willReturn(expectedPage);
         ResultActions actions = mockMvc.perform(get(API_EXPERIENCES + API_PAGINATION, page, size, sortField, sortDirection, key)
                     .contentType(APPLICATION_JSON_VALUE)
@@ -201,19 +201,18 @@ class ExperienceRestControllerMockMvcTest {
         for(int i = 0; i < expectedPage.getContent().size(); i++) {
             assertExperienceDto(actions, "$.content[" + i + "]", expectedPage.getContent().get(i));
         }
-        MvcResult result = actions.andReturn();
-        PageWrapper<ExperienceDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        PageWrapper<ExperienceDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response.getContent()).isEqualTo(expectedPage.getContent());
     }
 
     private void assertExperienceDto(ResultActions actions, String prefix, ExperienceDto experienceDto) throws Exception {
-        actions.andExpect(jsonPath(prefix + ".id").value(experienceDto.getId()));
-        actions.andExpect(jsonPath(prefix + ".title").value(experienceDto.getTitle()));
-        actions.andExpect(jsonPath(prefix + ".organization").value(experienceDto.getOrganization()));
-        actions.andExpect(jsonPath(prefix + ".description").value(experienceDto.getDescription()));
-        actions.andExpect(jsonPath(prefix + ".type").value(experienceDto.getType().name()));
-        actions.andExpect(jsonPath(prefix + ".startedAt").value(experienceDto.getStartedAt().toString()));
-        actions.andExpect(jsonPath(prefix + ".finishedAt").value(experienceDto.getFinishedAt().toString()));
+        actions.andExpect(jsonPath(prefix + ".id").value(experienceDto.getId()))
+              .andExpect(jsonPath(prefix + ".title").value(experienceDto.getTitle()))
+              .andExpect(jsonPath(prefix + ".organization").value(experienceDto.getOrganization()))
+              .andExpect(jsonPath(prefix + ".description").value(experienceDto.getDescription()))
+              .andExpect(jsonPath(prefix + ".type").value(experienceDto.getType().name()))
+              .andExpect(jsonPath(prefix + ".startedAt").value(experienceDto.getStartedAt().toString()))
+              .andExpect(jsonPath(prefix + ".finishedAt").value(experienceDto.getFinishedAt().toString()));
     }
 
     private void assertExperienceDtoJson(ResultActions actions, ExperienceDto experienceDto) throws Exception {

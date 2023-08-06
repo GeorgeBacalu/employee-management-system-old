@@ -1,9 +1,7 @@
 package com.project.ems.study;
 
-import com.project.ems.employee.Employee;
 import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
-import com.project.ems.mentor.Mentor;
 import com.project.ems.mentor.MentorRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,10 +55,8 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public void deleteById(Integer id) {
         Study studyToDelete = findEntityById(id);
-        List<Employee> employees = employeeRepository.findAllByStudiesContains(studyToDelete);
-        employees.forEach(employee -> employee.getStudies().remove(studyToDelete));
-        List<Mentor> mentors = mentorRepository.findAllByStudiesContains(studyToDelete);
-        mentors.forEach(mentor -> mentor.getStudies().remove(studyToDelete));
+        employeeRepository.findAllByStudiesContains(studyToDelete).forEach(employee -> employee.getStudies().remove(studyToDelete));
+        mentorRepository.findAllByStudiesContains(studyToDelete).forEach(mentor -> mentor.getStudies().remove(studyToDelete));
         studyRepository.delete(studyToDelete);
     }
 

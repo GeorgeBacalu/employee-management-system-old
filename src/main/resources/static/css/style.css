@@ -1,7 +1,22 @@
-.thead-link, .thead-link:hover {
+.page-container {
+    width: 98%;
+    font-size: 14px;
+}
+
+.details {
+    font-size: 14px;
+    line-height: 1.0;
+}
+
+.thead-link {
     color: white;
 }
 
 .thead-link:hover {
+    color: white;
     text-decoration: none;
+}
+
+.btn-container {
+    width: 15%;
 }
