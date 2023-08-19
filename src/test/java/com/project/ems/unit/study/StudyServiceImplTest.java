@@ -35,8 +35,6 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
-import static com.project.ems.mapper.StudyMapper.convertToDto;
-import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
@@ -45,6 +43,8 @@ import static com.project.ems.mock.StudyMock.getMockedStudiesPage2;
 import static com.project.ems.mock.StudyMock.getMockedStudiesPage3;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
 import static com.project.ems.mock.StudyMock.getMockedStudy2;
+import static com.project.ems.mock.StudyMock.getMockedStudyDto1;
+import static com.project.ems.mock.StudyMock.getMockedStudyDto2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -91,9 +91,9 @@ class StudyServiceImplTest {
         studies = getMockedStudies();
         employee = getMockedEmployee1();
         mentor = getMockedMentor1();
-        studyDto1 = convertToDto(modelMapper, study1);
-        studyDto2 = convertToDto(modelMapper, study2);
-        studyDtos = convertToDtoList(modelMapper, studies);
+        studyDto1 = getMockedStudyDto1();
+        studyDto2 = getMockedStudyDto2();
+        studyDtos = studyService.convertToDtos(studies);
     }
 
     @Test
@@ -122,7 +122,7 @@ class StudyServiceImplTest {
         given(studyRepository.save(any(Study.class))).willReturn(study1);
         StudyDto result = studyService.save(studyDto1);
         verify(studyRepository).save(studyCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, studyCaptor.getValue()));
+        assertThat(result).isEqualTo(studyService.convertToDto(studyCaptor.getValue()));
     }
 
     @Test
@@ -132,7 +132,7 @@ class StudyServiceImplTest {
         given(studyRepository.save(any(Study.class))).willReturn(study);
         StudyDto result = studyService.updateById(studyDto2, VALID_ID);
         verify(studyRepository).save(studyCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, studyCaptor.getValue()));
+        assertThat(result).isEqualTo(studyService.convertToDto(studyCaptor.getValue()));
     }
 
     @Test
@@ -163,7 +163,12 @@ class StudyServiceImplTest {
     @ParameterizedTest
     @CsvSource({ "1, ${STUDY_FILTER_KEY}", "2, ${STUDY_FILTER_KEY}", "3, ${STUDY_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
     void findAllByKey_shouldReturnListOfStudiesFilteredByKey(int page, String key) {
-        Pair<List<Study>, Pageable> pair = getFilteredStudiesAndPageable(page, key);
+        Pair<List<Study>, Pageable> pair = switch(page) {
+            case 1 -> Pair.of(getMockedStudiesPage1(), pageable);
+            case 2 -> Pair.of(getMockedStudiesPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedStudiesPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
         Page<Study> filteredStudiesPage = new PageImpl<>(pair.getLeft());
         if(key.equals("")) {
             given(studyRepository.findAll(any(Pageable.class))).willReturn(filteredStudiesPage);
@@ -171,15 +176,6 @@ class StudyServiceImplTest {
             given(studyRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredStudiesPage);
         }
         Page<StudyDto> result = studyService.findAllByKey(pair.getRight(), key);
-        assertThat(result.getContent()).isEqualTo(convertToDtoList(modelMapper, pair.getLeft()));
-    }
-
-    private Pair<List<Study>, Pageable> getFilteredStudiesAndPageable(int page, String key) {
-        return switch(page) {
-            case 1 -> Pair.of(getMockedStudiesPage1(), pageable);
-            case 2 -> Pair.of(getMockedStudiesPage2(), pageable2);
-            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedStudiesPage3(), pageable3);
-            default -> throw new IllegalArgumentException("Invalid page number: " + page);
-        };
+        assertThat(result.getContent()).isEqualTo(studyService.convertToDtos(pair.getLeft()));
     }
 }

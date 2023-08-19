@@ -25,8 +25,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Spy;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -40,13 +38,16 @@ import static com.project.ems.constants.ExceptionMessageConstants.MENTOR_NOT_FOU
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.MENTOR_FILTER_KEY;
-import static com.project.ems.mapper.MentorMapper.convertToDto;
-import static com.project.ems.mapper.MentorMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences2;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.MentorMock.getMockedMentor2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage3;
 import static com.project.ems.mock.MentorMock.getMockedMentors;
 import static com.project.ems.mock.MentorMock.getMockedMentorsPage1;
 import static com.project.ems.mock.MentorMock.getMockedMentorsPage2;
@@ -85,9 +86,6 @@ class MentorServiceIntegrationTest {
     @MockBean
     private ExperienceService experienceService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     @Captor
     private ArgumentCaptor<Mentor> mentorCaptor;
 
@@ -115,9 +113,9 @@ class MentorServiceIntegrationTest {
         studies2 = getMockedStudies2();
         experiences1 = getMockedExperiences1();
         experiences2 = getMockedExperiences2();
-        mentorDto1 = convertToDto(modelMapper, mentor1);
-        mentorDto2 = convertToDto(modelMapper, mentor2);
-        mentorDtos = convertToDtoList(modelMapper, mentors);
+        mentorDto1 = getMockedMentorDto1();
+        mentorDto2 = getMockedMentorDto2();
+        mentorDtos = mentorService.convertToDtos(mentors);
     }
 
     @Test
@@ -149,7 +147,7 @@ class MentorServiceIntegrationTest {
         given(mentorRepository.save(any(Mentor.class))).willReturn(mentor1);
         MentorDto result = mentorService.save(mentorDto1);
         verify(mentorRepository).save(mentorCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, mentorCaptor.getValue()));
+        assertThat(result).isEqualTo(mentorService.convertToDto(mentorCaptor.getValue()));
     }
 
     @Test
@@ -162,7 +160,7 @@ class MentorServiceIntegrationTest {
         given(mentorRepository.save(any(Mentor.class))).willReturn(mentor);
         MentorDto result = mentorService.updateById(mentorDto2, VALID_ID);
         verify(mentorRepository).save(mentorCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, mentorCaptor.getValue()));
+        assertThat(result).isEqualTo(mentorService.convertToDto(mentorCaptor.getValue()));
     }
 
     @Test
@@ -195,9 +193,9 @@ class MentorServiceIntegrationTest {
         Page<Mentor> mentorsPage2 = new PageImpl<>(getMockedMentorsPage2());
         Page<Mentor> mentorsPage3 = new PageImpl<>(getMockedMentorsPage3());
         Page<Mentor> emptyPage = new PageImpl<>(Collections.emptyList());
-        Page<MentorDto> mentorDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedMentorsPage1()));
-        Page<MentorDto> mentorDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedMentorsPage2()));
-        Page<MentorDto> mentorDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedMentorsPage3()));
+        Page<MentorDto> mentorDtosPage1 = new PageImpl<>(getMockedMentorDtosPage1());
+        Page<MentorDto> mentorDtosPage2 = new PageImpl<>(getMockedMentorDtosPage2());
+        Page<MentorDto> mentorDtosPage3 = new PageImpl<>(getMockedMentorDtosPage3());
         Page<MentorDto> emptyDtoPage = new PageImpl<>(Collections.emptyList());
         return Stream.of(Arguments.of(0, 2, "id", MENTOR_FILTER_KEY, mentorsPage1, mentorDtosPage1),
                          Arguments.of(1, 2, "id", MENTOR_FILTER_KEY, mentorsPage2, mentorDtosPage2),

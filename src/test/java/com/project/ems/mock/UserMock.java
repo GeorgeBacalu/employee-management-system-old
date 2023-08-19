@@ -1,6 +1,7 @@
 package com.project.ems.mock;
 
 import com.project.ems.user.User;
+import com.project.ems.user.UserDto;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AccessLevel;
@@ -34,6 +35,26 @@ public class UserMock {
 
     public static List<User> getMockedUsersPage3() {
         return List.of(getMockedUser5(), getMockedUser6());
+    }
+
+    public static List<UserDto> getMockedUserDtosPage1() {
+        return List.of(getMockedUserDto1(), getMockedUserDto2());
+    }
+
+    public static List<UserDto> getMockedUserDtosPage2() {
+        return List.of(getMockedUserDto3(), getMockedUserDto4());
+    }
+
+    public static List<UserDto> getMockedUserDtosPage3() {
+        return List.of(getMockedUserDto5(), getMockedUserDto6());
+    }
+
+    public static List<User> getMockedUsersFirstPage() {
+        return List.of(getMockedUser1(), getMockedUser2(), getMockedUser3(), getMockedUser4(), getMockedUser5(), getMockedUser6(), getMockedUser7(), getMockedUser8(), getMockedUser9(), getMockedUser10());
+    }
+
+    public static List<UserDto> getMockedUserDtosFirstPage() {
+        return List.of(getMockedUserDto1(), getMockedUserDto2(), getMockedUserDto3(), getMockedUserDto4(), getMockedUserDto5(), getMockedUserDto6(), getMockedUserDto7(), getMockedUserDto8(), getMockedUserDto9(), getMockedUserDto10());
     }
 
     public static User getMockedUser1() {
@@ -322,5 +343,45 @@ public class UserMock {
 
     public static User getMockedUser72() {
         return new User(72, "Michaela Allen", "michaela.allen@example.com", "#Michaela_Allen_Password0", "+40787654372", "999 Pine St, Beijing, China", LocalDate.of(1998, 5, 6), getMockedRole1());
+    }
+
+    public static UserDto getMockedUserDto1() {
+        return new UserDto(1, "John Doe", "john.doe@example.com", "#John_Doe_Password0", "+40721543701", "123 Main St, Boston, USA", LocalDate.of(1980, 2, 15), 2);
+    }
+
+    public static UserDto getMockedUserDto2() {
+        return new UserDto(2, "Jane Smith", "jane.smith@example.com", "#Jane_Smith_Password0", "+40756321802", "456 Oak St, London, UK", LocalDate.of(1982, 7, 10), 2);
+    }
+
+    public static UserDto getMockedUserDto3() {
+        return new UserDto(3, "Michael Johnson", "michael.johnson@example.com", "#Michael_Johnson_Password0", "+40789712303", "789 Pine St, Madrid, Spain", LocalDate.of(1990, 11, 20), 2);
+    }
+
+    public static UserDto getMockedUserDto4() {
+        return new UserDto(4, "Laura Brown", "laura.brown@example.com", "#Laura_Brown_Password0", "+40734289604", "333 Elm St, Paris, France", LocalDate.of(1985, 8, 25), 2);
+    }
+
+    public static UserDto getMockedUserDto5() {
+        return new UserDto(5, "Robert Davis", "robert.davis@example.com", "#Robert_Davis_Password0", "+40754321805", "555 Oak St, Berlin, Germany", LocalDate.of(1988, 5, 12), 1);
+    }
+
+    public static UserDto getMockedUserDto6() {
+        return new UserDto(6, "Emily Wilson", "emily.wilson@example.com", "#Emily_Wilson_Password0", "+40789012606", "777 Pine St, Sydney, Australia", LocalDate.of(1995, 9, 8), 1);
+    }
+
+    public static UserDto getMockedUserDto7() {
+        return new UserDto(7, "Michaela Taylor", "michaela.taylor@example.com", "#Michaela_Taylor_Password0", "+40723145607", "999 Elm St, Rome, Italy", LocalDate.of(1983, 12, 7), 1);
+    }
+
+    public static UserDto getMockedUserDto8() {
+        return new UserDto(8, "David Anderson", "david.anderson@example.com", "#David_Anderson_Password0", "+40787654308", "111 Oak St, Moscow, Russia", LocalDate.of(1992, 4, 23), 1);
+    }
+
+    public static UserDto getMockedUserDto9() {
+        return new UserDto(9, "Sophia Garcia", "sophia.garcia@example.com", "#Sophia_Garcia_Password0", "+40754321809", "333 Pine St, Athens, Greece", LocalDate.of(1998, 7, 30), 1);
+    }
+
+    public static UserDto getMockedUserDto10() {
+        return new UserDto(10, "Joseph Wilson", "joseph.wilson@example.com", "#Joseph_Wilson_Password0", "+40789012610", "555 Elm St, Madrid, Spain", LocalDate.of(1991, 3, 14), 1);
     }
 }

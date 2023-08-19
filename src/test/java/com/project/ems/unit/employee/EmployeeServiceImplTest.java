@@ -39,10 +39,10 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
-import static com.project.ems.mapper.EmployeeMapper.convertToDto;
-import static com.project.ems.mapper.EmployeeMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto1;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto2;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployees;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage1;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage2;
@@ -119,9 +119,9 @@ class EmployeeServiceImplTest {
         studies2 = getMockedStudies2();
         experiences1 = getMockedExperiences1();
         experiences2 = getMockedExperiences2();
-        employeeDto1 = convertToDto(modelMapper, employee1);
-        employeeDto2 = convertToDto(modelMapper, employee2);
-        employeeDtos = convertToDtoList(modelMapper, employees);
+        employeeDto1 = getMockedEmployeeDto1();
+        employeeDto2 = getMockedEmployeeDto2();
+        employeeDtos = employeeService.convertToDtos(employees);
     }
 
     @Test
@@ -154,7 +154,7 @@ class EmployeeServiceImplTest {
         given(employeeRepository.save(any(Employee.class))).willReturn(employee1);
         EmployeeDto result = employeeService.save(employeeDto1);
         verify(employeeRepository).save(employeeCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, employeeCaptor.getValue()));
+        assertThat(result).isEqualTo(employeeService.convertToDto(employeeCaptor.getValue()));
     }
 
     @Test
@@ -168,7 +168,7 @@ class EmployeeServiceImplTest {
         given(employeeRepository.save(any(Employee.class))).willReturn(employee);
         EmployeeDto result = employeeService.updateById(employeeDto2, VALID_ID);
         verify(employeeRepository).save(employeeCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, employee));
+        assertThat(result).isEqualTo(employeeService.convertToDto(employee));
     }
 
     @Test
@@ -197,7 +197,12 @@ class EmployeeServiceImplTest {
     @ParameterizedTest
     @CsvSource({ "1, ${EMPLOYEE_FILTER_KEY}", "2, ${EMPLOYEE_FILTER_KEY}", "3, ${EMPLOYEE_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
     void findAllByKey_shouldReturnListOfEmployeesFilteredByKey(int page, String key) {
-        Pair<List<Employee>, Pageable> pair = getFilteredEmployeesAndPageable(page, key);
+        Pair<List<Employee>, Pageable> pair = switch(page) {
+            case 1 -> Pair.of(getMockedEmployeesPage1(), pageable);
+            case 2 -> Pair.of(getMockedEmployeesPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedEmployeesPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
         Page<Employee> filteredEmployeesPage = new PageImpl<>(pair.getLeft());
         if(key.equals("")) {
             given(employeeRepository.findAll(any(Pageable.class))).willReturn(filteredEmployeesPage);
@@ -205,15 +210,6 @@ class EmployeeServiceImplTest {
             given(employeeRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredEmployeesPage);
         }
         Page<EmployeeDto> result = employeeService.findAllByKey(pair.getRight(), key);
-        assertThat(result.getContent()).isEqualTo(convertToDtoList(modelMapper, pair.getLeft()));
-    }
-
-    private Pair<List<Employee>, Pageable> getFilteredEmployeesAndPageable(int page, String key) {
-        return switch(page) {
-            case 1 -> Pair.of(getMockedEmployeesPage1(), pageable);
-            case 2 -> Pair.of(getMockedEmployeesPage2(), pageable2);
-            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedEmployeesPage3(), pageable3);
-            default -> throw new IllegalArgumentException("Invalid page number: " + page);
-        };
+        assertThat(result.getContent()).isEqualTo(employeeService.convertToDtos(pair.getLeft()));
     }
 }

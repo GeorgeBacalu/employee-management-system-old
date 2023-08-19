@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -28,10 +27,9 @@ import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_STUDIES_
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_STUDY_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.STUDIES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.STUDY_DETAILS_VIEW;
-import static com.project.ems.mapper.StudyMapper.convertToDto;
-import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.StudyMock.getMockedStudiesPage1;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
+import static com.project.ems.mock.StudyMock.getMockedStudyDto1;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
 import static com.project.ems.util.PageUtil.getSortDirection;
@@ -61,9 +59,6 @@ class StudyControllerTest {
     @Spy
     private RedirectAttributes redirectAttributes;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private Study study;
     private List<Study> studies;
     private StudyDto studyDto;
@@ -73,8 +68,8 @@ class StudyControllerTest {
     void setUp() {
         study = getMockedStudy1();
         studies = getMockedStudiesPage1();
-        studyDto = convertToDto(modelMapper, study);
-        studyDtos = convertToDtoList(modelMapper, studies);
+        studyDto = getMockedStudyDto1();
+        studyDtos = studyService.convertToDtos(studies);
     }
 
     @Test

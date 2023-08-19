@@ -18,9 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -36,14 +34,12 @@ import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUN
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.STUDY_FILTER_KEY;
-import static com.project.ems.mapper.StudyMapper.convertToDto;
-import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
-import static com.project.ems.mock.StudyMock.getMockedStudiesPage1;
-import static com.project.ems.mock.StudyMock.getMockedStudiesPage2;
-import static com.project.ems.mock.StudyMock.getMockedStudiesPage3;
-import static com.project.ems.mock.StudyMock.getMockedStudy1;
-import static com.project.ems.mock.StudyMock.getMockedStudy2;
+import static com.project.ems.mock.StudyMock.getMockedStudyDto1;
+import static com.project.ems.mock.StudyMock.getMockedStudyDto2;
+import static com.project.ems.mock.StudyMock.getMockedStudyDtosPage1;
+import static com.project.ems.mock.StudyMock.getMockedStudyDtosPage2;
+import static com.project.ems.mock.StudyMock.getMockedStudyDtosPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -74,18 +70,15 @@ class StudyRestControllerMockMvcTest {
     @MockBean
     private StudyService studyService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private StudyDto studyDto1;
     private StudyDto studyDto2;
     private List<StudyDto> studyDtos;
 
     @BeforeEach
     void setUp() {
-        studyDto1 = convertToDto(modelMapper, getMockedStudy1());
-        studyDto2 = convertToDto(modelMapper, getMockedStudy2());
-        studyDtos = convertToDtoList(modelMapper, getMockedStudies());
+        studyDto1 = getMockedStudyDto1();
+        studyDto2 = getMockedStudyDto2();
+        studyDtos = studyService.convertToDtos(getMockedStudies());
     }
 
     @Test
@@ -178,9 +171,9 @@ class StudyRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        Page<StudyDto> studyDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage1()));
-        Page<StudyDto> studyDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage2()));
-        Page<StudyDto> studyDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedStudiesPage3()));
+        Page<StudyDto> studyDtosPage1 = new PageImpl<>(getMockedStudyDtosPage1());
+        Page<StudyDto> studyDtosPage2 = new PageImpl<>(getMockedStudyDtosPage2());
+        Page<StudyDto> studyDtosPage3 = new PageImpl<>(getMockedStudyDtosPage3());
         Page<StudyDto> emptyPage = new PageImpl<>(Collections.emptyList());
         return Stream.of(Arguments.of(0, 2, "id", "asc", STUDY_FILTER_KEY, studyDtosPage1),
                          Arguments.of(1, 2, "id", "asc", STUDY_FILTER_KEY, studyDtosPage2),

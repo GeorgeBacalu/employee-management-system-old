@@ -13,9 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.FEEDBACK_NOT_FOUND;
-import static com.project.ems.mapper.FeedbackMapper.convertToDto;
-import static com.project.ems.mapper.FeedbackMapper.convertToDtoList;
-import static com.project.ems.mapper.FeedbackMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -29,21 +26,21 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public List<FeedbackDto> findAll() {
         List<Feedback> feedbacks = feedbackRepository.findAll();
-        return !feedbacks.isEmpty() ? convertToDtoList(modelMapper, feedbacks) : new ArrayList<>();
+        return !feedbacks.isEmpty() ? convertToDtos(feedbacks) : new ArrayList<>();
     }
 
     @Override
     public FeedbackDto findById(Integer id) {
         Feedback feedback = findEntityById(id);
-        return convertToDto(modelMapper, feedback);
+        return convertToDto(feedback);
     }
 
     @Override
     public FeedbackDto save(FeedbackDto feedbackDto) {
-        Feedback feedback = convertToEntity(modelMapper, feedbackDto, userService);
+        Feedback feedback = convertToEntity(feedbackDto);
         feedback.setSentAt(LocalDateTime.now(clock));
         Feedback savedFeedback = feedbackRepository.save(feedback);
-        return convertToDto(modelMapper, savedFeedback);
+        return convertToDto(savedFeedback);
     }
 
     @Override
@@ -51,7 +48,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         Feedback feedbackToUpdate = findEntityById(id);
         updateEntityFromDto(feedbackDto, feedbackToUpdate);
         Feedback updatedFeedback = feedbackRepository.save(feedbackToUpdate);
-        return convertToDto(modelMapper, updatedFeedback);
+        return convertToDto(updatedFeedback);
     }
 
     @Override
@@ -63,7 +60,29 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public Page<FeedbackDto> findAllByKey(Pageable pageable, String key) {
         Page<Feedback> feedbacksPage = key.trim().equals("") ? feedbackRepository.findAll(pageable) : feedbackRepository.findAllByKey(pageable, key.toLowerCase());
-        return feedbacksPage.hasContent() ? feedbacksPage.map(feedback -> convertToDto(modelMapper, feedback)) : Page.empty();
+        return feedbacksPage.hasContent() ? feedbacksPage.map(this::convertToDto) : Page.empty();
+    }
+
+    @Override
+    public List<FeedbackDto> convertToDtos(List<Feedback> feedbacks) {
+        return feedbacks.stream().map(this::convertToDto).toList();
+    }
+
+    @Override
+    public List<Feedback> convertToEntities(List<FeedbackDto> feedbackDtos) {
+        return feedbackDtos.stream().map(this::convertToEntity).toList();
+    }
+
+    @Override
+    public FeedbackDto convertToDto(Feedback feedback) {
+        return modelMapper.map(feedback, FeedbackDto.class);
+    }
+
+    @Override
+    public Feedback convertToEntity(FeedbackDto feedbackDto) {
+        Feedback feedback = modelMapper.map(feedbackDto, Feedback.class);
+        feedback.setUser(userService.findEntityById(feedbackDto.getUserId()));
+        return feedback;
     }
 
     private Feedback findEntityById(Integer id) {

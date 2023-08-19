@@ -18,5 +18,13 @@ public interface StudyService {
 
     Page<StudyDto> findAllByKey(Pageable pageable, String key);
 
+    List<StudyDto> convertToDtos(List<Study> studies);
+
+    List<Study> convertToEntities(List<StudyDto> studyDtos);
+
+    StudyDto convertToDto(Study study);
+
+    Study convertToEntity(StudyDto studyDto);
+
     Study findEntityById(Integer id);
 }

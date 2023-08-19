@@ -1,6 +1,7 @@
 package com.project.ems.mock;
 
 import com.project.ems.employee.Employee;
+import com.project.ems.employee.EmployeeDto;
 import com.project.ems.employee.enums.EmploymentType;
 import com.project.ems.employee.enums.Grade;
 import com.project.ems.employee.enums.Position;
@@ -47,6 +48,26 @@ public class EmployeeMock {
 
     public static List<Employee> getMockedEmployeesPage3() {
         return List.of(getMockedEmployee5(), getMockedEmployee6());
+    }
+
+    public static List<EmployeeDto> getMockedEmployeeDtosPage1() {
+        return List.of(getMockedEmployeeDto1(), getMockedEmployeeDto2());
+    }
+
+    public static List<EmployeeDto> getMockedEmployeeDtosPage2() {
+        return List.of(getMockedEmployeeDto3(), getMockedEmployeeDto4());
+    }
+
+    public static List<EmployeeDto> getMockedEmployeeDtosPage3() {
+        return List.of(getMockedEmployeeDto5(), getMockedEmployeeDto6());
+    }
+
+    public static List<Employee> getMockedEmployeesFirstPage() {
+        return List.of(getMockedEmployee1(), getMockedEmployee2(), getMockedEmployee3(), getMockedEmployee4(), getMockedEmployee5(), getMockedEmployee6(), getMockedEmployee7(), getMockedEmployee8(), getMockedEmployee9(), getMockedEmployee10());
+    }
+
+    public static List<EmployeeDto> getMockedEmployeeDtosFirstPage() {
+        return List.of(getMockedEmployeeDto1(), getMockedEmployeeDto2(), getMockedEmployeeDto3(), getMockedEmployeeDto4(), getMockedEmployeeDto5(), getMockedEmployeeDto6(), getMockedEmployeeDto7(), getMockedEmployeeDto8(), getMockedEmployeeDto9(), getMockedEmployeeDto10());
     }
 
     public static Employee getMockedEmployee1() {
@@ -191,5 +212,45 @@ public class EmployeeMock {
 
     public static Employee getMockedEmployee36() {
         return new Employee(36, "Michaela Allen", "michaela.allen@example.com", "#Michaela_Allen_Password0", "+40787654372", "999 Pine St, Beijing, China", LocalDate.of(1998, 5, 6), getMockedRole1(), EmploymentType.PART_TIME, Position.SCRUM_MASTER, Grade.SENIOR, getMockedMentor36(), getMockedStudies6(), getMockedExperiences4());
+    }
+
+    public static EmployeeDto getMockedEmployeeDto1() {
+        return new EmployeeDto(1, "Abigail Johnson", "abigail.johnson@example.com", "#Abigail_Johnson_Password0", "+40754321837", "999 Oak St, Athens, Greece", LocalDate.of(2000, 10, 2), 1, EmploymentType.FULL_TIME, Position.FRONTEND, Grade.JUNIOR, 1, List.of(1, 2), List.of(1, 2));
+    }
+
+    public static EmployeeDto getMockedEmployeeDto2() {
+        return new EmployeeDto(2, "Michael Davis", "michael.davis@example.com", "#Michael_Davis_Password0", "+40789012638", "111 Oak St, Madrid, Spain", LocalDate.of(1994, 5, 16), 1, EmploymentType.FULL_TIME, Position.FRONTEND, Grade.JUNIOR, 2, List.of(3, 4), List.of(3, 4));
+    }
+
+    public static EmployeeDto getMockedEmployeeDto3() {
+        return new EmployeeDto(3, "Mia Wilson", "mia.wilson@example.com", "#Mia_Wilson_Password0", "+40723145639", "333 Elm St, Tokyo, Japan", LocalDate.of(1990, 12, 29), 1, EmploymentType.FULL_TIME, Position.FRONTEND, Grade.MID, 3, List.of(5, 6), List.of(5, 6));
+    }
+
+    public static EmployeeDto getMockedEmployeeDto4() {
+        return new EmployeeDto(4, "James Lee", "james.lee@example.com", "#James_Lee_Password0", "+40787654340", "555 Pine St, Seoul, South Korea", LocalDate.of(1991, 8, 11), 1, EmploymentType.FULL_TIME, Position.FRONTEND, Grade.SENIOR, 4, List.of(7, 8), List.of(7, 8));
+    }
+
+    public static EmployeeDto getMockedEmployeeDto5() {
+        return new EmployeeDto(5, "Charlotte Thompson", "charlotte.thompson@example.com", "#Charlotte_Thompson_Password0", "+40754321841", "777 Elm St, Beijing, China", LocalDate.of(1993, 3, 24), 1, EmploymentType.FULL_TIME, Position.BACKEND, Grade.JUNIOR, 5, List.of(9, 10), List.of(9, 10));
+    }
+
+    public static EmployeeDto getMockedEmployeeDto6() {
+        return new EmployeeDto(6, "Ethan Smith", "ethan.smith@example.com", "#Ethan_Smith_Password0", "+40789012642", "999 Oak St, Cape Town, South Africa", LocalDate.of(1989, 11, 6), 1, EmploymentType.FULL_TIME, Position.BACKEND, Grade.JUNIOR, 6, List.of(11, 12), List.of(11, 12));
+    }
+
+    public static EmployeeDto getMockedEmployeeDto7() {
+        return new EmployeeDto(7, "Amelia Johnson", "amelia.johnson@example.com", "#Amelia_Johnson_Password0", "+40723145643", "111 Elm St, Buenos Aires, Argentina", LocalDate.of(1994, 6, 19), 1, EmploymentType.FULL_TIME, Position.BACKEND, Grade.MID, 7, List.of(1, 2), List.of(13, 14));
+    }
+
+    public static EmployeeDto getMockedEmployeeDto8() {
+        return new EmployeeDto(8, "Emily Davis", "emily.davis@example.com", "#Emily_Davis_Password0", "+40787654344", "333 Elm St, Rio de Janeiro, Brazil", LocalDate.of(1998, 1, 1), 1, EmploymentType.FULL_TIME, Position.BACKEND, Grade.SENIOR, 8, List.of(3, 4), List.of(15, 16));
+    }
+
+    public static EmployeeDto getMockedEmployeeDto9() {
+        return new EmployeeDto(9, "Henry Wilson", "henry.wilson@example.com", "#Henry_Wilson_Password0", "+40754321845", "555 Pine St, Mexico City, Mexico", LocalDate.of(2001, 8, 14), 1, EmploymentType.FULL_TIME, Position.DEVOPS, Grade.JUNIOR, 9, List.of(5, 6), List.of(1, 2));
+    }
+
+    public static EmployeeDto getMockedEmployeeDto10() {
+        return new EmployeeDto(10, "Scarlett Thompson", "scarlett.thompson@example.com", "#Scarlett_Thompson_Password0", "+40789012646", "777 Elm St, Vancouver, Canada", LocalDate.of(2002, 3, 28), 1, EmploymentType.FULL_TIME, Position.DEVOPS, Grade.JUNIOR, 10, List.of(7, 8), List.of(3, 4));
     }
 }

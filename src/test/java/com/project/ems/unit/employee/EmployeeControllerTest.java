@@ -5,10 +5,6 @@ import com.project.ems.employee.EmployeeController;
 import com.project.ems.employee.EmployeeDto;
 import com.project.ems.employee.EmployeeService;
 import com.project.ems.exception.ResourceNotFoundException;
-import com.project.ems.experience.ExperienceService;
-import com.project.ems.mentor.MentorService;
-import com.project.ems.role.RoleService;
-import com.project.ems.study.StudyService;
 import com.project.ems.wrapper.SearchRequest;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -32,9 +27,8 @@ import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEE_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_EMPLOYEES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_EMPLOYEE_VIEW;
-import static com.project.ems.mapper.EmployeeMapper.convertToDto;
-import static com.project.ems.mapper.EmployeeMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto1;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage1;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
@@ -59,26 +53,11 @@ class EmployeeControllerTest {
     @Mock
     private EmployeeService employeeService;
 
-    @Mock
-    private RoleService roleService;
-
-    @Mock
-    private MentorService mentorService;
-
-    @Mock
-    private StudyService studyService;
-
-    @Mock
-    private ExperienceService experienceService;
-
     @Spy
     private Model model;
 
     @Spy
     private RedirectAttributes redirectAttributes;
-
-    @Spy
-    private ModelMapper modelMapper;
 
     private Employee employee;
     private List<Employee> employees;
@@ -89,8 +68,8 @@ class EmployeeControllerTest {
     void setUp() {
         employee = getMockedEmployee1();
         employees = getMockedEmployeesPage1();
-        employeeDto = convertToDto(modelMapper, employee);
-        employeeDtos = convertToDtoList(modelMapper, employees);
+        employeeDto = getMockedEmployeeDto1();
+        employeeDtos = employeeService.convertToDtos(employees);
     }
 
     @Test

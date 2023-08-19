@@ -36,10 +36,10 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
-import static com.project.ems.mapper.FeedbackMapper.convertToDto;
-import static com.project.ems.mapper.FeedbackMapper.convertToDtoList;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedback1;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedback2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDto1;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDto2;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacks;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage1;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage2;
@@ -90,9 +90,9 @@ class FeedbackServiceImplTest {
         feedback2 = getMockedFeedback2();
         feedbacks = getMockedFeedbacks();
         user = getMockedUser2();
-        feedbackDto1 = convertToDto(modelMapper, feedback1);
-        feedbackDto2 = convertToDto(modelMapper, feedback2);
-        feedbackDtos = convertToDtoList(modelMapper, feedbacks);
+        feedbackDto1 = getMockedFeedbackDto1();
+        feedbackDto2 = getMockedFeedbackDto2();
+        feedbackDtos = feedbackService.convertToDtos(feedbacks);
     }
 
     @Test
@@ -124,7 +124,7 @@ class FeedbackServiceImplTest {
         given(feedbackRepository.save(any(Feedback.class))).willReturn(feedback1);
         FeedbackDto result = feedbackService.save(feedbackDto1);
         verify(feedbackRepository).save(feedbackCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, feedback1));
+        assertThat(result).isEqualTo(feedbackService.convertToDto(feedback1));
     }
 
     @Test
@@ -136,7 +136,7 @@ class FeedbackServiceImplTest {
         given(feedbackRepository.save(any(Feedback.class))).willReturn(feedback);
         FeedbackDto result = feedbackService.updateById(feedbackDto2, VALID_ID);
         verify(feedbackRepository).save(feedbackCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, feedbackCaptor.getValue()));
+        assertThat(result).isEqualTo(feedbackService.convertToDto(feedbackCaptor.getValue()));
     }
 
     @Test
@@ -165,7 +165,12 @@ class FeedbackServiceImplTest {
     @ParameterizedTest
     @CsvSource({ "1, ${FEEDBACK_FILTER_KEY}", "2, ${FEEDBACK_FILTER_KEY}", "3, ${FEEDBACK_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
     void findAllByKey_shouldReturnListOfFeedbacksFilteredByKey(int page, String key) {
-        Pair<List<Feedback>, Pageable> pair = getFilteredFeedbacksAndPageable(page, key);
+        Pair<List<Feedback>, Pageable> pair = switch(page) {
+            case 1 -> Pair.of(getMockedFeedbacksPage1(), pageable);
+            case 2 -> Pair.of(getMockedFeedbacksPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedFeedbacksPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
         Page<Feedback> filteredFeedbacksPage = new PageImpl<>(pair.getLeft());
         if(key.equals("")) {
             given(feedbackRepository.findAll(any(Pageable.class))).willReturn(filteredFeedbacksPage);
@@ -173,15 +178,6 @@ class FeedbackServiceImplTest {
             given(feedbackRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredFeedbacksPage);
         }
         Page<FeedbackDto> result = feedbackService.findAllByKey(pair.getRight(), key);
-        assertThat(result.getContent()).isEqualTo(convertToDtoList(modelMapper, pair.getLeft()));
-    }
-
-    private Pair<List<Feedback>, Pageable> getFilteredFeedbacksAndPageable(int page, String key) {
-        return switch(page) {
-            case 1 -> Pair.of(getMockedFeedbacksPage1(), pageable);
-            case 2 -> Pair.of(getMockedFeedbacksPage2(), pageable2);
-            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedFeedbacksPage3(), pageable3);
-            default -> throw new IllegalArgumentException("Invalid page number: " + page);
-        };
+        assertThat(result.getContent()).isEqualTo(feedbackService.convertToDtos(pair.getLeft()));
     }
 }

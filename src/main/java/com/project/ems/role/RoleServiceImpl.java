@@ -8,9 +8,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.ROLE_NOT_FOUND;
-import static com.project.ems.mapper.RoleMapper.convertToDto;
-import static com.project.ems.mapper.RoleMapper.convertToDtoList;
-import static com.project.ems.mapper.RoleMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -22,20 +19,20 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public List<RoleDto> findAll() {
         List<Role> roles = roleRepository.findAll();
-        return !roles.isEmpty() ? convertToDtoList(modelMapper, roles) : new ArrayList<>();
+        return !roles.isEmpty() ? convertToDtos(roles) : new ArrayList<>();
     }
 
     @Override
     public RoleDto findById(Integer id) {
         Role role = findEntityById(id);
-        return convertToDto(modelMapper, role);
+        return convertToDto(role);
     }
 
     @Override
     public RoleDto save(RoleDto roleDto) {
-        Role role = convertToEntity(modelMapper, roleDto);
+        Role role = convertToEntity(roleDto);
         Role savedRole = roleRepository.save(role);
-        return convertToDto(modelMapper, savedRole);
+        return convertToDto(savedRole);
     }
 
     @Override
@@ -43,7 +40,27 @@ public class RoleServiceImpl implements RoleService {
         Role roleToUpdate = findEntityById(id);
         updateEntityFromDto(roleDto, roleToUpdate);
         Role updatedRole = roleRepository.save(roleToUpdate);
-        return convertToDto(modelMapper, updatedRole);
+        return convertToDto(updatedRole);
+    }
+
+    @Override
+    public List<RoleDto> convertToDtos(List<Role> roles) {
+        return roles.stream().map(this::convertToDto).toList();
+    }
+
+    @Override
+    public List<Role> convertToEntities(List<RoleDto> roleDtos) {
+        return roleDtos.stream().map(this::convertToEntity).toList();
+    }
+
+    @Override
+    public RoleDto convertToDto(Role role) {
+        return modelMapper.map(role, RoleDto.class);
+    }
+
+    @Override
+    public Role convertToEntity(RoleDto roleDto) {
+        return modelMapper.map(roleDto, Role.class);
     }
 
     @Override

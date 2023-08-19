@@ -13,7 +13,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.ui.Model;
 
 import static com.project.ems.constants.ExceptionMessageConstants.ROLE_NOT_FOUND;
@@ -23,9 +22,8 @@ import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_ROLES_VI
 import static com.project.ems.constants.ThymeleafViewConstants.ROLES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.ROLE_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_ROLE_VIEW;
-import static com.project.ems.mapper.RoleMapper.convertToDto;
-import static com.project.ems.mapper.RoleMapper.convertToDtoList;
 import static com.project.ems.mock.RoleMock.getMockedRole1;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto1;
 import static com.project.ems.mock.RoleMock.getMockedRoles;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -46,9 +44,6 @@ class RoleControllerTest {
     @Spy
     private Model model;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private Role role;
     private List<Role> roles;
     private RoleDto roleDto;
@@ -58,8 +53,8 @@ class RoleControllerTest {
     void setUp() {
         role = getMockedRole1();
         roles = getMockedRoles();
-        roleDto = convertToDto(modelMapper, role);
-        roleDtos = convertToDtoList(modelMapper, roles);
+        roleDto = getMockedRoleDto1();
+        roleDtos = roleService.convertToDtos(roles);
     }
 
     @Test

@@ -18,9 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -36,14 +34,12 @@ import static com.project.ems.constants.ExceptionMessageConstants.FEEDBACK_NOT_F
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.FEEDBACK_FILTER_KEY;
-import static com.project.ems.mapper.FeedbackMapper.convertToDto;
-import static com.project.ems.mapper.FeedbackMapper.convertToDtoList;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedback1;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedback2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDto1;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDto2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDtosPage1;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDtosPage2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDtosPage3;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacks;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage1;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage2;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -74,18 +70,15 @@ class FeedbackRestControllerMockMvcTest {
     @MockBean
     private FeedbackService feedbackService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private FeedbackDto feedbackDto1;
     private FeedbackDto feedbackDto2;
     private List<FeedbackDto> feedbackDtos;
 
     @BeforeEach
     void setUp() {
-        feedbackDto1 = convertToDto(modelMapper, getMockedFeedback1());
-        feedbackDto2 = convertToDto(modelMapper, getMockedFeedback2());
-        feedbackDtos = convertToDtoList(modelMapper, getMockedFeedbacks());
+        feedbackDto1 = getMockedFeedbackDto1();
+        feedbackDto2 = getMockedFeedbackDto2();
+        feedbackDtos = feedbackService.convertToDtos(getMockedFeedbacks());
     }
 
     @Test
@@ -178,9 +171,9 @@ class FeedbackRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        Page<FeedbackDto> feedbackDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedFeedbacksPage1()));
-        Page<FeedbackDto> feedbackDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedFeedbacksPage2()));
-        Page<FeedbackDto> feedbackDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedFeedbacksPage3()));
+        Page<FeedbackDto> feedbackDtosPage1 = new PageImpl<>(getMockedFeedbackDtosPage1());
+        Page<FeedbackDto> feedbackDtosPage2 = new PageImpl<>(getMockedFeedbackDtosPage2());
+        Page<FeedbackDto> feedbackDtosPage3 = new PageImpl<>(getMockedFeedbackDtosPage3());
         Page<FeedbackDto> emptyPage = new PageImpl<>(Collections.emptyList());
         return Stream.of(Arguments.of(0, 2, "id", "asc", FEEDBACK_FILTER_KEY, feedbackDtosPage1),
                          Arguments.of(1, 2, "id", "asc", FEEDBACK_FILTER_KEY, feedbackDtosPage2),

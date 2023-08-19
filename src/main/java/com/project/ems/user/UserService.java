@@ -18,5 +18,13 @@ public interface UserService {
 
     Page<UserDto> findAllByKey(Pageable pageable, String key);
 
+    List<UserDto> convertToDtos(List<User> users);
+
+    List<User> convertToEntities(List<UserDto> userDtos);
+
+    UserDto convertToDto(User user);
+
+    User convertToEntity(UserDto userDto);
+
     User findEntityById(Integer id);
 }

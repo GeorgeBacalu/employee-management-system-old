@@ -21,8 +21,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Spy;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -36,11 +34,14 @@ import static com.project.ems.constants.ExceptionMessageConstants.EXPERIENCE_NOT
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.EXPERIENCE_FILTER_KEY;
-import static com.project.ems.mapper.ExperienceMapper.convertToDto;
-import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience2;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDto1;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDto2;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDtosPage1;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDtosPage2;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDtosPage3;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiencesPage1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiencesPage2;
@@ -71,9 +72,6 @@ class ExperienceServiceIntegrationTest {
     @MockBean
     private MentorRepository mentorRepository;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     @Captor
     private ArgumentCaptor<Experience> experienceCaptor;
 
@@ -93,9 +91,9 @@ class ExperienceServiceIntegrationTest {
         experiences = getMockedExperiences();
         employee = getMockedEmployee1();
         mentor = getMockedMentor1();
-        experienceDto1 = convertToDto(modelMapper, experience1);
-        experienceDto2 = convertToDto(modelMapper, experience2);
-        experienceDtos = convertToDtoList(modelMapper, experiences);
+        experienceDto1 = getMockedExperienceDto1();
+        experienceDto2 = getMockedExperienceDto2();
+        experienceDtos = experienceService.convertToDtos(experiences);
     }
 
     @Test
@@ -124,7 +122,7 @@ class ExperienceServiceIntegrationTest {
         given(experienceRepository.save(any(Experience.class))).willReturn(experience1);
         ExperienceDto result = experienceService.save(experienceDto1);
         verify(experienceRepository).save(experienceCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, experienceCaptor.getValue()));
+        assertThat(result).isEqualTo(experienceService.convertToDto(experienceCaptor.getValue()));
     }
 
     @Test
@@ -134,7 +132,7 @@ class ExperienceServiceIntegrationTest {
         given(experienceRepository.save(any(Experience.class))).willReturn(experience);
         ExperienceDto result = experienceService.updateById(experienceDto2, VALID_ID);
         verify(experienceRepository).save(experienceCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, experienceCaptor.getValue()));
+        assertThat(result).isEqualTo(experienceService.convertToDto(experienceCaptor.getValue()));
     }
 
     @Test
@@ -167,9 +165,9 @@ class ExperienceServiceIntegrationTest {
         Page<Experience> experiencesPage2 = new PageImpl<>(getMockedExperiencesPage2());
         Page<Experience> experiencesPage3 = new PageImpl<>(getMockedExperiencesPage3());
         Page<Experience> emptyPage = new PageImpl<>(Collections.emptyList());
-        Page<ExperienceDto> experienceDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedExperiencesPage1()));
-        Page<ExperienceDto> experienceDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedExperiencesPage2()));
-        Page<ExperienceDto> experienceDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedExperiencesPage3()));
+        Page<ExperienceDto> experienceDtosPage1 = new PageImpl<>(getMockedExperienceDtosPage1());
+        Page<ExperienceDto> experienceDtosPage2 = new PageImpl<>(getMockedExperienceDtosPage2());
+        Page<ExperienceDto> experienceDtosPage3 = new PageImpl<>(getMockedExperienceDtosPage3());
         Page<ExperienceDto> emptyDtoPage = new PageImpl<>(Collections.emptyList());
         return Stream.of(Arguments.of(0, 2, "id", EXPERIENCE_FILTER_KEY, experiencesPage1, experienceDtosPage1),
                          Arguments.of(1, 2, "id", EXPERIENCE_FILTER_KEY, experiencesPage2, experienceDtosPage2),

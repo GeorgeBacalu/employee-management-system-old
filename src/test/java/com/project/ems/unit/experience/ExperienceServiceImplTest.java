@@ -35,11 +35,11 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
-import static com.project.ems.mapper.ExperienceMapper.convertToDto;
-import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience2;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDto1;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDto2;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiencesPage1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiencesPage2;
@@ -91,9 +91,9 @@ class ExperienceServiceImplTest {
         experiences = getMockedExperiences();
         employee = getMockedEmployee1();
         mentor = getMockedMentor1();
-        experienceDto1 = convertToDto(modelMapper, experience1);
-        experienceDto2 = convertToDto(modelMapper, experience2);
-        experienceDtos = convertToDtoList(modelMapper, experiences);
+        experienceDto1 = getMockedExperienceDto1();
+        experienceDto2 = getMockedExperienceDto2();
+        experienceDtos = experienceService.convertToDtos(experiences);
     }
 
     @Test
@@ -122,7 +122,7 @@ class ExperienceServiceImplTest {
         given(experienceRepository.save(any(Experience.class))).willReturn(experience1);
         ExperienceDto result = experienceService.save(experienceDto1);
         verify(experienceRepository).save(experienceCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, experienceCaptor.getValue()));
+        assertThat(result).isEqualTo(experienceService.convertToDto(experienceCaptor.getValue()));
     }
 
     @Test
@@ -132,7 +132,7 @@ class ExperienceServiceImplTest {
         given(experienceRepository.save(any(Experience.class))).willReturn(experience);
         ExperienceDto result = experienceService.updateById(experienceDto2, VALID_ID);
         verify(experienceRepository).save(experienceCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, experienceCaptor.getValue()));
+        assertThat(result).isEqualTo(experienceService.convertToDto(experienceCaptor.getValue()));
     }
 
     @Test
@@ -163,7 +163,12 @@ class ExperienceServiceImplTest {
     @ParameterizedTest
     @CsvSource({ "1, ${EXPERIENCE_FILTER_KEY}", "2, ${EXPERIENCE_FILTER_KEY}", "3, ${EXPERIENCE_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
     void findAllByKey_shouldReturnListOfExperiencesFilteredByKey(int page, String key) {
-        Pair<List<Experience>, Pageable> pair = getFilteredExperiencesAndPageable(page, key);
+        Pair<List<Experience>, Pageable> pair = switch(page) {
+            case 1 -> Pair.of(getMockedExperiencesPage1(), pageable);
+            case 2 -> Pair.of(getMockedExperiencesPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedExperiencesPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
         Page<Experience> filteredExperiencesPage = new PageImpl<>(pair.getLeft());
         if(key.equals("")) {
             given(experienceRepository.findAll(any(Pageable.class))).willReturn(filteredExperiencesPage);
@@ -171,15 +176,6 @@ class ExperienceServiceImplTest {
             given(experienceRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredExperiencesPage);
         }
         Page<ExperienceDto> result = experienceService.findAllByKey(pair.getRight(), key);
-        assertThat(result.getContent()).isEqualTo(convertToDtoList(modelMapper, pair.getLeft()));
-    }
-
-    private Pair<List<Experience>, Pageable> getFilteredExperiencesAndPageable(int page, String key) {
-        return switch(page) {
-            case 1 -> Pair.of(getMockedExperiencesPage1(), pageable);
-            case 2 -> Pair.of(getMockedExperiencesPage2(), pageable2);
-            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedExperiencesPage3(), pageable3);
-            default -> throw new IllegalArgumentException("Invalid page number: " + page);
-        };
+        assertThat(result.getContent()).isEqualTo(experienceService.convertToDtos(pair.getLeft()));
     }
 }

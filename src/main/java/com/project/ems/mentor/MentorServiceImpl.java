@@ -2,8 +2,10 @@ package com.project.ems.mentor;
 
 import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
+import com.project.ems.experience.Experience;
 import com.project.ems.experience.ExperienceService;
 import com.project.ems.role.RoleService;
+import com.project.ems.study.Study;
 import com.project.ems.study.StudyService;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.MENTOR_NOT_FOUND;
-import static com.project.ems.mapper.MentorMapper.convertToDto;
-import static com.project.ems.mapper.MentorMapper.convertToDtoList;
-import static com.project.ems.mapper.MentorMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -33,20 +32,20 @@ public class MentorServiceImpl implements MentorService {
     @Override
     public List<MentorDto> findAll() {
         List<Mentor> mentors = mentorRepository.findAll();
-        return !mentors.isEmpty() ? convertToDtoList(modelMapper, mentors) : new ArrayList<>();
+        return !mentors.isEmpty() ? convertToDtos(mentors) : new ArrayList<>();
     }
 
     @Override
     public MentorDto findById(Integer id) {
         Mentor mentor = findEntityById(id);
-        return convertToDto(modelMapper, mentor);
+        return convertToDto(mentor);
     }
 
     @Override
     public MentorDto save(MentorDto mentorDto) {
-        Mentor mentor = convertToEntity(modelMapper, mentorDto, roleService, this, studyService, experienceService);
+        Mentor mentor = convertToEntity(mentorDto);
         Mentor savedMentor = mentorRepository.save(mentor);
-        return convertToDto(modelMapper, savedMentor);
+        return convertToDto(savedMentor);
     }
 
     @Override
@@ -54,7 +53,7 @@ public class MentorServiceImpl implements MentorService {
         Mentor mentorToUpdate = findEntityById(id);
         updateEntityFromDto(mentorDto, mentorToUpdate);
         Mentor updatedMentor = mentorRepository.save(mentorToUpdate);
-        return convertToDto(modelMapper, updatedMentor);
+        return convertToDto(updatedMentor);
     }
 
     @Override
@@ -68,7 +67,38 @@ public class MentorServiceImpl implements MentorService {
     @Override
     public Page<MentorDto> findAllByKey(Pageable pageable, String key) {
         Page<Mentor> mentorsPage = key.trim().equals("") ? mentorRepository.findAll(pageable) : mentorRepository.findAllByKey(pageable, key.toLowerCase());
-        return mentorsPage.hasContent() ? mentorsPage.map(mentor -> convertToDto(modelMapper, mentor)) : Page.empty();
+        return mentorsPage.hasContent() ? mentorsPage.map(this::convertToDto) : Page.empty();
+    }
+
+    @Override
+    public List<MentorDto> convertToDtos(List<Mentor> mentors) {
+        return mentors.stream().map(this::convertToDto).toList();
+    }
+
+    @Override
+    public List<Mentor> convertToEntities(List<MentorDto> mentorDtos) {
+        return mentorDtos.stream().map(this::convertToEntity).toList();
+    }
+
+    @Override
+    public MentorDto convertToDto(Mentor mentor) {
+        MentorDto mentorDto = modelMapper.map(mentor, MentorDto.class);
+        Mentor supervisingMentor = mentor.getSupervisingMentor();
+        mentorDto.setSupervisingMentorId(supervisingMentor != null ? supervisingMentor.getId() : null);
+        mentorDto.setStudiesIds(mentor.getStudies().stream().map(Study::getId).toList());
+        mentorDto.setExperiencesIds(mentor.getExperiences().stream().map(Experience::getId).toList());
+        return mentorDto;
+    }
+
+    @Override
+    public Mentor convertToEntity(MentorDto mentorDto) {
+        Mentor mentor = modelMapper.map(mentorDto, Mentor.class);
+        Integer supervisingMentorId = mentorDto.getSupervisingMentorId();
+        mentor.setRole(roleService.findEntityById(mentorDto.getRoleId()));
+        mentor.setSupervisingMentor(supervisingMentorId != null ? this.findEntityById(supervisingMentorId) : null);
+        mentor.setStudies(mentorDto.getStudiesIds().stream().map(studyService::findEntityById).toList());
+        mentor.setExperiences(mentorDto.getExperiencesIds().stream().map(experienceService::findEntityById).toList());
+        return mentor;
     }
 
     @Override

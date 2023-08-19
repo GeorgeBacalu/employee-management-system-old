@@ -17,4 +17,12 @@ public interface FeedbackService {
     void deleteById(Integer id);
 
     Page<FeedbackDto> findAllByKey(Pageable pageable, String key);
+
+    List<FeedbackDto> convertToDtos(List<Feedback> feedbacks);
+
+    List<Feedback> convertToEntities(List<FeedbackDto> feedbackDtos);
+
+    FeedbackDto convertToDto(Feedback feedback);
+
+    Feedback convertToEntity(FeedbackDto feedbackDto);
 }

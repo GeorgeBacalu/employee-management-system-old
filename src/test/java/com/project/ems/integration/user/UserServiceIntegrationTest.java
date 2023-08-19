@@ -19,8 +19,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Spy;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -34,11 +32,14 @@ import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.USER_FILTER_KEY;
-import static com.project.ems.mapper.UserMapper.convertToDto;
-import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mock.RoleMock.getMockedRole2;
 import static com.project.ems.mock.UserMock.getMockedUser1;
 import static com.project.ems.mock.UserMock.getMockedUser2;
+import static com.project.ems.mock.UserMock.getMockedUserDto1;
+import static com.project.ems.mock.UserMock.getMockedUserDto2;
+import static com.project.ems.mock.UserMock.getMockedUserDtosPage1;
+import static com.project.ems.mock.UserMock.getMockedUserDtosPage2;
+import static com.project.ems.mock.UserMock.getMockedUserDtosPage3;
 import static com.project.ems.mock.UserMock.getMockedUsers;
 import static com.project.ems.mock.UserMock.getMockedUsersPage1;
 import static com.project.ems.mock.UserMock.getMockedUsersPage2;
@@ -65,9 +66,6 @@ class UserServiceIntegrationTest {
     @MockBean
     private RoleService roleService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     @Captor
     private ArgumentCaptor<User> userCaptor;
 
@@ -85,9 +83,9 @@ class UserServiceIntegrationTest {
         user2 = getMockedUser2();
         users = getMockedUsers();
         role = getMockedRole2();
-        userDto1 = convertToDto(modelMapper, user1);
-        userDto2 = convertToDto(modelMapper, user2);
-        userDtos = convertToDtoList(modelMapper, users);
+        userDto1 = getMockedUserDto1();
+        userDto2 = getMockedUserDto2();
+        userDtos = userService.convertToDtos(users);
     }
 
     @Test
@@ -116,7 +114,7 @@ class UserServiceIntegrationTest {
         given(userRepository.save(any(User.class))).willReturn(user1);
         UserDto result = userService.save(userDto1);
         verify(userRepository).save(userCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, user1));
+        assertThat(result).isEqualTo(userService.convertToDto(user1));
     }
 
     @Test
@@ -127,7 +125,7 @@ class UserServiceIntegrationTest {
         given(userRepository.save(any(User.class))).willReturn(user);
         UserDto result = userService.updateById(userDto2, VALID_ID);
         verify(userRepository).save(userCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, userCaptor.getValue()));
+        assertThat(result).isEqualTo(userService.convertToDto(userCaptor.getValue()));
     }
 
     @Test
@@ -158,9 +156,9 @@ class UserServiceIntegrationTest {
         Page<User> usersPage2 = new PageImpl<>(getMockedUsersPage2());
         Page<User> usersPage3 = new PageImpl<>(getMockedUsersPage3());
         Page<User> emptyPage = new PageImpl<>(Collections.emptyList());
-        Page<UserDto> userDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage1()));
-        Page<UserDto> userDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage2()));
-        Page<UserDto> userDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage3()));
+        Page<UserDto> userDtosPage1 = new PageImpl<>(getMockedUserDtosPage1());
+        Page<UserDto> userDtosPage2 = new PageImpl<>(getMockedUserDtosPage2());
+        Page<UserDto> userDtosPage3 = new PageImpl<>(getMockedUserDtosPage3());
         Page<UserDto> emptyDtoPage = new PageImpl<>(Collections.emptyList());
         return Stream.of(Arguments.of(0, 2, "id", USER_FILTER_KEY, usersPage1, userDtosPage1),
                          Arguments.of(1, 2, "id", USER_FILTER_KEY, usersPage2, userDtosPage2),

@@ -18,9 +18,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -36,14 +34,12 @@ import static com.project.ems.constants.ExceptionMessageConstants.EMPLOYEE_NOT_F
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.EMPLOYEE_FILTER_KEY;
-import static com.project.ems.mapper.EmployeeMapper.convertToDto;
-import static com.project.ems.mapper.EmployeeMapper.convertToDtoList;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployee2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto1;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDtosPage1;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDtosPage2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDtosPage3;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployees;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage1;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage2;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -75,18 +71,15 @@ class EmployeeRestControllerMockMvcTest {
     @MockBean
     private EmployeeService employeeService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private EmployeeDto employeeDto1;
     private EmployeeDto employeeDto2;
     private List<EmployeeDto> employeeDtos;
 
     @BeforeEach
     void setUp() {
-        employeeDto1 = convertToDto(modelMapper, getMockedEmployee1());
-        employeeDto2 = convertToDto(modelMapper, getMockedEmployee2());
-        employeeDtos = convertToDtoList(modelMapper, getMockedEmployees());
+        employeeDto1 = getMockedEmployeeDto1();
+        employeeDto2 = getMockedEmployeeDto2();
+        employeeDtos = employeeService.convertToDtos(getMockedEmployees());
     }
 
     @Test
@@ -179,9 +172,9 @@ class EmployeeRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        Page<EmployeeDto> employeeDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage1()));
-        Page<EmployeeDto> employeeDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage2()));
-        Page<EmployeeDto> employeeDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage3()));
+        Page<EmployeeDto> employeeDtosPage1 = new PageImpl<>(getMockedEmployeeDtosPage1());
+        Page<EmployeeDto> employeeDtosPage2 = new PageImpl<>(getMockedEmployeeDtosPage2());
+        Page<EmployeeDto> employeeDtosPage3 = new PageImpl<>(getMockedEmployeeDtosPage3());
         Page<EmployeeDto> emptyPage = new PageImpl<>(Collections.emptyList());
         return Stream.of(Arguments.of(0, 2, "id", "asc", EMPLOYEE_FILTER_KEY, employeeDtosPage1),
                          Arguments.of(1, 2, "id", "asc", EMPLOYEE_FILTER_KEY, employeeDtosPage2),

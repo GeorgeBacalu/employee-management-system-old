@@ -2,7 +2,6 @@ package com.project.ems.experience;
 
 import com.project.ems.wrapper.SearchRequest;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -20,8 +19,6 @@ import static com.project.ems.constants.ThymeleafViewConstants.EXPERIENCES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.EXPERIENCE_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_EXPERIENCES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_EXPERIENCE_VIEW;
-import static com.project.ems.mapper.ExperienceMapper.convertToEntity;
-import static com.project.ems.mapper.ExperienceMapper.convertToEntityList;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
 import static com.project.ems.util.PageUtil.getSortDirection;
@@ -35,7 +32,6 @@ import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 public class ExperienceController {
 
     private final ExperienceService experienceService;
-    private final ModelMapper modelMapper;
 
     @GetMapping
     public String getAllExperiencesPage(Model model, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
@@ -46,7 +42,7 @@ public class ExperienceController {
         String direction = getSortDirection(pageable);
         long nrExperiences = experienceDtosPage.getTotalElements();
         int nrPages = experienceDtosPage.getTotalPages();
-        model.addAttribute("experiences", convertToEntityList(modelMapper, experienceDtosPage.getContent()));
+        model.addAttribute("experiences", experienceService.convertToEntities(experienceDtosPage.getContent()));
         model.addAttribute("nrExperiences", nrExperiences);
         model.addAttribute("nrPages", nrPages);
         model.addAttribute("page", page);
@@ -73,7 +69,7 @@ public class ExperienceController {
 
     @GetMapping("/{id}")
     public String getExperienceByIdPage(Model model, @PathVariable Integer id) {
-        model.addAttribute("experience", convertToEntity(modelMapper, experienceService.findById(id)));
+        model.addAttribute("experience", experienceService.convertToEntity(experienceService.findById(id)));
         return EXPERIENCE_DETAILS_VIEW;
     }
 

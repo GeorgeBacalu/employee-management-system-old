@@ -5,7 +5,6 @@ import com.project.ems.feedback.Feedback;
 import com.project.ems.feedback.FeedbackController;
 import com.project.ems.feedback.FeedbackDto;
 import com.project.ems.feedback.FeedbackService;
-import com.project.ems.user.UserService;
 import com.project.ems.wrapper.SearchRequest;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -29,9 +27,8 @@ import static com.project.ems.constants.ThymeleafViewConstants.FEEDBACKS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.FEEDBACK_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_FEEDBACKS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_FEEDBACK_VIEW;
-import static com.project.ems.mapper.FeedbackMapper.convertToDto;
-import static com.project.ems.mapper.FeedbackMapper.convertToDtoList;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedback1;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDto1;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage1;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
@@ -56,17 +53,11 @@ class FeedbackControllerTest {
     @Mock
     private FeedbackService feedbackService;
 
-    @Mock
-    private UserService userService;
-
     @Spy
     private Model model;
 
     @Spy
     private RedirectAttributes redirectAttributes;
-
-    @Spy
-    private ModelMapper modelMapper;
 
     private Feedback feedback;
     private List<Feedback> feedbacks;
@@ -77,8 +68,8 @@ class FeedbackControllerTest {
     void setUp() {
         feedback = getMockedFeedback1();
         feedbacks = getMockedFeedbacksPage1();
-        feedbackDto = convertToDto(modelMapper, feedback);
-        feedbackDtos = convertToDtoList(modelMapper, feedbacks);
+        feedbackDto = getMockedFeedbackDto1();
+        feedbackDtos = feedbackService.convertToDtos(feedbacks);
     }
 
     @Test

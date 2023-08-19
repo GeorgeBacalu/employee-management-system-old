@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -28,9 +27,8 @@ import static com.project.ems.constants.ThymeleafViewConstants.EXPERIENCES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.EXPERIENCE_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_EXPERIENCES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_EXPERIENCE_VIEW;
-import static com.project.ems.mapper.ExperienceMapper.convertToDto;
-import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
 import static com.project.ems.mock.ExperienceMock.getMockedExperience1;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDto1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiencesPage1;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
@@ -60,9 +58,6 @@ class ExperienceControllerTest {
 
     @Spy
     private RedirectAttributes redirectAttributes;
-
-    @Spy
-    private ModelMapper modelMapper;
     
     private Experience experience;
     private List<Experience> experiences;
@@ -73,8 +68,8 @@ class ExperienceControllerTest {
     void setUp() {
         experience = getMockedExperience1();
         experiences = getMockedExperiencesPage1();
-        experienceDto = convertToDto(modelMapper, experience);
-        experienceDtos = convertToDtoList(modelMapper, experiences);
+        experienceDto = getMockedExperienceDto1();
+        experienceDtos = experienceService.convertToDtos(experiences);
     }
 
     @Test

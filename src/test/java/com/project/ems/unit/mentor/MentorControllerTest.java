@@ -1,13 +1,10 @@
 package com.project.ems.unit.mentor;
 
 import com.project.ems.exception.ResourceNotFoundException;
-import com.project.ems.experience.ExperienceService;
 import com.project.ems.mentor.Mentor;
 import com.project.ems.mentor.MentorController;
 import com.project.ems.mentor.MentorDto;
 import com.project.ems.mentor.MentorService;
-import com.project.ems.role.RoleService;
-import com.project.ems.study.StudyService;
 import com.project.ems.wrapper.SearchRequest;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -31,9 +27,8 @@ import static com.project.ems.constants.ThymeleafViewConstants.MENTORS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.MENTOR_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_MENTORS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_MENTOR_VIEW;
-import static com.project.ems.mapper.MentorMapper.convertToDto;
-import static com.project.ems.mapper.MentorMapper.convertToDtoList;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto1;
 import static com.project.ems.mock.MentorMock.getMockedMentorsPage1;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
@@ -58,23 +53,11 @@ class MentorControllerTest {
     @Mock
     private MentorService mentorService;
 
-    @Mock
-    private RoleService roleService;
-
-    @Mock
-    private StudyService studyService;
-
-    @Mock
-    private ExperienceService experienceService;
-
     @Spy
     private Model model;
 
     @Spy
     private RedirectAttributes redirectAttributes;
-
-    @Spy
-    private ModelMapper modelMapper;
 
     private Mentor mentor;
     private List<Mentor> mentors;
@@ -85,8 +68,8 @@ class MentorControllerTest {
     void setUp() {
         mentor = getMockedMentor1();
         mentors = getMockedMentorsPage1();
-        mentorDto = convertToDto(modelMapper, mentor);
-        mentorDtos = convertToDtoList(modelMapper, mentors);
+        mentorDto = getMockedMentorDto1();
+        mentorDtos = mentorService.convertToDtos(mentors);
     }
 
     @Test

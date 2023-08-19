@@ -1,7 +1,6 @@
 package com.project.ems.unit.user;
 
 import com.project.ems.exception.ResourceNotFoundException;
-import com.project.ems.role.RoleService;
 import com.project.ems.user.User;
 import com.project.ems.user.UserController;
 import com.project.ems.user.UserDto;
@@ -15,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -29,9 +27,8 @@ import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_USERS_VI
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_USER_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.USERS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.USER_DETAILS_VIEW;
-import static com.project.ems.mapper.UserMapper.convertToDto;
-import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mock.UserMock.getMockedUser1;
+import static com.project.ems.mock.UserMock.getMockedUserDto1;
 import static com.project.ems.mock.UserMock.getMockedUsersPage1;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
@@ -56,17 +53,11 @@ class UserControllerTest {
     @Mock
     private UserService userService;
 
-    @Mock
-    private RoleService roleService;
-
     @Spy
     private Model model;
 
     @Spy
     private RedirectAttributes redirectAttributes;
-
-    @Spy
-    private ModelMapper modelMapper;
 
     private User user;
     private List<User> users;
@@ -77,8 +68,8 @@ class UserControllerTest {
     void setUp() {
         user = getMockedUser1();
         users = getMockedUsersPage1();
-        userDto = convertToDto(modelMapper, user);
-        userDtos = convertToDtoList(modelMapper, users);
+        userDto = getMockedUserDto1();
+        userDtos = userService.convertToDtos(users);
     }
 
     @Test

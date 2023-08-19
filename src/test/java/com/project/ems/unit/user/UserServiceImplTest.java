@@ -33,11 +33,11 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
-import static com.project.ems.mapper.UserMapper.convertToDto;
-import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mock.RoleMock.getMockedRole2;
 import static com.project.ems.mock.UserMock.getMockedUser1;
 import static com.project.ems.mock.UserMock.getMockedUser2;
+import static com.project.ems.mock.UserMock.getMockedUserDto1;
+import static com.project.ems.mock.UserMock.getMockedUserDto2;
 import static com.project.ems.mock.UserMock.getMockedUsers;
 import static com.project.ems.mock.UserMock.getMockedUsersPage1;
 import static com.project.ems.mock.UserMock.getMockedUsersPage2;
@@ -83,9 +83,9 @@ class UserServiceImplTest {
         user2 = getMockedUser2();
         users = getMockedUsers();
         role = getMockedRole2();
-        userDto1 = convertToDto(modelMapper, user1);
-        userDto2 = convertToDto(modelMapper, user2);
-        userDtos = convertToDtoList(modelMapper, users);
+        userDto1 = getMockedUserDto1();
+        userDto2 = getMockedUserDto2();
+        userDtos = userService.convertToDtos(users);
     }
 
     @Test
@@ -114,7 +114,7 @@ class UserServiceImplTest {
         given(userRepository.save(any(User.class))).willReturn(user1);
         UserDto result = userService.save(userDto1);
         verify(userRepository).save(userCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, user1));
+        assertThat(result).isEqualTo(userService.convertToDto(user1));
     }
 
     @Test
@@ -125,7 +125,7 @@ class UserServiceImplTest {
         given(userRepository.save(any(User.class))).willReturn(user);
         UserDto result = userService.updateById(userDto2, VALID_ID);
         verify(userRepository).save(userCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, userCaptor.getValue()));
+        assertThat(result).isEqualTo(userService.convertToDto(userCaptor.getValue()));
     }
 
     @Test
@@ -154,7 +154,12 @@ class UserServiceImplTest {
     @ParameterizedTest
     @CsvSource({ "1, ${USER_FILTER_KEY}", "2, ${USER_FILTER_KEY}", "3, ${USER_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
     void findAllByKey_shouldReturnListOfUsersFilteredByKey(int page, String key) {
-        Pair<List<User>, Pageable> pair = getFilteredUsersAndPageable(page, key);
+        Pair<List<User>, Pageable> pair = switch(page) {
+            case 1 -> Pair.of(getMockedUsersPage1(), pageable);
+            case 2 -> Pair.of(getMockedUsersPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedUsersPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
         Page<User> filteredUsersPage = new PageImpl<>(pair.getLeft());
         if(key.equals("")) {
             given(userRepository.findAll(any(Pageable.class))).willReturn(filteredUsersPage);
@@ -162,15 +167,6 @@ class UserServiceImplTest {
             given(userRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredUsersPage);
         }
         Page<UserDto> result = userService.findAllByKey(pair.getRight(), key);
-        assertThat(result.getContent()).isEqualTo(convertToDtoList(modelMapper, pair.getLeft()));
-    }
-
-    private Pair<List<User>, Pageable> getFilteredUsersAndPageable(int page, String key) {
-        return switch(page) {
-            case 1 -> Pair.of(getMockedUsersPage1(), pageable);
-            case 2 -> Pair.of(getMockedUsersPage2(), pageable2);
-            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedUsersPage3(), pageable3);
-            default -> throw new IllegalArgumentException("Invalid page number: " + page);
-        };
+        assertThat(result.getContent()).isEqualTo(userService.convertToDtos(pair.getLeft()));
     }
 }

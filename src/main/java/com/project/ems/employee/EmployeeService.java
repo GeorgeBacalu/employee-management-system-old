@@ -17,4 +17,12 @@ public interface EmployeeService {
     void deleteById(Integer id);
 
     Page<EmployeeDto> findAllByKey(Pageable pageable, String key);
+
+    List<EmployeeDto> convertToDtos(List<Employee> employees);
+
+    List<Employee> convertToEntities(List<EmployeeDto> employeeDtos);
+
+    EmployeeDto convertToDto(Employee employee);
+
+    Employee convertToEntity(EmployeeDto employeeDto);
 }

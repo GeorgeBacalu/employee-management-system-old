@@ -1,6 +1,7 @@
 package com.project.ems.mock;
 
 import com.project.ems.feedback.Feedback;
+import com.project.ems.feedback.FeedbackDto;
 import com.project.ems.feedback.enums.FeedbackType;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,6 +40,26 @@ public class FeedbackMock {
 
     public static List<Feedback> getMockedFeedbacksPage3() {
         return List.of(getMockedFeedback5(), getMockedFeedback6());
+    }
+
+    public static List<FeedbackDto> getMockedFeedbackDtosPage1() {
+        return List.of(getMockedFeedbackDto1(), getMockedFeedbackDto2());
+    }
+
+    public static List<FeedbackDto> getMockedFeedbackDtosPage2() {
+        return List.of(getMockedFeedbackDto3(), getMockedFeedbackDto4());
+    }
+
+    public static List<FeedbackDto> getMockedFeedbackDtosPage3() {
+        return List.of(getMockedFeedbackDto5(), getMockedFeedbackDto6());
+    }
+
+    public static List<Feedback> getMockedFeedbacksFirstPage() {
+        return List.of(getMockedFeedback1(), getMockedFeedback2(), getMockedFeedback3(), getMockedFeedback4(), getMockedFeedback5(), getMockedFeedback6(), getMockedFeedback7(), getMockedFeedback8(), getMockedFeedback9(), getMockedFeedback10());
+    }
+
+    public static List<FeedbackDto> getMockedFeedbackDtosFirstPage() {
+        return List.of(getMockedFeedbackDto1(), getMockedFeedbackDto2(), getMockedFeedbackDto3(), getMockedFeedbackDto4(), getMockedFeedbackDto5(), getMockedFeedbackDto6(), getMockedFeedbackDto7(), getMockedFeedbackDto8(), getMockedFeedbackDto9(), getMockedFeedbackDto10());
     }
 
     public static Feedback getMockedFeedback1() {
@@ -87,5 +108,45 @@ public class FeedbackMock {
 
     public static Feedback getMockedFeedback12() {
         return new Feedback(12, FeedbackType.IMPROVEMENT, "Allow users to customize their profile layout.", LocalDateTime.of(2023, 5, 3, 11, 35), getMockedUser12());
+    }
+
+    public static FeedbackDto getMockedFeedbackDto1() {
+        return new FeedbackDto(1, FeedbackType.OPTIMIZATION, "Improve page load time for the dashboard.", LocalDateTime.of(2023, 4, 21, 9, 15), 1);
+    }
+
+    public static FeedbackDto getMockedFeedbackDto2() {
+        return new FeedbackDto(2, FeedbackType.OPTIMIZATION, "Optimize search functionality for better results.", LocalDateTime.of(2023, 4, 25, 10, 50), 2);
+    }
+
+    public static FeedbackDto getMockedFeedbackDto3() {
+        return new FeedbackDto(3, FeedbackType.OPTIMIZATION, "Compress images to improve page load time.", LocalDateTime.of(2023, 5, 1, 9, 45), 3);
+    }
+
+    public static FeedbackDto getMockedFeedbackDto4() {
+        return new FeedbackDto(4, FeedbackType.OPTIMIZATION, "Implement lazy loading for faster initial load.", LocalDateTime.of(2023, 5, 4, 17, 20), 4);
+    }
+
+    public static FeedbackDto getMockedFeedbackDto5() {
+        return new FeedbackDto(5, FeedbackType.ISSUE, "App crashes when submitting a form.", LocalDateTime.of(2023, 4, 20, 14, 30), 5);
+    }
+
+    public static FeedbackDto getMockedFeedbackDto6() {
+        return new FeedbackDto(6, FeedbackType.ISSUE, "Error message appears when uploading an image.", LocalDateTime.of(2023, 4, 23, 11, 10), 6);
+    }
+
+    public static FeedbackDto getMockedFeedbackDto7() {
+        return new FeedbackDto(7, FeedbackType.ISSUE, "Login issues after resetting the password.", LocalDateTime.of(2023, 4, 26, 17, 20), 7);
+    }
+
+    public static FeedbackDto getMockedFeedbackDto8() {
+        return new FeedbackDto(8, FeedbackType.ISSUE, "Notifications not appearing on the mobile app.", LocalDateTime.of(2023, 5, 2, 16, 10), 8);
+    }
+
+    public static FeedbackDto getMockedFeedbackDto9() {
+        return new FeedbackDto(9, FeedbackType.IMPROVEMENT, "Add a dark mode for better user experience.", LocalDateTime.of(2023, 4, 22, 16, 45), 9);
+    }
+
+    public static FeedbackDto getMockedFeedbackDto10() {
+        return new FeedbackDto(10, FeedbackType.IMPROVEMENT, "Add more filtering options in the search bar.", LocalDateTime.of(2023, 4, 27, 15, 40), 10);
     }
 }

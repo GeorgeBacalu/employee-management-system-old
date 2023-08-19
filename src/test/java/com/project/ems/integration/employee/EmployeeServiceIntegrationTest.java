@@ -25,8 +25,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Spy;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -40,10 +38,13 @@ import static com.project.ems.constants.ExceptionMessageConstants.EMPLOYEE_NOT_F
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.EMPLOYEE_FILTER_KEY;
-import static com.project.ems.mapper.EmployeeMapper.convertToDto;
-import static com.project.ems.mapper.EmployeeMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto1;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDtosPage1;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDtosPage2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDtosPage3;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployees;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage1;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage2;
@@ -87,9 +88,6 @@ class EmployeeServiceIntegrationTest {
     @MockBean
     private ExperienceService experienceService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     @Captor
     private ArgumentCaptor<Employee> employeeCaptor;
 
@@ -121,9 +119,9 @@ class EmployeeServiceIntegrationTest {
         studies2 = getMockedStudies2();
         experiences1 = getMockedExperiences1();
         experiences2 = getMockedExperiences2();
-        employeeDto1 = convertToDto(modelMapper, employee1);
-        employeeDto2 = convertToDto(modelMapper, employee2);
-        employeeDtos = convertToDtoList(modelMapper, employees);
+        employeeDto1 = getMockedEmployeeDto1();
+        employeeDto2 = getMockedEmployeeDto2();
+        employeeDtos = employeeService.convertToDtos(employees);
     }
 
     @Test
@@ -156,7 +154,7 @@ class EmployeeServiceIntegrationTest {
         given(employeeRepository.save(any(Employee.class))).willReturn(employee1);
         EmployeeDto result = employeeService.save(employeeDto1);
         verify(employeeRepository).save(employeeCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, employeeCaptor.getValue()));
+        assertThat(result).isEqualTo(employeeService.convertToDto(employeeCaptor.getValue()));
     }
 
     @Test
@@ -170,7 +168,7 @@ class EmployeeServiceIntegrationTest {
         given(employeeRepository.save(any(Employee.class))).willReturn(employee);
         EmployeeDto result = employeeService.updateById(employeeDto2, VALID_ID);
         verify(employeeRepository).save(employeeCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, employee));
+        assertThat(result).isEqualTo(employeeService.convertToDto(employee));
     }
 
     @Test
@@ -201,9 +199,9 @@ class EmployeeServiceIntegrationTest {
         Page<Employee> employeesPage2 = new PageImpl<>(getMockedEmployeesPage2());
         Page<Employee> employeesPage3 = new PageImpl<>(getMockedEmployeesPage3());
         Page<Employee> emptyPage = new PageImpl<>(Collections.emptyList());
-        Page<EmployeeDto> employeeDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage1()));
-        Page<EmployeeDto> employeeDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage2()));
-        Page<EmployeeDto> employeeDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedEmployeesPage3()));
+        Page<EmployeeDto> employeeDtosPage1 = new PageImpl<>(getMockedEmployeeDtosPage1());
+        Page<EmployeeDto> employeeDtosPage2 = new PageImpl<>(getMockedEmployeeDtosPage2());
+        Page<EmployeeDto> employeeDtosPage3 = new PageImpl<>(getMockedEmployeeDtosPage3());
         Page<EmployeeDto> emptyDtoPage = new PageImpl<>(Collections.emptyList());
         return Stream.of(Arguments.of(0, 2, "id", EMPLOYEE_FILTER_KEY, employeesPage1, employeeDtosPage1),
                          Arguments.of(1, 2, "id", EMPLOYEE_FILTER_KEY, employeesPage2, employeeDtosPage2),

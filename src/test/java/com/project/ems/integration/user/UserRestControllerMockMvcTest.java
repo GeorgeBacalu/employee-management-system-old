@@ -19,9 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,14 +35,12 @@ import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.USER_FILTER_KEY;
-import static com.project.ems.mapper.UserMapper.convertToDto;
-import static com.project.ems.mapper.UserMapper.convertToDtoList;
-import static com.project.ems.mock.UserMock.getMockedUser1;
-import static com.project.ems.mock.UserMock.getMockedUser2;
+import static com.project.ems.mock.UserMock.getMockedUserDto1;
+import static com.project.ems.mock.UserMock.getMockedUserDto2;
+import static com.project.ems.mock.UserMock.getMockedUserDtosPage1;
+import static com.project.ems.mock.UserMock.getMockedUserDtosPage2;
+import static com.project.ems.mock.UserMock.getMockedUserDtosPage3;
 import static com.project.ems.mock.UserMock.getMockedUsers;
-import static com.project.ems.mock.UserMock.getMockedUsersPage1;
-import static com.project.ems.mock.UserMock.getMockedUsersPage2;
-import static com.project.ems.mock.UserMock.getMockedUsersPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,18 +71,15 @@ class UserRestControllerMockMvcTest {
     @MockBean
     private UserService userService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private UserDto userDto1;
     private UserDto userDto2;
     private List<UserDto> userDtos;
 
     @BeforeEach
     void setUp() {
-        userDto1 = convertToDto(modelMapper, getMockedUser1());
-        userDto2 = convertToDto(modelMapper, getMockedUser2());
-        userDtos = convertToDtoList(modelMapper, getMockedUsers());
+        userDto1 = getMockedUserDto1();
+        userDto2 = getMockedUserDto2();
+        userDtos = userService.convertToDtos(getMockedUsers());
     }
 
     @Test
@@ -179,9 +172,9 @@ class UserRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        Page<UserDto> userDtosPage1 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage1()));
-        Page<UserDto> userDtosPage2 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage2()));
-        Page<UserDto> userDtosPage3 = new PageImpl<>(convertToDtoList(modelMapper, getMockedUsersPage3()));
+        Page<UserDto> userDtosPage1 = new PageImpl<>(getMockedUserDtosPage1());
+        Page<UserDto> userDtosPage2 = new PageImpl<>(getMockedUserDtosPage2());
+        Page<UserDto> userDtosPage3 = new PageImpl<>(getMockedUserDtosPage3());
         Page<EmployeeDto> emptyPage = new PageImpl<>(Collections.emptyList());
         return Stream.of(Arguments.of(0, 2, "id", "asc", USER_FILTER_KEY, userDtosPage1),
                          Arguments.of(1, 2, "id", "asc", USER_FILTER_KEY, userDtosPage2),

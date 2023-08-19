@@ -12,5 +12,13 @@ public interface RoleService {
 
     RoleDto updateById(RoleDto roleDto, Integer id);
 
+    List<RoleDto> convertToDtos(List<Role> roles);
+
+    List<Role> convertToEntities(List<RoleDto> roleDtos);
+
+    RoleDto convertToDto(Role role);
+
+    Role convertToEntity(RoleDto roleDto);
+
     Role findEntityById(Integer id);
 }

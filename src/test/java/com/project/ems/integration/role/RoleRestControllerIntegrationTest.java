@@ -3,10 +3,10 @@ package com.project.ems.integration.role;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.role.RoleDto;
+import com.project.ems.role.RoleService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -21,10 +21,8 @@ import static com.project.ems.constants.ExceptionMessageConstants.RESOURCE_NOT_F
 import static com.project.ems.constants.ExceptionMessageConstants.ROLE_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
-import static com.project.ems.mapper.RoleMapper.convertToDto;
-import static com.project.ems.mapper.RoleMapper.convertToDtoList;
-import static com.project.ems.mock.RoleMock.getMockedRole1;
-import static com.project.ems.mock.RoleMock.getMockedRole2;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto1;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto2;
 import static com.project.ems.mock.RoleMock.getMockedRoles;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -40,7 +38,7 @@ class RoleRestControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private RoleService roleService;
 
     private RoleDto roleDto1;
     private RoleDto roleDto2;
@@ -48,9 +46,9 @@ class RoleRestControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        roleDto1 = convertToDto(modelMapper, getMockedRole1());
-        roleDto2 = convertToDto(modelMapper, getMockedRole2());
-        roleDtos = convertToDtoList(modelMapper, getMockedRoles());
+        roleDto1 = getMockedRoleDto1();
+        roleDto2 = getMockedRoleDto2();
+        roleDtos = roleService.convertToDtos(getMockedRoles());
     }
 
     @Test

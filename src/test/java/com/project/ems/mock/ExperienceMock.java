@@ -1,6 +1,7 @@
 package com.project.ems.mock;
 
 import com.project.ems.experience.Experience;
+import com.project.ems.experience.ExperienceDto;
 import com.project.ems.experience.enums.ExperienceType;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,18 +15,6 @@ public class ExperienceMock {
 
     public static List<Experience> getMockedExperiences() {
         return Stream.of(getMockedExperiences1(), getMockedExperiences2(), getMockedExperiences3(), getMockedExperiences4(), getMockedExperiences5(), getMockedExperiences6(), getMockedExperiences7(), getMockedExperiences8()).flatMap(List::stream).toList();
-    }
-
-    public static List<Experience> getMockedExperiencesPage1() {
-        return getMockedExperiences1();
-    }
-
-    public static List<Experience> getMockedExperiencesPage2() {
-        return getMockedExperiences2();
-    }
-
-    public static List<Experience> getMockedExperiencesPage3() {
-        return getMockedExperiences3();
     }
 
     public static List<Experience> getMockedExperiences1() {
@@ -58,6 +47,38 @@ public class ExperienceMock {
 
     public static List<Experience> getMockedExperiences8() {
         return new ArrayList<>(List.of(getMockedExperience15(), getMockedExperience16()));
+    }
+
+    public static List<Experience> getMockedExperiencesPage1() {
+        return getMockedExperiences1();
+    }
+
+    public static List<Experience> getMockedExperiencesPage2() {
+        return getMockedExperiences2();
+    }
+
+    public static List<Experience> getMockedExperiencesPage3() {
+        return getMockedExperiences3();
+    }
+
+    public static List<ExperienceDto> getMockedExperienceDtosPage1() {
+        return List.of(getMockedExperienceDto1(), getMockedExperienceDto2());
+    }
+
+    public static List<ExperienceDto> getMockedExperienceDtosPage2() {
+        return List.of(getMockedExperienceDto3(), getMockedExperienceDto4());
+    }
+
+    public static List<ExperienceDto> getMockedExperienceDtosPage3() {
+        return List.of(getMockedExperienceDto5(), getMockedExperienceDto6());
+    }
+
+    public static List<Experience> getMockedExperiencesFirstPage() {
+        return List.of(getMockedExperience1(), getMockedExperience2(),getMockedExperience3(), getMockedExperience4(), getMockedExperience5(), getMockedExperience6(), getMockedExperience7(), getMockedExperience8(), getMockedExperience9(), getMockedExperience10());
+    }
+
+    public static List<ExperienceDto> getMockedExperienceDtosFirstPage() {
+        return List.of(getMockedExperienceDto1(), getMockedExperienceDto2(), getMockedExperienceDto3(), getMockedExperienceDto4(), getMockedExperienceDto5(), getMockedExperienceDto6(), getMockedExperienceDto7(), getMockedExperienceDto8(), getMockedExperienceDto9(), getMockedExperienceDto10());
     }
 
     public static Experience getMockedExperience1() {
@@ -122,5 +143,45 @@ public class ExperienceMock {
 
     public static Experience getMockedExperience16() {
         return new Experience(16, "Teaching Assistant", "Coursera", "Served as a Teaching Assistant for online courses on Coursera, providing guidance and support to learners, grading assignments, and facilitating discussions.", ExperienceType.VOLUNTEERING, LocalDate.of(2018, 9, 1), LocalDate.of(2018, 12, 31));
+    }
+
+    public static ExperienceDto getMockedExperienceDto1() {
+        return new ExperienceDto(1, "Software Engineering Intern", "Google", "Worked as a Software Engineering Intern at Google, gaining hands-on experience in developing scalable software solutions.", ExperienceType.INTERNSHIP, LocalDate.of(2019, 6, 1), LocalDate.of(2019, 8, 31));
+    }
+
+    public static ExperienceDto getMockedExperienceDto2() {
+        return new ExperienceDto(2, "Data Science Intern", "Facebook", "Completed a Data Science Internship at Facebook, working on data analysis and machine learning projects to gain insights and drive business decisions.", ExperienceType.INTERNSHIP, LocalDate.of(2020, 6, 1), LocalDate.of(2020, 8, 31));
+    }
+
+    public static ExperienceDto getMockedExperienceDto3() {
+        return new ExperienceDto(3, "Backend Developer Intern", "Amazon", "Interned as a Backend Developer at Amazon, contributing to the development of high-performance backend systems for e-commerce applications.", ExperienceType.INTERNSHIP, LocalDate.of(2019, 5, 1), LocalDate.of(2019, 7, 31));
+    }
+
+    public static ExperienceDto getMockedExperienceDto4() {
+        return new ExperienceDto(4, "Frontend Developer Intern", "Microsoft", "Participated in a Frontend Developer Internship at Microsoft, collaborating on the development of user-friendly and responsive web interfaces.", ExperienceType.INTERNSHIP, LocalDate.of(2020, 5, 15), LocalDate.of(2020, 8, 15));
+    }
+
+    public static ExperienceDto getMockedExperienceDto5() {
+        return new ExperienceDto(5, "Machine Learning Trainee", "Apple", "Underwent comprehensive training in Machine Learning at Apple, exploring advanced algorithms and applying them to real-world data analysis challenges.", ExperienceType.TRAINING, LocalDate.of(2018, 6, 15), LocalDate.of(2018, 9, 15));
+    }
+
+    public static ExperienceDto getMockedExperienceDto6() {
+        return new ExperienceDto(6, "Web Development Trainee", "IBM", "Completed a rigorous training program in Web Development at IBM, acquiring skills in front-end and back-end development and working on industry projects.", ExperienceType.TRAINING, LocalDate.of(2017, 6, 1), LocalDate.of(2017, 12, 31));
+    }
+
+    public static ExperienceDto getMockedExperienceDto7() {
+        return new ExperienceDto(7, "Software Developer Trainee", "Intel", "Engaged in a Software Developer Training program at Intel, learning best practices in software engineering and gaining practical experience in software development lifecycle.", ExperienceType.TRAINING, LocalDate.of(2018, 6, 1), LocalDate.of(2018, 8, 31));
+    }
+
+    public static ExperienceDto getMockedExperienceDto8() {
+        return new ExperienceDto(8, "Mobile Application Developer Trainee", "Uber", "Participated in a Mobile Application Development Training program at Uber, learning mobile development frameworks and building innovative mobile applications.", ExperienceType.TRAINING, LocalDate.of(2019, 9, 1), LocalDate.of(2019, 11, 30));
+    }
+
+    public static ExperienceDto getMockedExperienceDto9() {
+        return new ExperienceDto(9, "Cloud Computing Apprentice", "Oracle", "Completed an apprenticeship program in Cloud Computing at Oracle, gaining expertise in cloud infrastructure and deploying scalable solutions.", ExperienceType.APPRENTICESHIP, LocalDate.of(2019, 1, 1), LocalDate.of(2019, 6, 30));
+    }
+
+    public static ExperienceDto getMockedExperienceDto10() {
+        return new ExperienceDto(10, "Full Stack Developer Apprentice", "Airbnb", "Engaged in an apprenticeship program as a Full Stack Developer at Airbnb, developing end-to-end web applications and learning agile development methodologies.", ExperienceType.APPRENTICESHIP, LocalDate.of(2018, 1, 15), LocalDate.of(2018, 7, 15));
     }
 }

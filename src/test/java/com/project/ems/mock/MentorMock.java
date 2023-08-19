@@ -4,6 +4,7 @@ import com.project.ems.employee.enums.EmploymentType;
 import com.project.ems.employee.enums.Grade;
 import com.project.ems.employee.enums.Position;
 import com.project.ems.mentor.Mentor;
+import com.project.ems.mentor.MentorDto;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AccessLevel;
@@ -47,6 +48,26 @@ public class MentorMock {
 
     public static List<Mentor> getMockedMentorsPage3() {
         return List.of(getMockedMentor5(), getMockedMentor6());
+    }
+
+    public static List<MentorDto> getMockedMentorDtosPage1() {
+        return List.of(getMockedMentorDto1(), getMockedMentorDto2());
+    }
+
+    public static List<MentorDto> getMockedMentorDtosPage2() {
+        return List.of(getMockedMentorDto3(), getMockedMentorDto4());
+    }
+
+    public static List<MentorDto> getMockedMentorDtosPage3() {
+        return List.of(getMockedMentorDto5(), getMockedMentorDto6());
+    }
+
+    public static List<Mentor> getMockedMentorsFirstPage() {
+        return List.of(getMockedMentor1(), getMockedMentor2(), getMockedMentor3(), getMockedMentor4(), getMockedMentor5(), getMockedMentor6(), getMockedMentor7(), getMockedMentor8(), getMockedMentor9(), getMockedMentor10());
+    }
+
+    public static List<MentorDto> getMockedMentorDtosFirstPage() {
+        return List.of(getMockedMentorDto1(), getMockedMentorDto2(), getMockedMentorDto3(), getMockedMentorDto4(), getMockedMentorDto5(), getMockedMentorDto6(), getMockedMentorDto7(), getMockedMentorDto8(), getMockedMentorDto9(), getMockedMentorDto10());
     }
 
     public static Mentor getMockedMentor1() {
@@ -191,5 +212,45 @@ public class MentorMock {
 
     public static Mentor getMockedMentor36() {
         return new Mentor(36, "Benjamin Thompson", "benjamin.thompson@example.com", "#Benjamin_Thompson_Password0", "+40787654336", "777 Elm St, Moscow, Russia", LocalDate.of(1996, 3, 20), getMockedRole1(), EmploymentType.PART_TIME, Position.SCRUM_MASTER, Grade.SENIOR, getMockedMentor5(), getMockedStudies6(), getMockedExperiences4(), 1, 5, false);
+    }
+
+    public static MentorDto getMockedMentorDto1() {
+        return new MentorDto(1, "John Doe", "john.doe@example.com", "#John_Doe_Password0", "+40721543701", "123 Main St, Boston, USA", LocalDate.of(1980, 2, 15), 2, EmploymentType.FULL_TIME, Position.FRONTEND, Grade.SENIOR, null, List.of(1, 2), List.of(1, 2), 7, 10, true);
+    }
+
+    public static MentorDto getMockedMentorDto2() {
+        return new MentorDto(2, "Jane Smith", "jane.smith@example.com", "#Jane_Smith_Password0", "+40756321802", "456 Oak St, London, UK", LocalDate.of(1982, 7, 10), 2, EmploymentType.FULL_TIME, Position.FRONTEND, Grade.SENIOR, null, List.of(3, 4), List.of(3, 4), 7, 10, true);
+    }
+
+    public static MentorDto getMockedMentorDto3() {
+        return new MentorDto(3, "Michael Johnson", "michael.johnson@example.com", "#Michael_Johnson_Password0", "+40789712303", "789 Pine St, Madrid, Spain", LocalDate.of(1990, 11, 20), 2, EmploymentType.FULL_TIME, Position.FRONTEND, Grade.SENIOR, null, List.of(5, 6), List.of(5, 6), 7, 10, true);
+    }
+
+    public static MentorDto getMockedMentorDto4() {
+        return new MentorDto(4, "Laura Brown", "laura.brown@example.com", "#Laura_Brown_Password0", "+40734289604", "333 Elm St, Paris, France", LocalDate.of(1985, 8, 25), 2, EmploymentType.FULL_TIME, Position.FRONTEND, Grade.SENIOR, null, List.of(7, 8), List.of(7, 8), 7, 10, false);
+    }
+
+    public static MentorDto getMockedMentorDto5() {
+        return new MentorDto(5, "Robert Davis", "robert.davis@example.com", "#Robert_Davis_Password0", "+40754321805", "555 Oak St, Berlin, Germany", LocalDate.of(1988, 5, 12), 1, EmploymentType.FULL_TIME, Position.BACKEND, Grade.SENIOR, null, List.of(9, 10), List.of(9, 10), 7, 10, false);
+    }
+
+    public static MentorDto getMockedMentorDto6() {
+        return new MentorDto(6, "Emily Wilson", "emily.wilson@example.com", "#Emily_Wilson_Password0", "+40789012606", "777 Pine St, Sydney, Australia", LocalDate.of(1995, 9, 8), 1, EmploymentType.FULL_TIME, Position.BACKEND, Grade.SENIOR, null, List.of(11, 12), List.of(11, 12), 7, 10, false);
+    }
+
+    public static MentorDto getMockedMentorDto7() {
+        return new MentorDto(7, "Michaela Taylor", "michaela.taylor@example.com", "#Michaela_Taylor_Password0", "+40723145607", "999 Elm St, Rome, Italy", LocalDate.of(1983, 12, 7), 1, EmploymentType.FULL_TIME, Position.BACKEND, Grade.SENIOR, 1, List.of(1, 2), List.of(13, 14), 1, 5, true);
+    }
+
+    public static MentorDto getMockedMentorDto8() {
+        return new MentorDto(8, "David Anderson", "david.anderson@example.com", "#David_Anderson_Password0", "+40787654308", "111 Oak St, Moscow, Russia", LocalDate.of(1992, 4, 23), 1, EmploymentType.FULL_TIME, Position.BACKEND, Grade.SENIOR, 1, List.of(3, 4), List.of(15, 16), 1, 5, true);
+    }
+
+    public static MentorDto getMockedMentorDto9() {
+        return new MentorDto(9, "Sophia Garcia", "sophia.garcia@example.com", "#Sophia_Garcia_Password0", "+40754321809", "333 Pine St, Athens, Greece", LocalDate.of(1998, 7, 30), 1, EmploymentType.FULL_TIME, Position.DEVOPS, Grade.SENIOR, 1, List.of(5, 6), List.of(1, 2), 1, 5, false);
+    }
+
+    public static MentorDto getMockedMentorDto10() {
+        return new MentorDto(10, "Joseph Wilson", "joseph.wilson@example.com", "#Joseph_Wilson_Password0", "+40789012610", "555 Elm St, Madrid, Spain", LocalDate.of(1991, 3, 14), 1, EmploymentType.FULL_TIME, Position.DEVOPS, Grade.SENIOR, 1, List.of(7, 8), List.of(3, 4), 1, 5, true);
     }
 }

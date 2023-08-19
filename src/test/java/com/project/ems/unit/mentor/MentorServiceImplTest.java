@@ -39,13 +39,13 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
-import static com.project.ems.mapper.MentorMapper.convertToDto;
-import static com.project.ems.mapper.MentorMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences2;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.MentorMock.getMockedMentor2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto2;
 import static com.project.ems.mock.MentorMock.getMockedMentors;
 import static com.project.ems.mock.MentorMock.getMockedMentorsPage1;
 import static com.project.ems.mock.MentorMock.getMockedMentorsPage2;
@@ -113,9 +113,9 @@ class MentorServiceImplTest {
         studies2 = getMockedStudies2();
         experiences1 = getMockedExperiences1();
         experiences2 = getMockedExperiences2();
-        mentorDto1 = convertToDto(modelMapper, mentor1);
-        mentorDto2 = convertToDto(modelMapper, mentor2);
-        mentorDtos = convertToDtoList(modelMapper, mentors);
+        mentorDto1 = getMockedMentorDto1();
+        mentorDto2 = getMockedMentorDto2();
+        mentorDtos = mentorService.convertToDtos(mentors);
     }
 
     @Test
@@ -147,7 +147,7 @@ class MentorServiceImplTest {
         given(mentorRepository.save(any(Mentor.class))).willReturn(mentor1);
         MentorDto result = mentorService.save(mentorDto1);
         verify(mentorRepository).save(mentorCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, mentorCaptor.getValue()));
+        assertThat(result).isEqualTo(mentorService.convertToDto(mentorCaptor.getValue()));
     }
 
     @Test
@@ -160,7 +160,7 @@ class MentorServiceImplTest {
         given(mentorRepository.save(any(Mentor.class))).willReturn(mentor);
         MentorDto result = mentorService.updateById(mentorDto2, VALID_ID);
         verify(mentorRepository).save(mentorCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, mentorCaptor.getValue()));
+        assertThat(result).isEqualTo(mentorService.convertToDto(mentorCaptor.getValue()));
     }
 
     @Test
@@ -191,7 +191,12 @@ class MentorServiceImplTest {
     @ParameterizedTest
     @CsvSource({ "1, ${MENTOR_FILTER_KEY}", "2, ${MENTOR_FILTER_KEY}", "3, ${MENTOR_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
     void findAllByKey_shouldReturnListOfMentorsFilteredByKey(int page, String key) {
-        Pair<List<Mentor>, Pageable> pair = getFilteredMentorsAndPageable(page, key);
+        Pair<List<Mentor>, Pageable> pair = switch(page) {
+            case 1 -> Pair.of(getMockedMentorsPage1(), pageable);
+            case 2 -> Pair.of(getMockedMentorsPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedMentorsPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
         Page<Mentor> filteredMentorsPage = new PageImpl<>(pair.getLeft());
         if(key.equals("")) {
             given(mentorRepository.findAll(any(Pageable.class))).willReturn(filteredMentorsPage);
@@ -199,15 +204,6 @@ class MentorServiceImplTest {
             given(mentorRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredMentorsPage);
         }
         Page<MentorDto> result = mentorService.findAllByKey(pair.getRight(), key);
-        assertThat(result.getContent()).isEqualTo(convertToDtoList(modelMapper, pair.getLeft()));
-    }
-
-    private Pair<List<Mentor>, Pageable> getFilteredMentorsAndPageable(int page, String key) {
-        return switch(page) {
-            case 1 -> Pair.of(getMockedMentorsPage1(), pageable);
-            case 2 -> Pair.of(getMockedMentorsPage2(), pageable2);
-            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedMentorsPage3(), pageable3);
-            default -> throw new IllegalArgumentException("Invalid page number: " + page);
-        };
+        assertThat(result.getContent()).isEqualTo(mentorService.convertToDtos(pair.getLeft()));
     }
 }

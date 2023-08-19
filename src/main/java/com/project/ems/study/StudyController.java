@@ -2,7 +2,6 @@ package com.project.ems.study;
 
 import com.project.ems.wrapper.SearchRequest;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -20,8 +19,6 @@ import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_STUDIES_
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_STUDY_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.STUDIES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.STUDY_DETAILS_VIEW;
-import static com.project.ems.mapper.StudyMapper.convertToEntity;
-import static com.project.ems.mapper.StudyMapper.convertToEntityList;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
 import static com.project.ems.util.PageUtil.getSortDirection;
@@ -35,7 +32,6 @@ import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 public class StudyController {
 
     private final StudyService studyService;
-    private final ModelMapper modelMapper;
 
     @GetMapping
     public String getAllStudiesPage(Model model, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
@@ -46,7 +42,7 @@ public class StudyController {
         String direction = getSortDirection(pageable);
         long nrStudies = studyDtosPage.getTotalElements();
         int nrPages = studyDtosPage.getTotalPages();
-        model.addAttribute("studies", convertToEntityList(modelMapper, studyDtosPage.getContent()));
+        model.addAttribute("studies", studyService.convertToEntities(studyDtosPage.getContent()));
         model.addAttribute("nrStudies", nrStudies);
         model.addAttribute("nrPages", nrPages);
         model.addAttribute("page", page);
@@ -73,7 +69,7 @@ public class StudyController {
 
     @GetMapping("/{id}")
     public String getStudyByIdPage(Model model, @PathVariable Integer id) {
-        model.addAttribute("study", convertToEntity(modelMapper, studyService.findById(id)));
+        model.addAttribute("study", studyService.convertToEntity(studyService.findById(id)));
         return STUDY_DETAILS_VIEW;
     }
 

@@ -14,9 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -27,14 +25,12 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
-import static com.project.ems.mapper.FeedbackMapper.convertToDto;
-import static com.project.ems.mapper.FeedbackMapper.convertToDtoList;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedback1;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedback2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDto1;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDto2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDtosPage1;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDtosPage2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDtosPage3;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacks;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage1;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage2;
-import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -51,18 +47,15 @@ class FeedbackRestControllerTest {
     @Mock
     private FeedbackService feedbackService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private FeedbackDto feedbackDto1;
     private FeedbackDto feedbackDto2;
     private List<FeedbackDto> feedbackDtos;
 
     @BeforeEach
     void setUp() {
-        feedbackDto1 = convertToDto(modelMapper, getMockedFeedback1());
-        feedbackDto2 = convertToDto(modelMapper, getMockedFeedback2());
-        feedbackDtos = convertToDtoList(modelMapper, getMockedFeedbacks());
+        feedbackDto1 = getMockedFeedbackDto1();
+        feedbackDto2 = getMockedFeedbackDto2();
+        feedbackDtos = feedbackService.convertToDtos(getMockedFeedbacks());
     }
 
     @Test
@@ -113,21 +106,17 @@ class FeedbackRestControllerTest {
     @ParameterizedTest
     @CsvSource({ "1, ${FEEDBACK_FILTER_KEY}", "2, ${FEEDBACK_FILTER_KEY}", "3, ${FEEDBACK_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
     void findAllByKey_shouldReturnListOfFeedbacksFilteredByKey(int page, String key) {
-        Pair<List<FeedbackDto>, Pageable> pair = getFilteredFeedbackDtosAndPageable(page, key);
+        Pair<List<FeedbackDto>, Pageable> pair = switch(page) {
+            case 1 -> Pair.of(getMockedFeedbackDtosPage1(), pageable);
+            case 2 -> Pair.of(getMockedFeedbackDtosPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedFeedbackDtosPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
         Page<FeedbackDto> filteredFeedbackDtosPage = new PageImpl<>(pair.getLeft());
         given(feedbackService.findAllByKey(any(Pageable.class), eq(key))).willReturn(filteredFeedbackDtosPage);
         ResponseEntity<PageWrapper<FeedbackDto>> response = feedbackRestController.findAllByKey(pair.getRight(), key);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(new PageWrapper<>(filteredFeedbackDtosPage.getContent()));
-    }
-
-    private Pair<List<FeedbackDto>, Pageable> getFilteredFeedbackDtosAndPageable(int page, String key) {
-        return switch(page) {
-            case 1 -> Pair.of(convertToDtoList(modelMapper, getMockedFeedbacksPage1()), pageable);
-            case 2 -> Pair.of(convertToDtoList(modelMapper, getMockedFeedbacksPage2()), pageable2);
-            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : convertToDtoList(modelMapper, getMockedFeedbacksPage3()), pageable3);
-            default -> throw new IllegalArgumentException("Invalid page number: " + page);
-        };
     }
 }

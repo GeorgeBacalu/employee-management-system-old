@@ -18,5 +18,13 @@ public interface ExperienceService {
 
     Page<ExperienceDto> findAllByKey(Pageable pageable, String key);
 
+    List<ExperienceDto> convertToDtos(List<Experience> experiences);
+
+    List<Experience> convertToEntities(List<ExperienceDto> experienceDtos);
+
+    ExperienceDto convertToDto(Experience experience);
+
+    Experience convertToEntity(ExperienceDto experienceDto);
+
     Experience findEntityById(Integer id);
 }

@@ -1,11 +1,7 @@
 package com.project.ems.mentor;
 
-import com.project.ems.experience.ExperienceService;
-import com.project.ems.role.RoleService;
-import com.project.ems.study.StudyService;
 import com.project.ems.wrapper.SearchRequest;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -23,8 +19,6 @@ import static com.project.ems.constants.ThymeleafViewConstants.MENTORS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.MENTOR_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_MENTORS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_MENTOR_VIEW;
-import static com.project.ems.mapper.MentorMapper.convertToEntity;
-import static com.project.ems.mapper.MentorMapper.convertToEntityList;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
 import static com.project.ems.util.PageUtil.getSortDirection;
@@ -38,10 +32,6 @@ import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 public class MentorController {
 
     private final MentorService mentorService;
-    private final RoleService roleService;
-    private final StudyService studyService;
-    private final ExperienceService experienceService;
-    private final ModelMapper modelMapper;
 
     @GetMapping
     public String getAllMentorsPage(Model model, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
@@ -52,7 +42,7 @@ public class MentorController {
         String direction = getSortDirection(pageable);
         long nrMentors = mentorDtosPage.getTotalElements();
         int nrPages = mentorDtosPage.getTotalPages();
-        model.addAttribute("mentors", convertToEntityList(modelMapper, mentorDtosPage.getContent(), roleService, mentorService, studyService, experienceService));
+        model.addAttribute("mentors", mentorService.convertToEntities(mentorDtosPage.getContent()));
         model.addAttribute("nrMentors", nrMentors);
         model.addAttribute("nrPages", nrPages);
         model.addAttribute("page", page);
@@ -79,7 +69,7 @@ public class MentorController {
 
     @GetMapping("/{id}")
     public String getMentorByIdPage(Model model, @PathVariable Integer id) {
-        model.addAttribute("mentor", convertToEntity(modelMapper, mentorService.findById(id), roleService, mentorService, studyService, experienceService));
+        model.addAttribute("mentor", mentorService.convertToEntity(mentorService.findById(id)));
         return MENTOR_DETAILS_VIEW;
     }
 

@@ -14,9 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -27,14 +25,12 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
-import static com.project.ems.mapper.MentorMapper.convertToDto;
-import static com.project.ems.mapper.MentorMapper.convertToDtoList;
-import static com.project.ems.mock.MentorMock.getMockedMentor1;
-import static com.project.ems.mock.MentorMock.getMockedMentor2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage3;
 import static com.project.ems.mock.MentorMock.getMockedMentors;
-import static com.project.ems.mock.MentorMock.getMockedMentorsPage1;
-import static com.project.ems.mock.MentorMock.getMockedMentorsPage2;
-import static com.project.ems.mock.MentorMock.getMockedMentorsPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -51,18 +47,15 @@ class MentorRestControllerTest {
     @Mock
     private MentorService mentorService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private MentorDto mentorDto1;
     private MentorDto mentorDto2;
     private List<MentorDto> mentorDtos;
 
     @BeforeEach
     void setUp() {
-        mentorDto1 = convertToDto(modelMapper, getMockedMentor1());
-        mentorDto2 = convertToDto(modelMapper, getMockedMentor2());
-        mentorDtos = convertToDtoList(modelMapper, getMockedMentors());
+        mentorDto1 = getMockedMentorDto1();
+        mentorDto2 = getMockedMentorDto2();
+        mentorDtos = mentorService.convertToDtos(getMockedMentors());
     }
 
     @Test
@@ -113,21 +106,17 @@ class MentorRestControllerTest {
     @ParameterizedTest
     @CsvSource({ "1, ${MENTOR_FILTER_KEY}", "2, ${MENTOR_FILTER_KEY}", "3, ${MENTOR_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
     void findAllByKey_shouldReturnListOfMentorsFilteredByKey(int page, String key) {
-        Pair<List<MentorDto>, Pageable> pair = getFilteredMentorDtosAndPageable(page, key);
+        Pair<List<MentorDto>, Pageable> pair = switch(page) {
+            case 1 -> Pair.of(getMockedMentorDtosPage1(), pageable);
+            case 2 -> Pair.of(getMockedMentorDtosPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedMentorDtosPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
         Page<MentorDto> filteredMentorDtosPage = new PageImpl<>(pair.getLeft());
         given(mentorService.findAllByKey(any(Pageable.class), eq(key))).willReturn(filteredMentorDtosPage);
         ResponseEntity<PageWrapper<MentorDto>> response = mentorRestController.findAllByKey(pair.getRight(), key);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isEqualTo(new PageWrapper<>(filteredMentorDtosPage.getContent()));
-    }
-
-    private Pair<List<MentorDto>, Pageable> getFilteredMentorDtosAndPageable(int page, String key) {
-        return switch(page) {
-            case 1 -> Pair.of(convertToDtoList(modelMapper, getMockedMentorsPage1()), pageable);
-            case 2 -> Pair.of(convertToDtoList(modelMapper, getMockedMentorsPage2()), pageable2);
-            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : convertToDtoList(modelMapper, getMockedMentorsPage3()), pageable3);
-            default -> throw new IllegalArgumentException("Invalid page number: " + page);
-        };
     }
 }
