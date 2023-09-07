@@ -30,7 +30,7 @@
       <th:block th:replace="~{/_fragments/layout :: tableHeader(${url}, ${field}, ${direction}, 'supervisingMentor.name', 'Supervising mentor')}"></th:block>
       <th:block th:replace="~{/_fragments/layout :: tableHeader(${url}, ${field}, ${direction}, 'nrTrainees', 'Nr trainees')}"></th:block>
       <th:block th:replace="~{/_fragments/layout :: tableHeader(${url}, ${field}, ${direction}, 'maxTrainees', 'Max trainees')}"></th:block>
-      <th:block th:replace="~{/_fragments/layout :: tableHeader(${url}, ${field}, ${direction}, 'isTrainingOpen', 'Open for training')}"></th:block>
+      <th:block th:replace="~{/_fragments/layout :: tableHeader(${url}, ${field}, ${direction}, 'openForTraining', 'Open for training')}"></th:block>
       <th>Actions</th>
     </tr>
     </thead>
@@ -44,7 +44,7 @@
       <td>[[${mentor.supervisingMentor != null ? mentor.supervisingMentor.name : 'null'}]]</td>
       <td>[[${mentor.nrTrainees}]]</td>
       <td>[[${mentor.maxTrainees}]]</td>
-      <td>[[${mentor.isTrainingOpen}]]</td>
+      <td>[[${mentor.openForTraining}]]</td>
       <td>
         <a th:href="@{'/mentors/save/' + ${mentor.id}}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i> Update</a>
         <a th:href="@{'/mentors/delete/' + ${mentor.id} + '?page=' + ${page} + '&size=' + ${size} + '&key=' + ${key} + '&sort=' + ${field} + '%2C' + ${direction}}" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Delete</a>

@@ -214,7 +214,7 @@ class MentorRestControllerMockMvcTest {
               .andExpect(jsonPath(prefix + ".supervisingMentorId").value(mentorDto.getSupervisingMentorId()))
               .andExpect(jsonPath(prefix + ".nrTrainees").value(mentorDto.getNrTrainees()))
               .andExpect(jsonPath(prefix + ".maxTrainees").value(mentorDto.getMaxTrainees()))
-              .andExpect(jsonPath(prefix + ".isTrainingOpen").value(mentorDto.getIsTrainingOpen()));
+              .andExpect(jsonPath(prefix + ".openForTraining").value(mentorDto.getOpenForTraining()));
         for(int j = 0; j < mentorDto.getStudiesIds().size(); j++) {
             actions.andExpect(jsonPath(prefix + ".studiesIds[" + j + "]").value(mentorDto.getStudiesIds().get(j)));
         }
@@ -240,6 +240,6 @@ class MentorRestControllerMockMvcTest {
               .andExpect(jsonPath("$.experiencesIds").value(containsInAnyOrder(mentorDto.getExperiencesIds().toArray())))
               .andExpect(jsonPath("$.nrTrainees").value(mentorDto.getNrTrainees()))
               .andExpect(jsonPath("$.maxTrainees").value(mentorDto.getMaxTrainees()))
-              .andExpect(jsonPath("$.isTrainingOpen").value(mentorDto.getIsTrainingOpen()));
+              .andExpect(jsonPath("$.openForTraining").value(mentorDto.getOpenForTraining()));
     }
 }

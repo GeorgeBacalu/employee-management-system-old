@@ -27,7 +27,6 @@ import static com.project.ems.constants.ThymeleafViewConstants.SAVE_ROLE_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.TEXT_HTML_UTF8;
 import static com.project.ems.mock.RoleMock.getMockedRole1;
 import static com.project.ems.mock.RoleMock.getMockedRoleDto1;
-import static com.project.ems.mock.RoleMock.getMockedRoleDtos;
 import static com.project.ems.mock.RoleMock.getMockedRoles;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -64,7 +63,7 @@ class RoleControllerMockMvcTest {
         role = getMockedRole1();
         roles = getMockedRoles();
         roleDto = getMockedRoleDto1();
-        roleDtos = getMockedRoleDtos();
+        roleDtos = roleService.convertToDtos(roles);
     }
 
     @Test

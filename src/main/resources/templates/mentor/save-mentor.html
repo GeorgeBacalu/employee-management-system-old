@@ -48,7 +48,7 @@
             <label for="max-trainees" class="mt-2">Max trainees <span class="text-danger font-weight-bold">*</span></label>
             <input type="number" id="max-trainees" th:field="*{maxTrainees}" placeholder="Enter max number of trainees" class="form-control" required>
             <label for="open-for-training" class="mt-2">Open for training <span class="text-danger font-weight-bold">*</span></label><br />
-            <input type="checkbox" id="open-for-training" th:field="*{isTrainingOpen}">
+            <input type="checkbox" id="open-for-training" th:field="*{openForTraining}">
           </div>
         </div>
         <button type="submit" class="btn btn-success btn-container"><i class="fa fa-save"></i> [[${(id == -1) ? 'Save' : 'Update'}]]</button>

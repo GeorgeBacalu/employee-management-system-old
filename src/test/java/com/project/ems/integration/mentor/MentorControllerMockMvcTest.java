@@ -255,7 +255,7 @@ class MentorControllerMockMvcTest {
         params.add("experiencesIds", mentorDto.getExperiencesIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
         params.add("nrTrainees", mentorDto.getNrTrainees().toString());
         params.add("maxTrainees", mentorDto.getMaxTrainees().toString());
-        params.add("isTrainingOpen", mentorDto.getIsTrainingOpen().toString());
+        params.add("openForTraining", mentorDto.getOpenForTraining().toString());
         return params;
     }
 }

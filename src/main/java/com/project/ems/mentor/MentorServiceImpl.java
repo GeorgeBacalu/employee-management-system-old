@@ -123,6 +123,6 @@ public class MentorServiceImpl implements MentorService {
         mentor.setExperiences(mentorDto.getExperiencesIds().stream().map(experienceService::findEntityById).collect(Collectors.toList()));
         mentor.setNrTrainees(mentorDto.getNrTrainees());
         mentor.setMaxTrainees(mentorDto.getMaxTrainees());
-        mentor.setIsTrainingOpen(mentorDto.getIsTrainingOpen());
+        mentor.setOpenForTraining(mentorDto.getOpenForTraining());
     }
 }

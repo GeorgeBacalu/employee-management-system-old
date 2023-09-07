@@ -120,7 +120,7 @@ INSERT INTO studies(id, title, institution, description, type, started_at, finis
 (11, 'ETH Zurich', 'Department of Computer Science', 'Bachelor''s degree in Artificial Intelligence at ETH Zurich - Department of Computer Science', 'MASTERS', '2017-09-01', '2020-08-31'),
 (12, 'California Institute of Technology', 'Division of Engineering and Applied Science', 'Master''s degree in Electrical Engineering at California Institute of Technology - Division of Engineering and Applied Science', 'MASTERS', '2018-09-01', '2021-05-31');
 
-INSERT INTO mentors(id, name, email, password, mobile, address, birthday, role_id, employment_type, position, grade, mentor_id, nr_trainees, max_trainees, is_training_open) VALUES
+INSERT INTO mentors(id, name, email, password, mobile, address, birthday, role_id, employment_type, position, grade, mentor_id, nr_trainees, max_trainees, open_for_training) VALUES
 (1, 'John Doe', 'john.doe@example.com', '#John_Doe_Password0', '+40721543701', '123 Main St, Boston, USA', '1980-02-15', 2, 'FULL_TIME', 'FRONTEND', 'SENIOR', null, 7, 10, true),
 (2, 'Jane Smith', 'jane.smith@example.com', '#Jane_Smith_Password0', '+40756321802', '456 Oak St, London, UK', '1982-07-10', 2, 'FULL_TIME', 'FRONTEND', 'SENIOR', null, 7, 10, true),
 (3, 'Michael Johnson', 'michael.johnson@example.com', '#Michael_Johnson_Password0', '+40789712303', '789 Pine St, Madrid, Spain', '1990-11-20', 2, 'FULL_TIME', 'FRONTEND', 'SENIOR', null, 7, 10, true),
