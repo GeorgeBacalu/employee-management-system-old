@@ -22,8 +22,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Spy;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -37,10 +35,13 @@ import static com.project.ems.constants.ExceptionMessageConstants.FEEDBACK_NOT_F
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.FEEDBACK_FILTER_KEY;
-import static com.project.ems.mapper.FeedbackMapper.convertToDto;
-import static com.project.ems.mapper.FeedbackMapper.convertToDtoList;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedback1;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedback2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDto1;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDto2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDtosPage1;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDtosPage2;
+import static com.project.ems.mock.FeedbackMock.getMockedFeedbackDtosPage3;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacks;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage1;
 import static com.project.ems.mock.FeedbackMock.getMockedFeedbacksPage2;
@@ -50,7 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -67,9 +68,6 @@ class FeedbackServiceIntegrationTest {
 
     @MockBean
     private UserService userService;
-
-    @Spy
-    private ModelMapper modelMapper;
 
     @MockBean
     private Clock clock;
@@ -93,9 +91,9 @@ class FeedbackServiceIntegrationTest {
         feedback2 = getMockedFeedback2();
         feedbacks = getMockedFeedbacks();
         user = getMockedUser2();
-        feedbackDto1 = convertToDto(modelMapper, feedback1);
-        feedbackDto2 = convertToDto(modelMapper, feedback2);
-        feedbackDtos = convertToDtoList(modelMapper, feedbacks);
+        feedbackDto1 = getMockedFeedbackDto1();
+        feedbackDto2 = getMockedFeedbackDto2();
+        feedbackDtos = feedbackService.convertToDtos(feedbacks);
     }
 
     @Test
@@ -127,7 +125,7 @@ class FeedbackServiceIntegrationTest {
         given(feedbackRepository.save(any(Feedback.class))).willReturn(feedback1);
         FeedbackDto result = feedbackService.save(feedbackDto1);
         verify(feedbackRepository).save(feedbackCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, feedback1));
+        assertThat(result).isEqualTo(feedbackService.convertToDto(feedback1));
     }
 
     @Test
@@ -139,7 +137,7 @@ class FeedbackServiceIntegrationTest {
         given(feedbackRepository.save(any(Feedback.class))).willReturn(feedback);
         FeedbackDto result = feedbackService.updateById(feedbackDto2, VALID_ID);
         verify(feedbackRepository).save(feedbackCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, feedbackCaptor.getValue()));
+        assertThat(result).isEqualTo(feedbackService.convertToDto(feedbackCaptor.getValue()));
     }
 
     @Test
@@ -166,27 +164,29 @@ class FeedbackServiceIntegrationTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<Feedback> feedbacksPage1 = getMockedFeedbacksPage1();
-        List<Feedback> feedbacksPage2 = getMockedFeedbacksPage2();
-        List<Feedback> feedbacksPage3 = getMockedFeedbacksPage3();
-        List<FeedbackDto> feedbackDtosPage1 = convertToDtoList(modelMapper, feedbacksPage1);
-        List<FeedbackDto> feedbackDtosPage2 = convertToDtoList(modelMapper, feedbacksPage2);
-        List<FeedbackDto> feedbackDtosPage3 = convertToDtoList(modelMapper, feedbacksPage3);
-        return Stream.of(Arguments.of(0, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(feedbacksPage1), new PageImpl<>(feedbackDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(feedbacksPage2), new PageImpl<>(feedbackDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", FEEDBACK_FILTER_KEY, new PageImpl<>(Collections.emptyList()), new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(feedbacksPage1), new PageImpl<>(feedbackDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(feedbacksPage2), new PageImpl<>(feedbackDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(feedbacksPage3), new PageImpl<>(feedbackDtosPage3)));
+        Page<Feedback> feedbacksPage1 = new PageImpl<>(getMockedFeedbacksPage1());
+        Page<Feedback> feedbacksPage2 = new PageImpl<>(getMockedFeedbacksPage2());
+        Page<Feedback> feedbacksPage3 = new PageImpl<>(getMockedFeedbacksPage3());
+        Page<Feedback> emptyPage = new PageImpl<>(Collections.emptyList());
+        Page<FeedbackDto> feedbackDtosPage1 = new PageImpl<>(getMockedFeedbackDtosPage1());
+        Page<FeedbackDto> feedbackDtosPage2 = new PageImpl<>(getMockedFeedbackDtosPage2());
+        Page<FeedbackDto> feedbackDtosPage3 = new PageImpl<>(getMockedFeedbackDtosPage3());
+        Page<FeedbackDto> emptyDtoPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", FEEDBACK_FILTER_KEY, feedbacksPage1, feedbackDtosPage1),
+                         Arguments.of(1, 2, "id", FEEDBACK_FILTER_KEY, feedbacksPage2, feedbackDtosPage2),
+                         Arguments.of(2, 2, "id", FEEDBACK_FILTER_KEY, emptyPage, emptyDtoPage),
+                         Arguments.of(0, 2, "id", "", feedbacksPage1, feedbackDtosPage1),
+                         Arguments.of(1, 2, "id", "", feedbacksPage2, feedbackDtosPage2),
+                         Arguments.of(2, 2, "id", "", feedbacksPage3, feedbackDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<Feedback> entityPage, PageImpl<FeedbackDto> dtoPage) {
+    void testFindAllByKey(int page, int size, String sortField, String key, Page<Feedback> entityPage, Page<FeedbackDto> dtoPage) {
         if(key.trim().equals("")) {
             given(feedbackRepository.findAll(any(Pageable.class))).willReturn(entityPage);
         } else {
-            given(feedbackRepository.findAllByKey(any(Pageable.class), anyString())).willReturn(entityPage);
+            given(feedbackRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(entityPage);
         }
         Page<FeedbackDto> result = feedbackService.findAllByKey(PageRequest.of(page, size, Sort.Direction.ASC, sortField), key);
         assertThat(result.getContent()).isEqualTo(dtoPage.getContent());

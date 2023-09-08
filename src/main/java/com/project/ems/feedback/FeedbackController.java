@@ -1,12 +1,9 @@
 package com.project.ems.feedback;
 
-import com.project.ems.user.UserService;
 import com.project.ems.wrapper.SearchRequest;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,8 +19,6 @@ import static com.project.ems.constants.ThymeleafViewConstants.FEEDBACKS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.FEEDBACK_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_FEEDBACKS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_FEEDBACK_VIEW;
-import static com.project.ems.mapper.FeedbackMapper.convertToEntity;
-import static com.project.ems.mapper.FeedbackMapper.convertToEntityList;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
 import static com.project.ems.util.PageUtil.getSortDirection;
@@ -37,11 +32,9 @@ import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 public class FeedbackController {
 
     private final FeedbackService feedbackService;
-    private final UserService userService;
-    private final ModelMapper modelMapper;
 
     @GetMapping
-    public String getAllFeedbacksPage(Model model, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String getAllFeedbacksPage(Model model, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         Page<FeedbackDto> feedbackDtosPage = feedbackService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
@@ -49,7 +42,7 @@ public class FeedbackController {
         String direction = getSortDirection(pageable);
         long nrFeedbacks = feedbackDtosPage.getTotalElements();
         int nrPages = feedbackDtosPage.getTotalPages();
-        model.addAttribute("feedbacks", convertToEntityList(modelMapper, feedbackDtosPage.getContent(), userService));
+        model.addAttribute("feedbacks", feedbackService.convertToEntities(feedbackDtosPage.getContent()));
         model.addAttribute("nrFeedbacks", nrFeedbacks);
         model.addAttribute("nrPages", nrPages);
         model.addAttribute("page", page);
@@ -76,7 +69,7 @@ public class FeedbackController {
 
     @GetMapping("/{id}")
     public String getFeedbackByIdPage(Model model, @PathVariable Integer id) {
-        model.addAttribute("feedback", convertToEntity(modelMapper, feedbackService.findById(id), userService));
+        model.addAttribute("feedback", feedbackService.convertToEntity(feedbackService.findById(id)));
         return FEEDBACK_DETAILS_VIEW;
     }
 
@@ -98,7 +91,7 @@ public class FeedbackController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         feedbackService.deleteById(id);
         Page<FeedbackDto> feedbackDtosPage = feedbackService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();

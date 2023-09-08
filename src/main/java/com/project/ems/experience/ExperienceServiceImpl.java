@@ -1,9 +1,7 @@
 package com.project.ems.experience;
 
-import com.project.ems.employee.Employee;
 import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
-import com.project.ems.mentor.Mentor;
 import com.project.ems.mentor.MentorRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.EXPERIENCE_NOT_FOUND;
-import static com.project.ems.mapper.ExperienceMapper.convertToDto;
-import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
-import static com.project.ems.mapper.ExperienceMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -30,20 +25,20 @@ public class ExperienceServiceImpl implements ExperienceService {
     @Override
     public List<ExperienceDto> findAll() {
         List<Experience> experiences = experienceRepository.findAll();
-        return !experiences.isEmpty() ? convertToDtoList(modelMapper, experiences) : new ArrayList<>();
+        return !experiences.isEmpty() ? convertToDtos(experiences) : new ArrayList<>();
     }
 
     @Override
     public ExperienceDto findById(Integer id) {
         Experience experience = findEntityById(id);
-        return convertToDto(modelMapper, experience);
+        return convertToDto(experience);
     }
 
     @Override
     public ExperienceDto save(ExperienceDto experienceDto) {
-        Experience experience = convertToEntity(modelMapper, experienceDto);
+        Experience experience = convertToEntity(experienceDto);
         Experience savedExperience = experienceRepository.save(experience);
-        return convertToDto(modelMapper, savedExperience);
+        return convertToDto(savedExperience);
     }
 
     @Override
@@ -51,23 +46,41 @@ public class ExperienceServiceImpl implements ExperienceService {
         Experience experienceToUpdate = findEntityById(id);
         updateEntityFromDto(experienceDto, experienceToUpdate);
         Experience updatedExperience = experienceRepository.save(experienceToUpdate);
-        return convertToDto(modelMapper, updatedExperience);
+        return convertToDto(updatedExperience);
     }
 
     @Override
     public void deleteById(Integer id) {
         Experience experienceToDelete = findEntityById(id);
-        List<Employee> employees = employeeRepository.findAllByExperiencesContains(experienceToDelete);
-        employees.forEach(employee -> employee.getExperiences().remove(experienceToDelete));
-        List<Mentor> mentors = mentorRepository.findAllByExperiencesContains(experienceToDelete);
-        mentors.forEach(mentor -> mentor.getExperiences().remove(experienceToDelete));
+        employeeRepository.findAllByExperiencesContains(experienceToDelete).forEach(employee -> employee.getExperiences().remove(experienceToDelete));
+        mentorRepository.findAllByExperiencesContains(experienceToDelete).forEach(mentor -> mentor.getExperiences().remove(experienceToDelete));
         experienceRepository.delete(experienceToDelete);
     }
 
     @Override
     public Page<ExperienceDto> findAllByKey(Pageable pageable, String key) {
         Page<Experience> experiencesPage = key.trim().equals("") ? experienceRepository.findAll(pageable) : experienceRepository.findAllByKey(pageable, key.toLowerCase());
-        return experiencesPage.hasContent() ? experiencesPage.map(experience -> convertToDto(modelMapper, experience)) : Page.empty();
+        return experiencesPage.hasContent() ? experiencesPage.map(this::convertToDto) : Page.empty();
+    }
+
+    @Override
+    public List<ExperienceDto> convertToDtos(List<Experience> experiences) {
+        return experiences.stream().map(this::convertToDto).toList();
+    }
+
+    @Override
+    public List<Experience> convertToEntities(List<ExperienceDto> experienceDtos) {
+        return experienceDtos.stream().map(this::convertToEntity).toList();
+    }
+
+    @Override
+    public ExperienceDto convertToDto(Experience experience) {
+        return modelMapper.map(experience, ExperienceDto.class);
+    }
+
+    @Override
+    public Experience convertToEntity(ExperienceDto experienceDto) {
+        return modelMapper.map(experienceDto, Experience.class);
     }
 
     @Override

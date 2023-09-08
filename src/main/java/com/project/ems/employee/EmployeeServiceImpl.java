@@ -1,9 +1,11 @@
 package com.project.ems.employee;
 
 import com.project.ems.exception.ResourceNotFoundException;
+import com.project.ems.experience.Experience;
 import com.project.ems.experience.ExperienceService;
 import com.project.ems.mentor.MentorService;
 import com.project.ems.role.RoleService;
+import com.project.ems.study.Study;
 import com.project.ems.study.StudyService;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.EMPLOYEE_NOT_FOUND;
-import static com.project.ems.mapper.EmployeeMapper.convertToDto;
-import static com.project.ems.mapper.EmployeeMapper.convertToDtoList;
-import static com.project.ems.mapper.EmployeeMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -33,20 +32,20 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<EmployeeDto> findAll() {
         List<Employee> employees = employeeRepository.findAll();
-        return !employees.isEmpty() ? convertToDtoList(modelMapper, employees) : new ArrayList<>();
+        return !employees.isEmpty() ? convertToDtos(employees) : new ArrayList<>();
     }
 
     @Override
     public EmployeeDto findById(Integer id) {
         Employee employee = findEntityById(id);
-        return convertToDto(modelMapper, employee);
+        return convertToDto(employee);
     }
 
     @Override
     public EmployeeDto save(EmployeeDto employeeDto) {
-        Employee employee = convertToEntity(modelMapper, employeeDto, roleService, mentorService, studyService, experienceService);
+        Employee employee = convertToEntity(employeeDto);
         Employee savedEmployee = employeeRepository.save(employee);
-        return convertToDto(modelMapper, savedEmployee);
+        return convertToDto(savedEmployee);
     }
 
     @Override
@@ -54,7 +53,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employeeToUpdate = findEntityById(id);
         updateEntityFromDto(employeeDto, employeeToUpdate);
         Employee updatedEmployee = employeeRepository.save(employeeToUpdate);
-        return convertToDto(modelMapper, updatedEmployee);
+        return convertToDto(updatedEmployee);
     }
 
     @Override
@@ -66,7 +65,35 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public Page<EmployeeDto> findAllByKey(Pageable pageable, String key) {
         Page<Employee> employeesPage = key.trim().equals("") ? employeeRepository.findAll(pageable) : employeeRepository.findAllByKey(pageable, key.toLowerCase());
-        return employeesPage.hasContent() ? employeesPage.map(employee -> convertToDto(modelMapper, employee)) : Page.empty();
+        return employeesPage.hasContent() ? employeesPage.map(this::convertToDto) : Page.empty();
+    }
+
+    @Override
+    public List<EmployeeDto> convertToDtos(List<Employee> employees) {
+        return employees.stream().map(this::convertToDto).toList();
+    }
+
+    @Override
+    public List<Employee> convertToEntities(List<EmployeeDto> employeeDtos) {
+        return employeeDtos.stream().map(this::convertToEntity).toList();
+    }
+
+    @Override
+    public EmployeeDto convertToDto(Employee employee) {
+        EmployeeDto employeeDto = modelMapper.map(employee, EmployeeDto.class);
+        employeeDto.setStudiesIds(employee.getStudies().stream().map(Study::getId).toList());
+        employeeDto.setExperiencesIds(employee.getExperiences().stream().map(Experience::getId).toList());
+        return employeeDto;
+    }
+
+    @Override
+    public Employee convertToEntity(EmployeeDto employeeDto) {
+        Employee employee = modelMapper.map(employeeDto, Employee.class);
+        employee.setRole(roleService.findEntityById(employeeDto.getRoleId()));
+        employee.setMentor(mentorService.findEntityById(employeeDto.getMentorId()));
+        employee.setStudies(employeeDto.getStudiesIds().stream().map(studyService::findEntityById).toList());
+        employee.setExperiences(employeeDto.getExperiencesIds().stream().map(experienceService::findEntityById).toList());
+        return employee;
     }
 
     private Employee findEntityById(Integer id) {

@@ -1,6 +1,7 @@
 package com.project.ems.mock;
 
 import com.project.ems.user.User;
+import com.project.ems.user.UserDto;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AccessLevel;
@@ -13,8 +14,7 @@ import static com.project.ems.mock.RoleMock.getMockedRole2;
 public class UserMock {
 
     public static List<User> getMockedUsers() {
-        return List.of(
-              getMockedUser1(), getMockedUser2(), getMockedUser3(), getMockedUser4(), getMockedUser5(), getMockedUser6(), getMockedUser7(), getMockedUser8(), getMockedUser9(),
+        return List.of(getMockedUser1(), getMockedUser2(), getMockedUser3(), getMockedUser4(), getMockedUser5(), getMockedUser6(), getMockedUser7(), getMockedUser8(), getMockedUser9(),
               getMockedUser10(), getMockedUser11(), getMockedUser12(), getMockedUser13(), getMockedUser14(), getMockedUser15(), getMockedUser16(), getMockedUser17(), getMockedUser18(),
               getMockedUser19(), getMockedUser20(), getMockedUser21(), getMockedUser22(), getMockedUser23(), getMockedUser24(), getMockedUser25(), getMockedUser26(), getMockedUser27(),
               getMockedUser28(), getMockedUser29(), getMockedUser30(), getMockedUser31(), getMockedUser32(), getMockedUser33(), getMockedUser34(), getMockedUser35(), getMockedUser36(),
@@ -36,291 +36,183 @@ public class UserMock {
         return List.of(getMockedUser5(), getMockedUser6());
     }
 
-    public static User getMockedUser1() {
-        return new User(1, "John Doe", "john.doe@example.com", "#John_Doe_Password0", "+40721543701", "123 Main St, Boston, USA", LocalDate.of(1980, 2, 15), getMockedRole2());
+    public static List<UserDto> getMockedUserDtosPage1() {
+        return List.of(getMockedUserDto1(), getMockedUserDto2());
     }
 
-    public static User getMockedUser2() {
-        return new User(2, "Jane Smith", "jane.smith@example.com", "#Jane_Smith_Password0", "+40756321802", "456 Oak St, London, UK", LocalDate.of(1982, 7, 10), getMockedRole2());
+    public static List<UserDto> getMockedUserDtosPage2() {
+        return List.of(getMockedUserDto3(), getMockedUserDto4());
     }
 
-    public static User getMockedUser3() {
-        return new User(3, "Michael Johnson", "michael.johnson@example.com", "#Michael_Johnson_Password0", "+40789712303", "789 Pine St, Madrid, Spain", LocalDate.of(1990, 11, 20), getMockedRole2());
+    public static List<UserDto> getMockedUserDtosPage3() {
+        return List.of(getMockedUserDto5(), getMockedUserDto6());
     }
 
-    public static User getMockedUser4() {
-        return new User(4, "Laura Brown", "laura.brown@example.com", "#Laura_Brown_Password0", "+40734289604", "333 Elm St, Paris, France", LocalDate.of(1985, 8, 25), getMockedRole2());
-    }
+    public static List<User> getMockedUsersFirstPage() { return List.of(getMockedUser1(), getMockedUser2(), getMockedUser3(), getMockedUser4(), getMockedUser5(), getMockedUser6(), getMockedUser7(), getMockedUser8(), getMockedUser9(), getMockedUser10()); }
 
-    public static User getMockedUser5() {
-        return new User(5, "Robert Davis", "robert.davis@example.com", "#Robert_Davis_Password0", "+40754321805", "555 Oak St, Berlin, Germany", LocalDate.of(1988, 5, 12), getMockedRole1());
-    }
+    public static List<UserDto> getMockedUserDtosFirstPage() { return List.of(getMockedUserDto1(), getMockedUserDto2(), getMockedUserDto3(), getMockedUserDto4(), getMockedUserDto5(), getMockedUserDto6(), getMockedUserDto7(), getMockedUserDto8(), getMockedUserDto9(), getMockedUserDto10()); }
 
-    public static User getMockedUser6() {
-        return new User(6, "Emily Wilson", "emily.wilson@example.com", "#Emily_Wilson_Password0", "+40789012606", "777 Pine St, Sydney, Australia", LocalDate.of(1995, 9, 8), getMockedRole1());
-    }
+    public static User getMockedUser1() { return User.builder().id(1).name("John Doe").email("john.doe@example.com").password("#John_Doe_Password0").mobile("+40721543701").address("123 Main St, Boston, USA").birthday(LocalDate.of(1980, 2, 15)).role(getMockedRole2()).build(); }
 
-    public static User getMockedUser7() {
-        return new User(7, "Michaela Taylor", "michaela.taylor@example.com", "#Michaela_Taylor_Password0", "+40723145607", "999 Elm St, Rome, Italy", LocalDate.of(1983, 12, 7), getMockedRole1());
-    }
+    public static User getMockedUser2() { return User.builder().id(2).name("Jane Smith").email("jane.smith@example.com").password("#Jane_Smith_Password0").mobile("+40756321802").address("456 Oak St, London, UK").birthday(LocalDate.of(1982, 7, 10)).role(getMockedRole2()).build(); }
 
-    public static User getMockedUser8() {
-        return new User(8, "David Anderson", "david.anderson@example.com", "#David_Anderson_Password0", "+40787654308", "111 Oak St, Moscow, Russia", LocalDate.of(1992, 4, 23), getMockedRole1());
-    }
+    public static User getMockedUser3() { return User.builder().id(3).name("Michael Johnson").email("michael.johnson@example.com").password("#Michael_Johnson_Password0").mobile("+40789712303").address("789 Pine St, Madrid, Spain").birthday(LocalDate.of(1990, 11, 20)).role(getMockedRole2()).build(); }
 
-    public static User getMockedUser9() {
-        return new User(9, "Sophia Garcia", "sophia.garcia@example.com", "#Sophia_Garcia_Password0", "+40754321809", "333 Pine St, Athens, Greece", LocalDate.of(1998, 7, 30), getMockedRole1());
-    }
+    public static User getMockedUser4() { return User.builder().id(4).name("Laura Brown").email("laura.brown@example.com").password("#Laura_Brown_Password0").mobile("+40734289604").address("333 Elm St, Paris, France").birthday(LocalDate.of(1985, 8, 25)).role(getMockedRole2()).build(); }
 
-    public static User getMockedUser10() {
-        return new User(10, "Joseph Wilson", "joseph.wilson@example.com", "#Joseph_Wilson_Password0", "+40789012610", "555 Elm St, Madrid, Spain", LocalDate.of(1991, 3, 14), getMockedRole1());
-    }
+    public static User getMockedUser5() { return User.builder().id(5).name("Robert Davis").email("robert.davis@example.com").password("#Robert_Davis_Password0").mobile("+40754321805").address("555 Oak St, Berlin, Germany").birthday(LocalDate.of(1988, 5, 12)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser11() {
-        return new User(11, "Olivia Martinez", "olivia.martinez@example.com", "#Olivia_Martinez_Password0", "+40723145611", "777 Oak St, Tokyo, Japan", LocalDate.of(1999, 10, 17), getMockedRole1());
-    }
+    public static User getMockedUser6() { return User.builder().id(6).name("Emily Wilson").email("emily.wilson@example.com").password("#Emily_Wilson_Password0").mobile("+40789012606").address("777 Pine St, Sydney, Australia").birthday(LocalDate.of(1995, 9, 8)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser12() {
-        return new User(12, "Daniel Thompson", "daniel.thompson@example.com", "#Daniel_Thompson_Password0", "+40787654312", "999 Elm St, Seoul, South Korea", LocalDate.of(1994, 6, 9), getMockedRole1());
-    }
+    public static User getMockedUser7() { return User.builder().id(7).name("Michaela Taylor").email("michaela.taylor@example.com").password("#Michaela_Taylor_Password0").mobile("+40723145607").address("999 Elm St, Rome, Italy").birthday(LocalDate.of(1983, 12, 7)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser13() {
-        return new User(13, "Emma Thompson", "emma.thompson@example.com", "#Emma_Thompson_Password0", "+40754321813", "111 Pine St, Beijing, China", LocalDate.of(2000, 12, 22), getMockedRole1());
-    }
+    public static User getMockedUser8() { return User.builder().id(8).name("David Anderson").email("david.anderson@example.com").password("#David_Anderson_Password0").mobile("+40787654308").address("111 Oak St, Moscow, Russia").birthday(LocalDate.of(1992, 4, 23)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser14() {
-        return new User(14, "Liam Brown", "liam.brown@example.com", "#Liam_Brown_Password0", "+40789012614", "333 Oak St, Cape Town, South Africa", LocalDate.of(1997, 9, 4), getMockedRole1());
-    }
+    public static User getMockedUser9() { return User.builder().id(9).name("Sophia Garcia").email("sophia.garcia@example.com").password("#Sophia_Garcia_Password0").mobile("+40754321809").address("333 Pine St, Athens, Greece").birthday(LocalDate.of(1998, 7, 30)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser15() {
-        return new User(15, "Olivia Wilson", "olivia.wilson@example.com", "#Olivia_Wilson_Password0", "+40723145615", "555 Elm St, Buenos Aires, Argentina", LocalDate.of(2001, 4, 7), getMockedRole1());
-    }
+    public static User getMockedUser10() { return User.builder().id(10).name("Joseph Wilson").email("joseph.wilson@example.com").password("#Joseph_Wilson_Password0").mobile("+40789012610").address("555 Elm St, Madrid, Spain").birthday(LocalDate.of(1991, 3, 14)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser16() {
-        return new User(16, "Noah Taylor", "noah.taylor@example.com", "#Noah_Taylor_Password0", "+40787654316", "777 Pine St, Rio de Janeiro, Brazil", LocalDate.of(1996, 11, 19), getMockedRole1());
-    }
+    public static User getMockedUser11() { return User.builder().id(11).name("Olivia Martinez").email("olivia.martinez@example.com").password("#Olivia_Martinez_Password0").mobile("+40723145611").address("777 Oak St, Tokyo, Japan").birthday(LocalDate.of(1999, 10, 17)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser17() {
-        return new User(17, "Ava Johnson", "ava.johnson@example.com", "#Ava_Johnson_Password0", "+40754321817", "999 Oak St, Mexico City, Mexico", LocalDate.of(2002, 6, 2), getMockedRole1());
-    }
+    public static User getMockedUser12() { return User.builder().id(12).name("Daniel Thompson").email("daniel.thompson@example.com").password("#Daniel_Thompson_Password0").mobile("+40787654312").address("999 Elm St, Seoul, South Korea").birthday(LocalDate.of(1994, 6, 9)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser18() {
-        return new User(18, "William Davis", "william.davis@example.com", "#William_Davis_Password0", "+40789012618", "111 Elm St, Vancouver, Canada", LocalDate.of(1993, 2, 25), getMockedRole1());
-    }
+    public static User getMockedUser13() { return User.builder().id(13).name("Emma Thompson").email("emma.thompson@example.com").password("#Emma_Thompson_Password0").mobile("+40754321813").address("111 Pine St, Beijing, China").birthday(LocalDate.of(2000, 12, 22)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser19() {
-        return new User(19, "Sophia Martinez", "sophia.martinez@example.com", "#Sophia_Martinez_Password0", "+40723145619", "333 Oak St, Paris, France", LocalDate.of(2003, 9, 8), getMockedRole1());
-    }
+    public static User getMockedUser14() { return User.builder().id(14).name("Liam Brown").email("liam.brown@example.com").password("#Liam_Brown_Password0").mobile("+40789012614").address("333 Oak St, Cape Town, South Africa").birthday(LocalDate.of(1997, 9, 4)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser20() {
-        return new User(20, "Isabella Anderson", "isabella.anderson@example.com", "#Isabella_Anderson_Password0", "+40787654320", "555 Elm St, London, UK", LocalDate.of(1999, 6, 22), getMockedRole1());
-    }
+    public static User getMockedUser15() { return User.builder().id(15).name("Olivia Wilson").email("olivia.wilson@example.com").password("#Olivia_Wilson_Password0").mobile("+40723145615").address("555 Elm St, Buenos Aires, Argentina").birthday(LocalDate.of(2001, 4, 7)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser21() {
-        return new User(21, "Mason Thompson", "mason.thompson@example.com", "#Mason_Thompson_Password0", "+40754321821", "777 Pine St, Berlin, Germany", LocalDate.of(2002, 12, 20), getMockedRole1());
-    }
+    public static User getMockedUser16() { return User.builder().id(16).name("Noah Taylor").email("noah.taylor@example.com").password("#Noah_Taylor_Password0").mobile("+40787654316").address("777 Pine St, Rio de Janeiro, Brazil").birthday(LocalDate.of(1996, 11, 19)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser22() {
-        return new User(22, "Charlotte Thompson", "charlotte.thompson@example.com", "#Charlotte_Thompson_Password0", "+40789012622", "999 Oak St, Moscow, Russia", LocalDate.of(1998, 10, 18), getMockedRole1());
-    }
+    public static User getMockedUser17() { return User.builder().id(17).name("Ava Johnson").email("ava.johnson@example.com").password("#Ava_Johnson_Password0").mobile("+40754321817").address("999 Oak St, Mexico City, Mexico").birthday(LocalDate.of(2002, 6, 2)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser23() {
-        return new User(23, "Elijah Smith", "elijah.smith@example.com", "#Elijah_Smith_Password0", "+40723145623", "111 Elm St, Athens, Greece", LocalDate.of(2003, 5, 3), getMockedRole1());
-    }
+    public static User getMockedUser18() { return User.builder().id(18).name("William Davis").email("william.davis@example.com").password("#William_Davis_Password0").mobile("+40789012618").address("111 Elm St, Vancouver, Canada").birthday(LocalDate.of(1993, 2, 25)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser24() {
-        return new User(24, "Amelia Johnson", "amelia.johnson@example.com", "#Amelia_Johnson_Password0", "+40787654324", "333 Pine St, Madrid, Spain", LocalDate.of(1998, 12, 14), getMockedRole1());
-    }
+    public static User getMockedUser19() { return User.builder().id(19).name("Sophia Martinez").email("sophia.martinez@example.com").password("#Sophia_Martinez_Password0").mobile("+40723145619").address("333 Oak St, Paris, France").birthday(LocalDate.of(2003, 9, 8)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser25() {
-        return new User(25, "Harper Wilson", "harper.wilson@example.com", "#Harper_Wilson_Password0", "+40754321825", "555 Oak St, Tokyo, Japan", LocalDate.of(2001, 7, 27), getMockedRole1());
-    }
+    public static User getMockedUser20() { return User.builder().id(20).name("Isabella Anderson").email("isabella.anderson@example.com").password("#Isabella_Anderson_Password0").mobile("+40787654320").address("555 Elm St, London, UK").birthday(LocalDate.of(1999, 6, 22)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser26() {
-        return new User(26, "Daniel Thompson", "daniel.thompson@example.com", "#Daniel_Thompson_Password0", "+40789012626", "777 Elm St, Seoul, South Korea", LocalDate.of(2001, 2, 9), getMockedRole1());
-    }
+    public static User getMockedUser21() { return User.builder().id(21).name("Mason Thompson").email("mason.thompson@example.com").password("#Mason_Thompson_Password0").mobile("+40754321821").address("777 Pine St, Berlin, Germany").birthday(LocalDate.of(2002, 12, 20)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser27() {
-        return new User(27, "Liam Thompson", "liam.thompson@example.com", "#Liam_Thompson_Password0", "+40723145627", "999 Oak St, Beijing, China", LocalDate.of(2000, 9, 23), getMockedRole1());
-    }
+    public static User getMockedUser22() { return User.builder().id(22).name("Charlotte Thompson").email("charlotte.thompson@example.com").password("#Charlotte_Thompson_Password0").mobile("+40789012622").address("999 Oak St, Moscow, Russia").birthday(LocalDate.of(1998, 10, 18)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser28() {
-        return new User(28, "Grace Martinez", "grace.martinez@example.com", "#Grace_Martinez_Password0", "+40787654328", "111 Elm St, Cape Town, South Africa", LocalDate.of(2002, 6, 6), getMockedRole1());
-    }
+    public static User getMockedUser23() { return User.builder().id(23).name("Elijah Smith").email("elijah.smith@example.com").password("#Elijah_Smith_Password0").mobile("+40723145623").address("111 Elm St, Athens, Greece").birthday(LocalDate.of(2003, 5, 3)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser29() {
-        return new User(29, "Isabella White", "isabella.white@example.com", "#Isabella_White_Password0", "+40754321829", "333 Pine St, Buenos Aires, Argentina", LocalDate.of(2002, 1, 19), getMockedRole1());
-    }
+    public static User getMockedUser24() { return User.builder().id(24).name("Amelia Johnson").email("amelia.johnson@example.com").password("#Amelia_Johnson_Password0").mobile("+40787654324").address("333 Pine St, Madrid, Spain").birthday(LocalDate.of(1998, 12, 14)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser30() {
-        return new User(30, "Logan Thompson", "logan.thompson@example.com", "#Logan_Thompson_Password0", "+40789012630", "555 Elm St, Rio de Janeiro, Brazil", LocalDate.of(2003, 7, 2), getMockedRole1());
-    }
+    public static User getMockedUser25() { return User.builder().id(25).name("Harper Wilson").email("harper.wilson@example.com").password("#Harper_Wilson_Password0").mobile("+40754321825").address("555 Oak St, Tokyo, Japan").birthday(LocalDate.of(2001, 7, 27)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser31() {
-        return new User(31, "Evelyn Brown", "evelyn.brown@example.com", "#Evelyn_Brown_Password0", "+40723145631", "777 Oak St, Mexico City, Mexico", LocalDate.of(1999, 3, 16), getMockedRole1());
-    }
+    public static User getMockedUser26() { return User.builder().id(26).name("Daniel Thompson").email("daniel.thompson@example.com").password("#Daniel_Thompson_Password0").mobile("+40789012626").address("777 Elm St, Seoul, South Korea").birthday(LocalDate.of(2001, 2, 9)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser32() {
-        return new User(32, "Henry Davis", "henry.davis@example.com", "#Henry_Davis_Password0", "+40787654332", "999 Elm St, Vancouver, Canada", LocalDate.of(1998, 10, 29), getMockedRole1());
-    }
+    public static User getMockedUser27() { return User.builder().id(27).name("Liam Thompson").email("liam.thompson@example.com").password("#Liam_Thompson_Password0").mobile("+40723145627").address("999 Oak St, Beijing, China").birthday(LocalDate.of(2000, 9, 23)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser33() {
-        return new User(33, "Sofia Smith", "sofia.smith@example.com", "#Sofia_Smith_Password0", "+40754321833", "111 Oak St, Paris, France", LocalDate.of(2000, 6, 11), getMockedRole1());
-    }
+    public static User getMockedUser28() { return User.builder().id(28).name("Grace Martinez").email("grace.martinez@example.com").password("#Grace_Martinez_Password0").mobile("+40787654328").address("111 Elm St, Cape Town, South Africa").birthday(LocalDate.of(2002, 6, 6)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser34() {
-        return new User(34, "Jack Wilson", "jack.wilson@example.com", "#Jack_Wilson_Password0", "+40789012634", "333 Elm St, London, UK", LocalDate.of(1997, 1, 24), getMockedRole1());
-    }
+    public static User getMockedUser29() { return User.builder().id(29).name("Isabella White").email("isabella.white@example.com").password("#Isabella_White_Password0").mobile("+40754321829").address("333 Pine St, Buenos Aires, Argentina").birthday(LocalDate.of(2002, 1, 19)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser35() {
-        return new User(35, "Emily Anderson", "emily.anderson@example.com", "#Emily_Anderson_Password0", "+40723145635", "555 Pine St, Berlin, Germany", LocalDate.of(1995, 8, 6), getMockedRole1());
-    }
+    public static User getMockedUser30() { return User.builder().id(30).name("Logan Thompson").email("logan.thompson@example.com").password("#Logan_Thompson_Password0").mobile("+40789012630").address("555 Elm St, Rio de Janeiro, Brazil").birthday(LocalDate.of(2003, 7, 2)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser36() {
-        return new User(36, "Benjamin Thompson", "benjamin.thompson@example.com", "#Benjamin_Thompson_Password0", "+40787654336", "777 Elm St, Moscow, Russia", LocalDate.of(1996, 3, 20), getMockedRole1());
-    }
+    public static User getMockedUser31() { return User.builder().id(31).name("Evelyn Brown").email("evelyn.brown@example.com").password("#Evelyn_Brown_Password0").mobile("+40723145631").address("777 Oak St, Mexico City, Mexico").birthday(LocalDate.of(1999, 3, 16)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser37() {
-        return new User(37, "Abigail Johnson", "abigail.johnson@example.com", "#Abigail_Johnson_Password0", "+40754321837", "999 Oak St, Athens, Greece", LocalDate.of(2000, 10, 2), getMockedRole1());
-    }
+    public static User getMockedUser32() { return User.builder().id(32).name("Henry Davis").email("henry.davis@example.com").password("#Henry_Davis_Password0").mobile("+40787654332").address("999 Elm St, Vancouver, Canada").birthday(LocalDate.of(1998, 10, 29)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser38() {
-        return new User(38, "Michael Davis", "michael.davis@example.com", "#Michael_Davis_Password0", "+40789012638", "111 Oak St, Madrid, Spain", LocalDate.of(1994, 5, 16), getMockedRole1());
-    }
+    public static User getMockedUser33() { return User.builder().id(33).name("Sofia Smith").email("sofia.smith@example.com").password("#Sofia_Smith_Password0").mobile("+40754321833").address("111 Oak St, Paris, France").birthday(LocalDate.of(2000, 6, 11)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser39() {
-        return new User(39, "Mia Wilson", "mia.wilson@example.com", "#Mia_Wilson_Password0", "+40723145639", "333 Elm St, Tokyo, Japan", LocalDate.of(1990, 12, 29), getMockedRole1());
-    }
+    public static User getMockedUser34() { return User.builder().id(34).name("Jack Wilson").email("jack.wilson@example.com").password("#Jack_Wilson_Password0").mobile("+40789012634").address("333 Elm St, London, UK").birthday(LocalDate.of(1997, 1, 24)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser40() {
-        return new User(40, "James Lee", "james.lee@example.com", "#James_Lee_Password0", "+40787654340", "555 Pine St, Seoul, South Korea", LocalDate.of(1991, 8, 11), getMockedRole1());
-    }
+    public static User getMockedUser35() { return User.builder().id(35).name("Emily Anderson").email("emily.anderson@example.com").password("#Emily_Anderson_Password0").mobile("+40723145635").address("555 Pine St, Berlin, Germany").birthday(LocalDate.of(1995, 8, 6)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser41() {
-        return new User(41, "Charlotte Thompson", "charlotte.thompson@example.com", "#Charlotte_Thompson_Password0", "+40754321841", "777 Elm St, Beijing, China", LocalDate.of(1993, 3, 24), getMockedRole1());
-    }
+    public static User getMockedUser36() { return User.builder().id(36).name("Benjamin Thompson").email("benjamin.thompson@example.com").password("#Benjamin_Thompson_Password0").mobile("+40787654336").address("777 Elm St, Moscow, Russia").birthday(LocalDate.of(1996, 3, 20)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser42() {
-        return new User(42, "Ethan Smith", "ethan.smith@example.com", "#Ethan_Smith_Password0", "+40789012642", "999 Oak St, Cape Town, South Africa", LocalDate.of(1989, 11, 6), getMockedRole1());
-    }
+    public static User getMockedUser37() { return User.builder().id(37).name("Abigail Johnson").email("abigail.johnson@example.com").password("#Abigail_Johnson_Password0").mobile("+40754321837").address("999 Oak St, Athens, Greece").birthday(LocalDate.of(2000, 10, 2)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser43() {
-        return new User(43, "Amelia Johnson", "amelia.johnson@example.com", "#Amelia_Johnson_Password0", "+40723145643", "111 Elm St, Buenos Aires, Argentina", LocalDate.of(1994, 6, 19), getMockedRole1());
-    }
+    public static User getMockedUser38() { return User.builder().id(38).name("Michael Davis").email("michael.davis@example.com").password("#Michael_Davis_Password0").mobile("+40789012638").address("111 Oak St, Madrid, Spain").birthday(LocalDate.of(1994, 5, 16)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser44() {
-        return new User(44, "Emily Davis", "emily.davis@example.com", "#Emily_Davis_Password0", "+40787654344", "333 Elm St, Rio de Janeiro, Brazil", LocalDate.of(1998, 1, 1), getMockedRole1());
-    }
+    public static User getMockedUser39() { return User.builder().id(39).name("Mia Wilson").email("mia.wilson@example.com").password("#Mia_Wilson_Password0").mobile("+40723145639").address("333 Elm St, Tokyo, Japan").birthday(LocalDate.of(1990, 12, 29)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser45() {
-        return new User(45, "Henry Wilson", "henry.wilson@example.com", "#Henry_Wilson_Password0", "+40754321845", "555 Pine St, Mexico City, Mexico", LocalDate.of(2001, 8, 14), getMockedRole1());
-    }
+    public static User getMockedUser40() { return User.builder().id(40).name("James Lee").email("james.lee@example.com").password("#James_Lee_Password0").mobile("+40787654340").address("555 Pine St, Seoul, South Korea").birthday(LocalDate.of(1991, 8, 11)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser46() {
-        return new User(46, "Scarlett Thompson", "scarlett.thompson@example.com", "#Scarlett_Thompson_Password0", "+40789012646", "777 Elm St, Vancouver, Canada", LocalDate.of(2002, 3, 28), getMockedRole1());
-    }
+    public static User getMockedUser41() { return User.builder().id(41).name("Charlotte Thompson").email("charlotte.thompson@example.com").password("#Charlotte_Thompson_Password0").mobile("+40754321841").address("777 Elm St, Beijing, China").birthday(LocalDate.of(1993, 3, 24)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser47() {
-        return new User(47, "Jacob Brown", "jacob.brown@example.com", "#Jacob_Brown_Password0", "+40723145647", "999 Pine St, Paris, France", LocalDate.of(1999, 11, 10), getMockedRole1());
-    }
+    public static User getMockedUser42() { return User.builder().id(42).name("Ethan Smith").email("ethan.smith@example.com").password("#Ethan_Smith_Password0").mobile("+40789012642").address("999 Oak St, Cape Town, South Africa").birthday(LocalDate.of(1989, 11, 6)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser48() {
-        return new User(48, "Ava Smith", "ava.smith@example.com", "#Ava_Smith_Password0", "+40787654348", "111 Pine St, London, UK", LocalDate.of(1986, 6, 23), getMockedRole1());
-    }
+    public static User getMockedUser43() { return User.builder().id(43).name("Amelia Johnson").email("amelia.johnson@example.com").password("#Amelia_Johnson_Password0").mobile("+40723145643").address("111 Elm St, Buenos Aires, Argentina").birthday(LocalDate.of(1994, 6, 19)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser49() {
-        return new User(49, "Oliver Johnson", "oliver.johnson@example.com", "#Oliver_Johnson_Password0", "+40754321849", "333 Elm St, Berlin, Germany", LocalDate.of(1988, 2, 5), getMockedRole1());
-    }
+    public static User getMockedUser44() { return User.builder().id(44).name("Emily Davis").email("emily.davis@example.com").password("#Emily_Davis_Password0").mobile("+40787654344").address("333 Elm St, Rio de Janeiro, Brazil").birthday(LocalDate.of(1998, 1, 1)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser50() {
-        return new User(50, "Sophia Wilson", "sophia.wilson@example.com", "#Sophia_Wilson_Password0", "+40789012650", "555 Elm St, Moscow, Russia", LocalDate.of(1994, 9, 19), getMockedRole1());
-    }
+    public static User getMockedUser45() { return User.builder().id(45).name("Henry Wilson").email("henry.wilson@example.com").password("#Henry_Wilson_Password0").mobile("+40754321845").address("555 Pine St, Mexico City, Mexico").birthday(LocalDate.of(2001, 8, 14)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser51() {
-        return new User(51, "William Davis", "william.davis@example.com", "#William_Davis_Password0", "+40723145651", "777 Pine St, Athens, Greece", LocalDate.of(1996, 4, 3), getMockedRole1());
-    }
+    public static User getMockedUser46() { return User.builder().id(46).name("Scarlett Thompson").email("scarlett.thompson@example.com").password("#Scarlett_Thompson_Password0").mobile("+40789012646").address("777 Elm St, Vancouver, Canada").birthday(LocalDate.of(2002, 3, 28)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser52() {
-        return new User(52, "Mia Johnson", "mia.johnson@example.com", "#Mia_Johnson_Password0", "+40787654352", "999 Oak St, Madrid, Spain", LocalDate.of(1998, 11, 16), getMockedRole1());
-    }
+    public static User getMockedUser47() { return User.builder().id(47).name("Jacob Brown").email("jacob.brown@example.com").password("#Jacob_Brown_Password0").mobile("+40723145647").address("999 Pine St, Paris, France").birthday(LocalDate.of(1999, 11, 10)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser53() {
-        return new User(53, "James Lee", "james.lee@example.com", "#James_Lee_Password0", "+40754321853", "111 Elm St, Tokyo, Japan", LocalDate.of(1997, 6, 29), getMockedRole1());
-    }
+    public static User getMockedUser48() { return User.builder().id(48).name("Ava Smith").email("ava.smith@example.com").password("#Ava_Smith_Password0").mobile("+40787654348").address("111 Pine St, London, UK").birthday(LocalDate.of(1986, 6, 23)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser54() {
-        return new User(54, "Charlotte Brown", "charlotte.brown@example.com", "#Charlotte_Brown_Password0", "+40789012654", "333 Pine St, Seoul, South Korea", LocalDate.of(2000, 2, 12), getMockedRole1());
-    }
+    public static User getMockedUser49() { return User.builder().id(49).name("Oliver Johnson").email("oliver.johnson@example.com").password("#Oliver_Johnson_Password0").mobile("+40754321849").address("333 Elm St, Berlin, Germany").birthday(LocalDate.of(1988, 2, 5)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser55() {
-        return new User(55, "Ethan Smith", "ethan.smith@example.com", "#Ethan_Smith_Password0", "+40723145655", "555 Elm St, Beijing, China", LocalDate.of(1998, 9, 25), getMockedRole1());
-    }
+    public static User getMockedUser50() { return User.builder().id(50).name("Sophia Wilson").email("sophia.wilson@example.com").password("#Sophia_Wilson_Password0").mobile("+40789012650").address("555 Elm St, Moscow, Russia").birthday(LocalDate.of(1994, 9, 19)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser56() {
-        return new User(56, "Emily Davis", "emily.davis@example.com", "#Emily_Davis_Password0", "+40787654356", "777 Elm St, Cape Town, South Africa", LocalDate.of(2001, 7, 9), getMockedRole1());
-    }
+    public static User getMockedUser51() { return User.builder().id(51).name("William Davis").email("william.davis@example.com").password("#William_Davis_Password0").mobile("+40723145651").address("777 Pine St, Athens, Greece").birthday(LocalDate.of(1996, 4, 3)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser57() {
-        return new User(57, "Jacob Thompson", "jacob.thompson@example.com", "#Jacob_Thompson_Password0", "+40754321857", "999 Pine St, Buenos Aires, Argentina", LocalDate.of(1996, 2, 22), getMockedRole1());
-    }
+    public static User getMockedUser52() { return User.builder().id(52).name("Mia Johnson").email("mia.johnson@example.com").password("#Mia_Johnson_Password0").mobile("+40787654352").address("999 Oak St, Madrid, Spain").birthday(LocalDate.of(1998, 11, 16)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser58() {
-        return new User(58, "Sophia Wilson", "sophia.wilson@example.com", "#Sophia_Wilson_Password0", "+40789012658", "111 Elm St, Rio de Janeiro, Brazil", LocalDate.of(1995, 10, 7), getMockedRole1());
-    }
+    public static User getMockedUser53() { return User.builder().id(53).name("James Lee").email("james.lee@example.com").password("#James_Lee_Password0").mobile("+40754321853").address("111 Elm St, Tokyo, Japan").birthday(LocalDate.of(1997, 6, 29)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser59() {
-        return new User(59, "Oliver Johnson", "oliver.johnson@example.com", "#Oliver_Johnson_Password0", "+40723145659", "333 Elm St, Mexico City, Mexico", LocalDate.of(1998, 7, 21), getMockedRole1());
-    }
+    public static User getMockedUser54() { return User.builder().id(54).name("Charlotte Brown").email("charlotte.brown@example.com").password("#Charlotte_Brown_Password0").mobile("+40789012654").address("333 Pine St, Seoul, South Korea").birthday(LocalDate.of(2000, 2, 12)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser60() {
-        return new User(60, "Scarlett Wilson", "scarlett.wilson@example.com", "#Scarlett_Wilson_Password0", "+40787654360", "555 Elm St, Vancouver, Canada", LocalDate.of(2001, 5, 5), getMockedRole1());
-    }
+    public static User getMockedUser55() { return User.builder().id(55).name("Ethan Smith").email("ethan.smith@example.com").password("#Ethan_Smith_Password0").mobile("+40723145655").address("555 Elm St, Beijing, China").birthday(LocalDate.of(1998, 9, 25)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser61() {
-        return new User(61, "William Davis", "william.davis@example.com", "#William_Davis_Password0", "+40754321861", "777 Pine St, Paris, France", LocalDate.of(1999, 12, 17), getMockedRole1());
-    }
+    public static User getMockedUser56() { return User.builder().id(56).name("Emily Davis").email("emily.davis@example.com").password("#Emily_Davis_Password0").mobile("+40787654356").address("777 Elm St, Cape Town, South Africa").birthday(LocalDate.of(2001, 7, 9)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser62() {
-        return new User(62, "Mia Johnson", "mia.johnson@example.com", "#Mia_Johnson_Password0", "+40789012662", "999 Oak St, London, UK", LocalDate.of(2002, 9, 30), getMockedRole1());
-    }
+    public static User getMockedUser57() { return User.builder().id(57).name("Jacob Thompson").email("jacob.thompson@example.com").password("#Jacob_Thompson_Password0").mobile("+40754321857").address("999 Pine St, Buenos Aires, Argentina").birthday(LocalDate.of(1996, 2, 22)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser63() {
-        return new User(63, "James Lee", "james.lee@example.com", "#James_Lee_Password0", "+40723145663", "111 Elm St, Berlin, Germany", LocalDate.of(1996, 5, 14), getMockedRole1());
-    }
+    public static User getMockedUser58() { return User.builder().id(58).name("Sophia Wilson").email("sophia.wilson@example.com").password("#Sophia_Wilson_Password0").mobile("+40789012658").address("111 Elm St, Rio de Janeiro, Brazil").birthday(LocalDate.of(1995, 10, 7)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser64() {
-        return new User(64, "Charlotte Brown", "charlotte.brown@example.com", "#Charlotte_Brown_Password0", "+40787654364", "333 Elm St, Moscow, Russia", LocalDate.of(2002, 12, 27), getMockedRole1());
-    }
+    public static User getMockedUser59() { return User.builder().id(59).name("Oliver Johnson").email("oliver.johnson@example.com").password("#Oliver_Johnson_Password0").mobile("+40723145659").address("333 Elm St, Mexico City, Mexico").birthday(LocalDate.of(1998, 7, 21)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser65() {
-        return new User(65, "Elijah Roberts", "elijah.roberts@example.com", "#Elijah_Roberts_Password0", "+40754321865", "555 Pine St, Sydney, Australia", LocalDate.of(2003, 1, 27), getMockedRole1());
-    }
+    public static User getMockedUser60() { return User.builder().id(60).name("Scarlett Wilson").email("scarlett.wilson@example.com").password("#Scarlett_Wilson_Password0").mobile("+40787654360").address("555 Elm St, Vancouver, Canada").birthday(LocalDate.of(2001, 5, 5)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser66() {
-        return new User(66, "Amelia Walker", "amelia.walker@example.com", "#Amelia_Walker_Password0", "+40789012666", "777 Oak St, Rome, Italy", LocalDate.of(1992, 8, 12), getMockedRole1());
-    }
+    public static User getMockedUser61() { return User.builder().id(61).name("William Davis").email("william.davis@example.com").password("#William_Davis_Password0").mobile("+40754321861").address("777 Pine St, Paris, France").birthday(LocalDate.of(1999, 12, 17)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser67() {
-        return new User(67, "Daniel Green", "daniel.green@example.com", "#Daniel_Green_Password0", "+40723145667", "999 Elm St, Moscow, Russia", LocalDate.of(1996, 3, 27), getMockedRole1());
-    }
+    public static User getMockedUser62() { return User.builder().id(62).name("Mia Johnson").email("mia.johnson@example.com").password("#Mia_Johnson_Password0").mobile("+40789012662").address("999 Oak St, London, UK").birthday(LocalDate.of(2002, 9, 30)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser68() {
-        return new User(68, "Liam Hall", "liam.hall@example.com", "#Liam_Hall_Password0", "+40787654368", "111 Oak St, Athens, Greece", LocalDate.of(1998, 11, 9), getMockedRole1());
-    }
+    public static User getMockedUser63() { return User.builder().id(63).name("James Lee").email("james.lee@example.com").password("#James_Lee_Password0").mobile("+40723145663").address("111 Elm St, Berlin, Germany").birthday(LocalDate.of(1996, 5, 14)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser69() {
-        return new User(69, "Sophia Young", "sophia.young@example.com", "#Sophia_Young_Password0", "+40754321869", "333 Pine St, Madrid, Spain", LocalDate.of(1995, 6, 23), getMockedRole1());
-    }
+    public static User getMockedUser64() { return User.builder().id(64).name("Charlotte Brown").email("charlotte.brown@example.com").password("#Charlotte_Brown_Password0").mobile("+40787654364").address("333 Elm St, Moscow, Russia").birthday(LocalDate.of(2002, 12, 27)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser70() {
-        return new User(70, "Noah Clark", "noah.clark@example.com", "#Noah_Clark_Password0", "+40789012670", "555 Elm St, Tokyo, Japan", LocalDate.of(1997, 2, 5), getMockedRole1());
-    }
+    public static User getMockedUser65() { return User.builder().id(65).name("Elijah Roberts").email("elijah.roberts@example.com").password("#Elijah_Roberts_Password0").mobile("+40754321865").address("555 Pine St, Sydney, Australia").birthday(LocalDate.of(2003, 1, 27)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser71() {
-        return new User(71, "Olivia Hill", "olivia.hill@example.com", "#Olivia_Hill_Password0", "+40723145671", "777 Oak St, Seoul, South Korea", LocalDate.of(2001, 9, 20), getMockedRole1());
-    }
+    public static User getMockedUser66() { return User.builder().id(66).name("Amelia Walker").email("amelia.walker@example.com").password("#Amelia_Walker_Password0").mobile("+40789012666").address("777 Oak St, Rome, Italy").birthday(LocalDate.of(1992, 8, 12)).role(getMockedRole1()).build(); }
 
-    public static User getMockedUser72() {
-        return new User(72, "Michaela Allen", "michaela.allen@example.com", "#Michaela_Allen_Password0", "+40787654372", "999 Pine St, Beijing, China", LocalDate.of(1998, 5, 6), getMockedRole1());
-    }
+    public static User getMockedUser67() { return User.builder().id(67).name("Daniel Green").email("daniel.green@example.com").password("#Daniel_Green_Password0").mobile("+40723145667").address("999 Elm St, Moscow, Russia").birthday(LocalDate.of(1996, 3, 27)).role(getMockedRole1()).build(); }
+
+    public static User getMockedUser68() { return User.builder().id(68).name("Liam Hall").email("liam.hall@example.com").password("#Liam_Hall_Password0").mobile("+40787654368").address("111 Oak St, Athens, Greece").birthday(LocalDate.of(1998, 11, 9)).role(getMockedRole1()).build(); }
+
+    public static User getMockedUser69() { return User.builder().id(69).name("Sophia Young").email("sophia.young@example.com").password("#Sophia_Young_Password0").mobile("+40754321869").address("333 Pine St, Madrid, Spain").birthday(LocalDate.of(1995, 6, 23)).role(getMockedRole1()).build(); }
+
+    public static User getMockedUser70() { return User.builder().id(70).name("Noah Clark").email("noah.clark@example.com").password("#Noah_Clark_Password0").mobile("+40789012670").address("555 Elm St, Tokyo, Japan").birthday(LocalDate.of(1997, 2, 5)).role(getMockedRole1()).build(); }
+
+    public static User getMockedUser71() { return User.builder().id(71).name("Olivia Hill").email("olivia.hill@example.com").password("#Olivia_Hill_Password0").mobile("+40723145671").address("777 Oak St, Seoul, South Korea").birthday(LocalDate.of(2001, 9, 20)).role(getMockedRole1()).build(); }
+
+    public static User getMockedUser72() { return User.builder().id(72).name("Michaela Allen").email("michaela.allen@example.com").password("#Michaela_Allen_Password0").mobile("+40787654372").address("999 Pine St, Beijing, China").birthday(LocalDate.of(1998, 5, 6)).role(getMockedRole1()).build(); }
+
+    public static UserDto getMockedUserDto1() { return UserDto.builder().id(1).name("John Doe").email("john.doe@example.com").password("#John_Doe_Password0").mobile("+40721543701").address("123 Main St, Boston, USA").birthday(LocalDate.of(1980, 2, 15)).roleId(2).build(); }
+
+    public static UserDto getMockedUserDto2() { return UserDto.builder().id(2).name("Jane Smith").email("jane.smith@example.com").password("#Jane_Smith_Password0").mobile("+40756321802").address("456 Oak St, London, UK").birthday(LocalDate.of(1982, 7, 10)).roleId(2).build(); }
+
+    public static UserDto getMockedUserDto3() { return UserDto.builder().id(3).name("Michael Johnson").email("michael.johnson@example.com").password("#Michael_Johnson_Password0").mobile("+40789712303").address("789 Pine St, Madrid, Spain").birthday(LocalDate.of(1990, 11, 20)).roleId(2).build(); }
+
+    public static UserDto getMockedUserDto4() { return UserDto.builder().id(4).name("Laura Brown").email("laura.brown@example.com").password("#Laura_Brown_Password0").mobile("+40734289604").address("333 Elm St, Paris, France").birthday(LocalDate.of(1985, 8, 25)).roleId(2).build(); }
+
+    public static UserDto getMockedUserDto5() { return UserDto.builder().id(5).name("Robert Davis").email("robert.davis@example.com").password("#Robert_Davis_Password0").mobile("+40754321805").address("555 Oak St, Berlin, Germany").birthday(LocalDate.of(1988, 5, 12)).roleId(1).build(); }
+
+    public static UserDto getMockedUserDto6() { return UserDto.builder().id(6).name("Emily Wilson").email("emily.wilson@example.com").password("#Emily_Wilson_Password0").mobile("+40789012606").address("777 Pine St, Sydney, Australia").birthday(LocalDate.of(1995, 9, 8)).roleId(1).build(); }
+
+    public static UserDto getMockedUserDto7() { return UserDto.builder().id(7).name("Michaela Taylor").email("michaela.taylor@example.com").password("#Michaela_Taylor_Password0").mobile("+40723145607").address("999 Elm St, Rome, Italy").birthday(LocalDate.of(1983, 12, 7)).roleId(1).build(); }
+
+    public static UserDto getMockedUserDto8() { return UserDto.builder().id(8).name("David Anderson").email("david.anderson@example.com").password("#David_Anderson_Password0").mobile("+40787654308").address("111 Oak St, Moscow, Russia").birthday(LocalDate.of(1992, 4, 23)).roleId(1).build(); }
+
+    public static UserDto getMockedUserDto9() { return UserDto.builder().id(9).name("Sophia Garcia").email("sophia.garcia@example.com").password("#Sophia_Garcia_Password0").mobile("+40754321809").address("333 Pine St, Athens, Greece").birthday(LocalDate.of(1998, 7, 30)).roleId(1).build(); }
+
+    public static UserDto getMockedUserDto10() { return UserDto.builder().id(10).name("Joseph Wilson").email("joseph.wilson@example.com").password("#Joseph_Wilson_Password0").mobile("+40789012610").address("555 Elm St, Madrid, Spain").birthday(LocalDate.of(1991, 3, 14)).roleId(1).build(); }
 }

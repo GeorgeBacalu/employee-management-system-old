@@ -3,6 +3,7 @@ package com.project.ems.integration.experience;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.experience.ExperienceDto;
+import com.project.ems.experience.ExperienceService;
 import com.project.ems.wrapper.PageWrapper;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,10 +15,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -32,14 +33,12 @@ import static com.project.ems.constants.ExceptionMessageConstants.RESOURCE_NOT_F
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.EXPERIENCE_FILTER_KEY;
-import static com.project.ems.mapper.ExperienceMapper.convertToDto;
-import static com.project.ems.mapper.ExperienceMapper.convertToDtoList;
-import static com.project.ems.mock.ExperienceMock.getMockedExperience1;
-import static com.project.ems.mock.ExperienceMock.getMockedExperience2;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDto1;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDto2;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDtosPage1;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDtosPage2;
+import static com.project.ems.mock.ExperienceMock.getMockedExperienceDtosPage3;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences;
-import static com.project.ems.mock.ExperienceMock.getMockedExperiencesPage1;
-import static com.project.ems.mock.ExperienceMock.getMockedExperiencesPage2;
-import static com.project.ems.mock.ExperienceMock.getMockedExperiencesPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -55,7 +54,7 @@ class ExperienceRestControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private ExperienceService experienceService;
 
     private ExperienceDto experienceDto1;
     private ExperienceDto experienceDto2;
@@ -63,9 +62,9 @@ class ExperienceRestControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        experienceDto1 = convertToDto(modelMapper, getMockedExperience1());
-        experienceDto2 = convertToDto(modelMapper, getMockedExperience2());
-        experienceDtos = convertToDtoList(modelMapper, getMockedExperiences());
+        experienceDto1 = getMockedExperienceDto1();
+        experienceDto2 = getMockedExperienceDto2();
+        experienceDtos = experienceService.convertToDtos(getMockedExperiences());
     }
 
     @Test
@@ -158,20 +157,21 @@ class ExperienceRestControllerIntegrationTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<ExperienceDto> experienceDtosPage1 = convertToDtoList(modelMapper, getMockedExperiencesPage1());
-        List<ExperienceDto> experienceDtosPage2 = convertToDtoList(modelMapper, getMockedExperiencesPage2());
-        List<ExperienceDto> experienceDtosPage3 = convertToDtoList(modelMapper, getMockedExperiencesPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(experienceDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(experienceDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", EXPERIENCE_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(experienceDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(experienceDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(experienceDtosPage3)));
+        Page<ExperienceDto> experienceDtosPage1 = new PageImpl<>(getMockedExperienceDtosPage1());
+        Page<ExperienceDto> experienceDtosPage2 = new PageImpl<>(getMockedExperienceDtosPage2());
+        Page<ExperienceDto> experienceDtosPage3 = new PageImpl<>(getMockedExperienceDtosPage3());
+        Page<ExperienceDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", EXPERIENCE_FILTER_KEY, experienceDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", EXPERIENCE_FILTER_KEY, experienceDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", EXPERIENCE_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", experienceDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", experienceDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", experienceDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<ExperienceDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<ExperienceDto> expectedPage) throws Exception {
         ResponseEntity<String> response = template.getForEntity(API_EXPERIENCES + String.format(API_PAGINATION_V2, page, size, sortField, sortDirection, key), String.class);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

@@ -11,9 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.USER_NOT_FOUND;
-import static com.project.ems.mapper.UserMapper.convertToDto;
-import static com.project.ems.mapper.UserMapper.convertToDtoList;
-import static com.project.ems.mapper.UserMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -26,20 +23,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> findAll() {
         List<User> users = userRepository.findAll();
-        return !users.isEmpty() ? convertToDtoList(modelMapper, users) : new ArrayList<>();
+        return !users.isEmpty() ? convertToDtos(users) : new ArrayList<>();
     }
 
     @Override
     public UserDto findById(Integer id) {
         User user = findEntityById(id);
-        return convertToDto(modelMapper, user);
+        return convertToDto(user);
     }
 
     @Override
     public UserDto save(UserDto userDto) {
-        User user = convertToEntity(modelMapper, userDto, roleService);
+        User user = convertToEntity(userDto);
         User savedUser = userRepository.save(user);
-        return convertToDto(modelMapper, savedUser);
+        return convertToDto(savedUser);
     }
 
     @Override
@@ -47,7 +44,7 @@ public class UserServiceImpl implements UserService {
         User userToUpdate = findEntityById(id);
         updateEntityFromDto(userDto, userToUpdate);
         User updatedUser = userRepository.save(userToUpdate);
-        return convertToDto(modelMapper, updatedUser);
+        return convertToDto(updatedUser);
     }
 
     @Override
@@ -59,7 +56,29 @@ public class UserServiceImpl implements UserService {
     @Override
     public Page<UserDto> findAllByKey(Pageable pageable, String key) {
         Page<User> usersPage = key.trim().equals("") ? userRepository.findAll(pageable) : userRepository.findAllByKey(pageable, key.toLowerCase());
-        return usersPage.hasContent() ? usersPage.map(user -> convertToDto(modelMapper, user)) : Page.empty();
+        return usersPage.hasContent() ? usersPage.map(this::convertToDto) : Page.empty();
+    }
+
+    @Override
+    public List<UserDto> convertToDtos(List<User> users) {
+        return users.stream().map(this::convertToDto).toList();
+    }
+
+    @Override
+    public List<User> convertToEntities(List<UserDto> userDtos) {
+        return userDtos.stream().map(this::convertToEntity).toList();
+    }
+
+    @Override
+    public UserDto convertToDto(User user) {
+        return modelMapper.map(user, UserDto.class);
+    }
+
+    @Override
+    public User convertToEntity(UserDto userDto) {
+        User user = modelMapper.map(userDto, User.class);
+        user.setRole(roleService.findEntityById(userDto.getRoleId()));
+        return user;
     }
 
     @Override

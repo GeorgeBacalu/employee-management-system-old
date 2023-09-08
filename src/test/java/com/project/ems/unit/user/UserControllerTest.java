@@ -1,7 +1,6 @@
 package com.project.ems.unit.user;
 
 import com.project.ems.exception.ResourceNotFoundException;
-import com.project.ems.role.RoleService;
 import com.project.ems.user.User;
 import com.project.ems.user.UserController;
 import com.project.ems.user.UserDto;
@@ -15,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -29,9 +27,8 @@ import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_USERS_VI
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_USER_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.USERS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.USER_DETAILS_VIEW;
-import static com.project.ems.mapper.UserMapper.convertToDto;
-import static com.project.ems.mapper.UserMapper.convertToDtoList;
 import static com.project.ems.mock.UserMock.getMockedUser1;
+import static com.project.ems.mock.UserMock.getMockedUserDto1;
 import static com.project.ems.mock.UserMock.getMockedUsersPage1;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
@@ -56,17 +53,11 @@ class UserControllerTest {
     @Mock
     private UserService userService;
 
-    @Mock
-    private RoleService roleService;
-
     @Spy
     private Model model;
 
     @Spy
     private RedirectAttributes redirectAttributes;
-
-    @Spy
-    private ModelMapper modelMapper;
 
     private User user;
     private List<User> users;
@@ -77,8 +68,8 @@ class UserControllerTest {
     void setUp() {
         user = getMockedUser1();
         users = getMockedUsersPage1();
-        userDto = convertToDto(modelMapper, user);
-        userDtos = convertToDtoList(modelMapper, users);
+        userDto = getMockedUserDto1();
+        userDtos = userService.convertToDtos(users);
     }
 
     @Test
@@ -90,10 +81,6 @@ class UserControllerTest {
         String direction = getSortDirection(pageable);
         long nrUsers = userDtosPage.getTotalElements();
         int nrPages = userDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrUsers);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
         SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         given(userService.findAllByKey(pageable, USER_FILTER_KEY)).willReturn(userDtosPage);
         given(model.getAttribute("users")).willReturn(users);
@@ -104,10 +91,10 @@ class UserControllerTest {
         given(model.getAttribute("key")).willReturn(USER_FILTER_KEY);
         given(model.getAttribute("field")).willReturn(field);
         given(model.getAttribute("direction")).willReturn(direction);
-        given(model.getAttribute("startIndexCurrentPage")).willReturn(startIndexCurrentPage);
-        given(model.getAttribute("endIndexCurrentPage")).willReturn(endIndexCurrentPage);
-        given(model.getAttribute("startIndexPageNavigation")).willReturn(startIndexPageNavigation);
-        given(model.getAttribute("endIndexPageNavigation")).willReturn(endIndexPageNavigation);
+        given(model.getAttribute("startIndexCurrentPage")).willReturn(getStartIndexCurrentPage(page, size));
+        given(model.getAttribute("endIndexCurrentPage")).willReturn(getEndIndexCurrentPage(page, size, nrUsers));
+        given(model.getAttribute("startIndexPageNavigation")).willReturn(getStartIndexPageNavigation(page, nrPages));
+        given(model.getAttribute("endIndexPageNavigation")).willReturn(getEndIndexPageNavigation(page, nrPages));
         given(model.getAttribute("searchRequest")).willReturn(searchRequest);
         String viewName = userController.getAllUsersPage(model, pageable, USER_FILTER_KEY);
         assertThat(viewName).isEqualTo(USERS_VIEW);
@@ -119,10 +106,10 @@ class UserControllerTest {
         assertThat(model.getAttribute("key")).isEqualTo(USER_FILTER_KEY);
         assertThat(model.getAttribute("field")).isEqualTo(field);
         assertThat(model.getAttribute("direction")).isEqualTo(direction);
-        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(startIndexCurrentPage);
-        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(endIndexCurrentPage);
-        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(startIndexPageNavigation);
-        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(endIndexPageNavigation);
+        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(getStartIndexCurrentPage(page, size));
+        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(getEndIndexCurrentPage(page, size, nrUsers));
+        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(getStartIndexPageNavigation(page, nrPages));
+        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(getEndIndexPageNavigation(page, nrPages));
         assertThat(model.getAttribute("searchRequest")).isEqualTo(searchRequest);
     }
 
@@ -218,21 +205,18 @@ class UserControllerTest {
     @Test
     void deleteById_withValidId_shouldRemoveUserWithGivenIdFromList() {
         PageImpl<UserDto> userDtosPage = new PageImpl<>(userDtos);
-        int page = userDtosPage.getNumber();
-        int size = userDtosPage.getSize();
-        String sort = getSortField(pageable) + ',' +  getSortDirection(pageable);
         given(userService.findAllByKey(pageable, USER_FILTER_KEY)).willReturn(userDtosPage);
-        given(redirectAttributes.getAttribute("page")).willReturn(page);
-        given(redirectAttributes.getAttribute("size")).willReturn(size);
+        given(redirectAttributes.getAttribute("page")).willReturn(userDtosPage.getNumber());
+        given(redirectAttributes.getAttribute("size")).willReturn(userDtosPage.getSize());
         given(redirectAttributes.getAttribute("key")).willReturn(USER_FILTER_KEY);
-        given(redirectAttributes.getAttribute("sort")).willReturn(sort);
+        given(redirectAttributes.getAttribute("sort")).willReturn(getSortField(pageable) + ',' +  getSortDirection(pageable));
         String viewName = userController.deleteById(VALID_ID, redirectAttributes, pageable, USER_FILTER_KEY);
         assertThat(viewName).isEqualTo(REDIRECT_USERS_VIEW);
         verify(userService).deleteById(VALID_ID);
-        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(page);
-        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(size);
+        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(userDtosPage.getNumber());
+        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(userDtosPage.getSize());
         assertThat(redirectAttributes.getAttribute("key")).isEqualTo(USER_FILTER_KEY);
-        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(sort);
+        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(getSortField(pageable) + ',' +  getSortDirection(pageable));
     }
 
     @Test

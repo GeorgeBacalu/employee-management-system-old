@@ -21,10 +21,10 @@ import org.modelmapper.ModelMapper;
 import static com.project.ems.constants.ExceptionMessageConstants.ROLE_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
-import static com.project.ems.mapper.RoleMapper.convertToDto;
-import static com.project.ems.mapper.RoleMapper.convertToDtoList;
 import static com.project.ems.mock.RoleMock.getMockedRole1;
 import static com.project.ems.mock.RoleMock.getMockedRole2;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto1;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto2;
 import static com.project.ems.mock.RoleMock.getMockedRoles;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -61,9 +61,9 @@ class RoleServiceImplTest {
         role1 = getMockedRole1();
         role2 = getMockedRole2();
         roles = getMockedRoles();
-        roleDto1 = convertToDto(modelMapper, role1);
-        roleDto2 = convertToDto(modelMapper, role2);
-        roleDtos = convertToDtoList(modelMapper, roles);
+        roleDto1 = getMockedRoleDto1();
+        roleDto2 = getMockedRoleDto2();
+        roleDtos = roleService.convertToDtos(roles);
     }
 
     @Test
@@ -92,7 +92,7 @@ class RoleServiceImplTest {
         given(roleRepository.save(any(Role.class))).willReturn(role1);
         RoleDto result = roleService.save(roleDto1);
         verify(roleRepository).save(roleCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, roleCaptor.getValue()));
+        assertThat(result).isEqualTo(roleService.convertToDto(roleCaptor.getValue()));
     }
 
     @Test
@@ -102,7 +102,7 @@ class RoleServiceImplTest {
         given(roleRepository.save(any(Role.class))).willReturn(role);
         RoleDto result = roleService.updateById(roleDto2, VALID_ID);
         verify(roleRepository).save(roleCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, roleCaptor.getValue()));
+        assertThat(result).isEqualTo(roleService.convertToDto(roleCaptor.getValue()));
     }
 
     @Test

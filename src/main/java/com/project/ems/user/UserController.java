@@ -1,12 +1,9 @@
 package com.project.ems.user;
 
-import com.project.ems.role.RoleService;
 import com.project.ems.wrapper.SearchRequest;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,8 +19,6 @@ import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_USERS_VI
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_USER_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.USERS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.USER_DETAILS_VIEW;
-import static com.project.ems.mapper.UserMapper.convertToEntity;
-import static com.project.ems.mapper.UserMapper.convertToEntityList;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
 import static com.project.ems.util.PageUtil.getSortDirection;
@@ -37,11 +32,9 @@ import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 public class UserController {
 
     private final UserService userService;
-    private final RoleService roleService;
-    private final ModelMapper modelMapper;
 
     @GetMapping
-    public String getAllUsersPage(Model model, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String getAllUsersPage(Model model, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         Page<UserDto> userDtosPage = userService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
@@ -49,7 +42,7 @@ public class UserController {
         String direction = getSortDirection(pageable);
         long nrUsers = userDtosPage.getTotalElements();
         int nrPages = userDtosPage.getTotalPages();
-        model.addAttribute("users", convertToEntityList(modelMapper, userDtosPage.getContent(), roleService));
+        model.addAttribute("users", userService.convertToEntities(userDtosPage.getContent()));
         model.addAttribute("nrUsers", nrUsers);
         model.addAttribute("nrPages", nrPages);
         model.addAttribute("page", page);
@@ -76,7 +69,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     public String getUserByIdPage(Model model, @PathVariable Integer id) {
-        model.addAttribute("user", convertToEntity(modelMapper, userService.findById(id), roleService));
+        model.addAttribute("user", userService.convertToEntity(userService.findById(id)));
         return USER_DETAILS_VIEW;
     }
 
@@ -98,7 +91,7 @@ public class UserController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         userService.deleteById(id);
         Page<UserDto> userDtosPage = userService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();

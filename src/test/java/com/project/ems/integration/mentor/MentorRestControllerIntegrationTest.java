@@ -3,6 +3,7 @@ package com.project.ems.integration.mentor;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.mentor.MentorDto;
+import com.project.ems.mentor.MentorService;
 import com.project.ems.wrapper.PageWrapper;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,10 +15,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -32,14 +33,12 @@ import static com.project.ems.constants.ExceptionMessageConstants.RESOURCE_NOT_F
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.MENTOR_FILTER_KEY;
-import static com.project.ems.mapper.MentorMapper.convertToDto;
-import static com.project.ems.mapper.MentorMapper.convertToDtoList;
-import static com.project.ems.mock.MentorMock.getMockedMentor1;
-import static com.project.ems.mock.MentorMock.getMockedMentor2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage3;
 import static com.project.ems.mock.MentorMock.getMockedMentors;
-import static com.project.ems.mock.MentorMock.getMockedMentorsPage1;
-import static com.project.ems.mock.MentorMock.getMockedMentorsPage2;
-import static com.project.ems.mock.MentorMock.getMockedMentorsPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -55,7 +54,7 @@ class MentorRestControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private MentorService mentorService;
 
     private MentorDto mentorDto1;
     private MentorDto mentorDto2;
@@ -63,9 +62,9 @@ class MentorRestControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        mentorDto1 = convertToDto(modelMapper, getMockedMentor1());
-        mentorDto2 = convertToDto(modelMapper, getMockedMentor2());
-        mentorDtos = convertToDtoList(modelMapper, getMockedMentors());
+        mentorDto1 = getMockedMentorDto1();
+        mentorDto2 = getMockedMentorDto2();
+        mentorDtos = mentorService.convertToDtos(getMockedMentors());
     }
 
     @Test
@@ -161,20 +160,21 @@ class MentorRestControllerIntegrationTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<MentorDto> mentorDtosPage1 = convertToDtoList(modelMapper, getMockedMentorsPage1());
-        List<MentorDto> mentorDtosPage2 = convertToDtoList(modelMapper, getMockedMentorsPage2());
-        List<MentorDto> mentorDtosPage3 = convertToDtoList(modelMapper, getMockedMentorsPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", MENTOR_FILTER_KEY, new PageImpl<>(mentorDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", MENTOR_FILTER_KEY, new PageImpl<>(mentorDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", MENTOR_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(mentorDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(mentorDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(mentorDtosPage3)));
+        Page<MentorDto> mentorDtosPage1 = new PageImpl<>(getMockedMentorDtosPage1());
+        Page<MentorDto> mentorDtosPage2 = new PageImpl<>(getMockedMentorDtosPage2());
+        Page<MentorDto> mentorDtosPage3 = new PageImpl<>(getMockedMentorDtosPage3());
+        Page<MentorDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", MENTOR_FILTER_KEY, mentorDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", MENTOR_FILTER_KEY, mentorDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", MENTOR_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", mentorDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", mentorDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", mentorDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<MentorDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<MentorDto> expectedPage) throws Exception {
         ResponseEntity<String> response = template.getForEntity(API_MENTORS + String.format(API_PAGINATION_V2, page, size, sortField, sortDirection, key), String.class);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

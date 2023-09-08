@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.ui.Model;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -28,10 +27,9 @@ import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_STUDIES_
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_STUDY_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.STUDIES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.STUDY_DETAILS_VIEW;
-import static com.project.ems.mapper.StudyMapper.convertToDto;
-import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.StudyMock.getMockedStudiesPage1;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
+import static com.project.ems.mock.StudyMock.getMockedStudyDto1;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
 import static com.project.ems.util.PageUtil.getSortDirection;
@@ -61,9 +59,6 @@ class StudyControllerTest {
     @Spy
     private RedirectAttributes redirectAttributes;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private Study study;
     private List<Study> studies;
     private StudyDto studyDto;
@@ -73,8 +68,8 @@ class StudyControllerTest {
     void setUp() {
         study = getMockedStudy1();
         studies = getMockedStudiesPage1();
-        studyDto = convertToDto(modelMapper, study);
-        studyDtos = convertToDtoList(modelMapper, studies);
+        studyDto = getMockedStudyDto1();
+        studyDtos = studyService.convertToDtos(studies);
     }
 
     @Test
@@ -86,10 +81,6 @@ class StudyControllerTest {
         String direction = getSortDirection(pageable);
         long nrStudies = studyDtosPage.getTotalElements();
         int nrPages = studyDtosPage.getTotalPages();
-        int startIndexCurrentPage = getStartIndexCurrentPage(page, size);
-        long endIndexCurrentPage = getEndIndexCurrentPage(page, size, nrStudies);
-        int startIndexPageNavigation = getStartIndexPageNavigation(page, nrPages);
-        int endIndexPageNavigation = getEndIndexPageNavigation(page, nrPages);
         SearchRequest searchRequest = new SearchRequest(0, size, "", field + "," + direction);
         given(studyService.findAllByKey(pageable, STUDY_FILTER_KEY)).willReturn(studyDtosPage);
         given(model.getAttribute("studies")).willReturn(studies);
@@ -100,10 +91,10 @@ class StudyControllerTest {
         given(model.getAttribute("key")).willReturn(STUDY_FILTER_KEY);
         given(model.getAttribute("field")).willReturn(field);
         given(model.getAttribute("direction")).willReturn(direction);
-        given(model.getAttribute("startIndexCurrentPage")).willReturn(startIndexCurrentPage);
-        given(model.getAttribute("endIndexCurrentPage")).willReturn(endIndexCurrentPage);
-        given(model.getAttribute("startIndexPageNavigation")).willReturn(startIndexPageNavigation);
-        given(model.getAttribute("endIndexPageNavigation")).willReturn(endIndexPageNavigation);
+        given(model.getAttribute("startIndexCurrentPage")).willReturn(getStartIndexCurrentPage(page, size));
+        given(model.getAttribute("endIndexCurrentPage")).willReturn(getEndIndexCurrentPage(page, size, nrStudies));
+        given(model.getAttribute("startIndexPageNavigation")).willReturn(getStartIndexPageNavigation(page, nrPages));
+        given(model.getAttribute("endIndexPageNavigation")).willReturn(getEndIndexPageNavigation(page, nrPages));
         given(model.getAttribute("searchRequest")).willReturn(searchRequest);
         String viewName = studyController.getAllStudiesPage(model, pageable, STUDY_FILTER_KEY);
         assertThat(viewName).isEqualTo(STUDIES_VIEW);
@@ -115,10 +106,10 @@ class StudyControllerTest {
         assertThat(model.getAttribute("key")).isEqualTo(STUDY_FILTER_KEY);
         assertThat(model.getAttribute("field")).isEqualTo(field);
         assertThat(model.getAttribute("direction")).isEqualTo(direction);
-        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(startIndexCurrentPage);
-        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(endIndexCurrentPage);
-        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(startIndexPageNavigation);
-        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(endIndexPageNavigation);
+        assertThat(model.getAttribute("startIndexCurrentPage")).isEqualTo(getStartIndexCurrentPage(page, size));
+        assertThat(model.getAttribute("endIndexCurrentPage")).isEqualTo(getEndIndexCurrentPage(page, size, nrStudies));
+        assertThat(model.getAttribute("startIndexPageNavigation")).isEqualTo(getStartIndexPageNavigation(page, nrPages));
+        assertThat(model.getAttribute("endIndexPageNavigation")).isEqualTo(getEndIndexPageNavigation(page, nrPages));
         assertThat(model.getAttribute("searchRequest")).isEqualTo(searchRequest);
     }
 
@@ -214,21 +205,18 @@ class StudyControllerTest {
     @Test
     void deleteById_withValidId_shouldRemoveStudyWithGivenIdFromList() {
         PageImpl<StudyDto> studyDtosPage = new PageImpl<>(studyDtos);
-        int page = studyDtosPage.getNumber();
-        int size = studyDtosPage.getSize();
-        String sort = getSortField(pageable) + ',' +  getSortDirection(pageable);
         given(studyService.findAllByKey(pageable, STUDY_FILTER_KEY)).willReturn(studyDtosPage);
-        given(redirectAttributes.getAttribute("page")).willReturn(page);
-        given(redirectAttributes.getAttribute("size")).willReturn(size);
+        given(redirectAttributes.getAttribute("page")).willReturn(studyDtosPage.getNumber());
+        given(redirectAttributes.getAttribute("size")).willReturn(studyDtosPage.getSize());
         given(redirectAttributes.getAttribute("key")).willReturn(STUDY_FILTER_KEY);
-        given(redirectAttributes.getAttribute("sort")).willReturn(sort);
+        given(redirectAttributes.getAttribute("sort")).willReturn(getSortField(pageable) + ',' +  getSortDirection(pageable));
         String viewName = studyController.deleteById(VALID_ID, redirectAttributes, pageable, STUDY_FILTER_KEY);
         verify(studyService).deleteById(VALID_ID);
         assertThat(viewName).isEqualTo(REDIRECT_STUDIES_VIEW);
-        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(page);
-        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(size);
+        assertThat(redirectAttributes.getAttribute("page")).isEqualTo(studyDtosPage.getNumber());
+        assertThat(redirectAttributes.getAttribute("size")).isEqualTo(studyDtosPage.getSize());
         assertThat(redirectAttributes.getAttribute("key")).isEqualTo(STUDY_FILTER_KEY);
-        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(sort);
+        assertThat(redirectAttributes.getAttribute("sort")).isEqualTo(getSortField(pageable) + ',' +  getSortDirection(pageable));
     }
 
     @Test

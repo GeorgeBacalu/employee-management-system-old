@@ -12,9 +12,12 @@ import com.project.ems.study.StudyServiceImpl;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.InjectMocks;
@@ -24,16 +27,14 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
-import static com.project.ems.constants.PaginationConstants.STUDY_FILTER_KEY;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
-import static com.project.ems.mapper.StudyMapper.convertToDto;
-import static com.project.ems.mapper.StudyMapper.convertToDtoList;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.MentorMock.getMockedMentor1;
 import static com.project.ems.mock.StudyMock.getMockedStudies;
@@ -42,10 +43,13 @@ import static com.project.ems.mock.StudyMock.getMockedStudiesPage2;
 import static com.project.ems.mock.StudyMock.getMockedStudiesPage3;
 import static com.project.ems.mock.StudyMock.getMockedStudy1;
 import static com.project.ems.mock.StudyMock.getMockedStudy2;
+import static com.project.ems.mock.StudyMock.getMockedStudyDto1;
+import static com.project.ems.mock.StudyMock.getMockedStudyDto2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -74,34 +78,22 @@ class StudyServiceImplTest {
     private Study study1;
     private Study study2;
     private List<Study> studies;
-    private List<Study> studiesPage1;
-    private List<Study> studiesPage2;
-    private List<Study> studiesPage3;
     private Employee employee;
     private Mentor mentor;
     private StudyDto studyDto1;
     private StudyDto studyDto2;
     private List<StudyDto> studyDtos;
-    private List<StudyDto> studyDtosPage1;
-    private List<StudyDto> studyDtosPage2;
-    private List<StudyDto> studyDtosPage3;
 
     @BeforeEach
     void setUp() {
         study1 = getMockedStudy1();
         study2 = getMockedStudy2();
         studies = getMockedStudies();
-        studiesPage1 = getMockedStudiesPage1();
-        studiesPage2 = getMockedStudiesPage2();
-        studiesPage3 = getMockedStudiesPage3();
         employee = getMockedEmployee1();
         mentor = getMockedMentor1();
-        studyDto1 = convertToDto(modelMapper, study1);
-        studyDto2 = convertToDto(modelMapper, study2);
-        studyDtos = convertToDtoList(modelMapper, studies);
-        studyDtosPage1 = convertToDtoList(modelMapper, studiesPage1);
-        studyDtosPage2 = convertToDtoList(modelMapper, studiesPage2);
-        studyDtosPage3 = convertToDtoList(modelMapper, studiesPage3);
+        studyDto1 = getMockedStudyDto1();
+        studyDto2 = getMockedStudyDto2();
+        studyDtos = studyService.convertToDtos(studies);
     }
 
     @Test
@@ -130,7 +122,7 @@ class StudyServiceImplTest {
         given(studyRepository.save(any(Study.class))).willReturn(study1);
         StudyDto result = studyService.save(studyDto1);
         verify(studyRepository).save(studyCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, studyCaptor.getValue()));
+        assertThat(result).isEqualTo(studyService.convertToDto(studyCaptor.getValue()));
     }
 
     @Test
@@ -140,7 +132,7 @@ class StudyServiceImplTest {
         given(studyRepository.save(any(Study.class))).willReturn(study);
         StudyDto result = studyService.updateById(studyDto2, VALID_ID);
         verify(studyRepository).save(studyCaptor.capture());
-        assertThat(result).isEqualTo(convertToDto(modelMapper, studyCaptor.getValue()));
+        assertThat(result).isEqualTo(studyService.convertToDto(studyCaptor.getValue()));
     }
 
     @Test
@@ -168,45 +160,22 @@ class StudyServiceImplTest {
         verify(studyRepository, never()).delete(any(Study.class));
     }
 
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfStudiesFilteredByKeyPage1() {
-        given(studyRepository.findAllByKey(pageable, STUDY_FILTER_KEY)).willReturn(new PageImpl<>(studiesPage1));
-        Page<StudyDto> result = studyService.findAllByKey(pageable, STUDY_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(studyDtosPage1);
-    }
-
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfStudiesFilteredByKeyPage2() {
-        given(studyRepository.findAllByKey(pageable2, STUDY_FILTER_KEY)).willReturn(new PageImpl<>(studiesPage2));
-        Page<StudyDto> result = studyService.findAllByKey(pageable2, STUDY_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(studyDtosPage2);
-    }
-
-    @Test
-    void findAllByKey_withFilterKey_shouldReturnListOfStudiesFilteredByKeyPage3() {
-        given(studyRepository.findAllByKey(pageable3, STUDY_FILTER_KEY)).willReturn(new PageImpl<>(Collections.emptyList()));
-        Page<StudyDto> result = studyService.findAllByKey(pageable3, STUDY_FILTER_KEY);
-        assertThat(result.getContent()).isEqualTo(Collections.emptyList());
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfStudiesPage1() {
-        given(studyRepository.findAll(pageable)).willReturn(new PageImpl<>(studiesPage1));
-        Page<StudyDto> result = studyService.findAllByKey(pageable, "");
-        assertThat(result.getContent()).isEqualTo(studyDtosPage1);
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfStudiesPage2() {
-        given(studyRepository.findAll(pageable2)).willReturn(new PageImpl<>(studiesPage2));
-        Page<StudyDto> result = studyService.findAllByKey(pageable2, "");
-        assertThat(result.getContent()).isEqualTo(studyDtosPage2);
-    }
-
-    @Test
-    void findAllByKey_withoutFilterKey_shouldReturnListOfStudiesPage3() {
-        given(studyRepository.findAll(pageable3)).willReturn(new PageImpl<>(studiesPage3));
-        Page<StudyDto> result = studyService.findAllByKey(pageable3, "");
-        assertThat(result.getContent()).isEqualTo(studyDtosPage3);
+    @ParameterizedTest
+    @CsvSource({ "1, ${STUDY_FILTER_KEY}", "2, ${STUDY_FILTER_KEY}", "3, ${STUDY_FILTER_KEY}", "1, ''", "2, ''", "3, ''"  })
+    void findAllByKey_shouldReturnListOfStudiesFilteredByKey(int page, String key) {
+        Pair<List<Study>, Pageable> pair = switch(page) {
+            case 1 -> Pair.of(getMockedStudiesPage1(), pageable);
+            case 2 -> Pair.of(getMockedStudiesPage2(), pageable2);
+            case 3 -> Pair.of(key.equals("") ? Collections.emptyList() : getMockedStudiesPage3(), pageable3);
+            default -> throw new IllegalArgumentException("Invalid page number: " + page);
+        };
+        Page<Study> filteredStudiesPage = new PageImpl<>(pair.getLeft());
+        if(key.equals("")) {
+            given(studyRepository.findAll(any(Pageable.class))).willReturn(filteredStudiesPage);
+        } else {
+            given(studyRepository.findAllByKey(any(Pageable.class), eq(key.toLowerCase()))).willReturn(filteredStudiesPage);
+        }
+        Page<StudyDto> result = studyService.findAllByKey(pair.getRight(), key);
+        assertThat(result.getContent()).isEqualTo(studyService.convertToDtos(pair.getLeft()));
     }
 }

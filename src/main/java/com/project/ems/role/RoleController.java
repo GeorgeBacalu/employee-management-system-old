@@ -1,7 +1,6 @@
 package com.project.ems.role;
 
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +13,6 @@ import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_ROLES_VI
 import static com.project.ems.constants.ThymeleafViewConstants.ROLES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.ROLE_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_ROLE_VIEW;
-import static com.project.ems.mapper.RoleMapper.convertToEntity;
-import static com.project.ems.mapper.RoleMapper.convertToEntityList;
 
 @Controller
 @RequiredArgsConstructor
@@ -23,17 +20,16 @@ import static com.project.ems.mapper.RoleMapper.convertToEntityList;
 public class RoleController {
 
     private final RoleService roleService;
-    private final ModelMapper modelMapper;
 
     @GetMapping
     public String getAllRolesPage(Model model) {
-        model.addAttribute("roles", convertToEntityList(modelMapper, roleService.findAll()));
+        model.addAttribute("roles", roleService.convertToEntities(roleService.findAll()));
         return ROLES_VIEW;
     }
 
     @GetMapping("/{id}")
     public String getRoleByIdPage(Model model, @PathVariable Integer id) {
-        model.addAttribute("role", convertToEntity(modelMapper, roleService.findById(id)));
+        model.addAttribute("role", roleService.convertToEntity(roleService.findById(id)));
         return ROLE_DETAILS_VIEW;
     }
 

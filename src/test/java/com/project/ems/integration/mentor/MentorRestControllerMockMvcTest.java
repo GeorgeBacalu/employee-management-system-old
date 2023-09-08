@@ -18,16 +18,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.project.ems.constants.EndpointConstants.API_MENTORS;
@@ -36,14 +34,12 @@ import static com.project.ems.constants.ExceptionMessageConstants.MENTOR_NOT_FOU
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.MENTOR_FILTER_KEY;
-import static com.project.ems.mapper.MentorMapper.convertToDto;
-import static com.project.ems.mapper.MentorMapper.convertToDtoList;
-import static com.project.ems.mock.MentorMock.getMockedMentor1;
-import static com.project.ems.mock.MentorMock.getMockedMentor2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDto2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage1;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage2;
+import static com.project.ems.mock.MentorMock.getMockedMentorDtosPage3;
 import static com.project.ems.mock.MentorMock.getMockedMentors;
-import static com.project.ems.mock.MentorMock.getMockedMentorsPage1;
-import static com.project.ems.mock.MentorMock.getMockedMentorsPage2;
-import static com.project.ems.mock.MentorMock.getMockedMentorsPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -75,18 +71,15 @@ class MentorRestControllerMockMvcTest {
     @MockBean
     private MentorService mentorService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private MentorDto mentorDto1;
     private MentorDto mentorDto2;
     private List<MentorDto> mentorDtos;
 
     @BeforeEach
     void setUp() {
-        mentorDto1 = convertToDto(modelMapper, getMockedMentor1());
-        mentorDto2 = convertToDto(modelMapper, getMockedMentor2());
-        mentorDtos = convertToDtoList(modelMapper, getMockedMentors());
+        mentorDto1 = getMockedMentorDto1();
+        mentorDto2 = getMockedMentorDto2();
+        mentorDtos = mentorService.convertToDtos(getMockedMentors());
     }
 
     @Test
@@ -96,8 +89,7 @@ class MentorRestControllerMockMvcTest {
         for(int i = 0; i < mentorDtos.size(); i++) {
             assertMentorDto(actions, "$[" + i + "]", mentorDtos.get(i));
         }
-        MvcResult result = actions.andReturn();
-        List<MentorDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<MentorDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response).isEqualTo(mentorDtos);
     }
 
@@ -105,10 +97,10 @@ class MentorRestControllerMockMvcTest {
     void findById_withValidId_shouldReturnMentorWithGivenId() throws Exception {
         given(mentorService.findById(anyInt())).willReturn(mentorDto1);
         ResultActions actions = mockMvc.perform(get(API_MENTORS + "/{id}", VALID_ID)).andExpect(status().isOk());
-        verify(mentorService).findById(VALID_ID);
         assertMentorDtoJson(actions, mentorDto1);
         MentorDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), MentorDto.class);
         assertThat(response).isEqualTo(mentorDto1);
+        verify(mentorService).findById(VALID_ID);
     }
 
     @Test
@@ -129,10 +121,10 @@ class MentorRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(mentorDto1)))
               .andExpect(status().isCreated());
-        verify(mentorService).save(mentorDto1);
         assertMentorDtoJson(actions, mentorDto1);
         MentorDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), MentorDto.class);
         assertThat(response).isEqualTo(mentorDto1);
+        verify(mentorService).save(mentorDto1);
     }
 
     @Test
@@ -180,20 +172,21 @@ class MentorRestControllerMockMvcTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<MentorDto> mentorDtosPage1 = convertToDtoList(modelMapper, getMockedMentorsPage1());
-        List<MentorDto> mentorDtosPage2 = convertToDtoList(modelMapper, getMockedMentorsPage2());
-        List<MentorDto> mentorDtosPage3 = convertToDtoList(modelMapper, getMockedMentorsPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", MENTOR_FILTER_KEY, new PageImpl<>(mentorDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", MENTOR_FILTER_KEY, new PageImpl<>(mentorDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", MENTOR_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(mentorDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(mentorDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(mentorDtosPage3)));
+        Page<MentorDto> mentorDtosPage1 = new PageImpl<>(getMockedMentorDtosPage1());
+        Page<MentorDto> mentorDtosPage2 = new PageImpl<>(getMockedMentorDtosPage2());
+        Page<MentorDto> mentorDtosPage3 = new PageImpl<>(getMockedMentorDtosPage3());
+        Page<MentorDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", MENTOR_FILTER_KEY, mentorDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", MENTOR_FILTER_KEY, mentorDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", MENTOR_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", mentorDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", mentorDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", mentorDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<MentorDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<MentorDto> expectedPage) throws Exception {
         given(mentorService.findAllByKey(any(Pageable.class), anyString())).willReturn(expectedPage);
         ResultActions actions = mockMvc.perform(get(API_MENTORS + API_PAGINATION, page, size, sortField, sortDirection, key)
                     .contentType(APPLICATION_JSON_VALUE)
@@ -202,33 +195,32 @@ class MentorRestControllerMockMvcTest {
         for(int i = 0; i < expectedPage.getContent().size(); i++) {
             assertMentorDto(actions, "$.content[" + i + "]", expectedPage.getContent().get(i));
         }
-        MvcResult result = actions.andReturn();
-        PageWrapper<MentorDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        PageWrapper<MentorDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response.getContent()).isEqualTo(expectedPage.getContent());
     }
 
     private void assertMentorDto(ResultActions actions, String prefix, MentorDto mentorDto) throws Exception {
-        actions.andExpect(jsonPath(prefix + ".id").value(mentorDto.getId()));
-        actions.andExpect(jsonPath(prefix + ".name").value(mentorDto.getName()));
-        actions.andExpect(jsonPath(prefix + ".email").value(mentorDto.getEmail()));
-        actions.andExpect(jsonPath(prefix + ".password").value(mentorDto.getPassword()));
-        actions.andExpect(jsonPath(prefix + ".mobile").value(mentorDto.getMobile()));
-        actions.andExpect(jsonPath(prefix + ".address").value(mentorDto.getAddress()));
-        actions.andExpect(jsonPath(prefix + ".birthday").value(mentorDto.getBirthday().toString()));
-        actions.andExpect(jsonPath(prefix + ".roleId").value(mentorDto.getRoleId()));
-        actions.andExpect(jsonPath(prefix + ".employmentType").value(mentorDto.getEmploymentType().name()));
-        actions.andExpect(jsonPath(prefix + ".position").value(mentorDto.getPosition().name()));
-        actions.andExpect(jsonPath(prefix + ".grade").value(mentorDto.getGrade().name()));
-        actions.andExpect(jsonPath(prefix + ".supervisingMentorId").value(mentorDto.getSupervisingMentorId()));
+        actions.andExpect(jsonPath(prefix + ".id").value(mentorDto.getId()))
+              .andExpect(jsonPath(prefix + ".name").value(mentorDto.getName()))
+              .andExpect(jsonPath(prefix + ".email").value(mentorDto.getEmail()))
+              .andExpect(jsonPath(prefix + ".password").value(mentorDto.getPassword()))
+              .andExpect(jsonPath(prefix + ".mobile").value(mentorDto.getMobile()))
+              .andExpect(jsonPath(prefix + ".address").value(mentorDto.getAddress()))
+              .andExpect(jsonPath(prefix + ".birthday").value(mentorDto.getBirthday().toString()))
+              .andExpect(jsonPath(prefix + ".roleId").value(mentorDto.getRoleId()))
+              .andExpect(jsonPath(prefix + ".employmentType").value(mentorDto.getEmploymentType().name()))
+              .andExpect(jsonPath(prefix + ".position").value(mentorDto.getPosition().name()))
+              .andExpect(jsonPath(prefix + ".grade").value(mentorDto.getGrade().name()))
+              .andExpect(jsonPath(prefix + ".supervisingMentorId").value(mentorDto.getSupervisingMentorId()))
+              .andExpect(jsonPath(prefix + ".nrTrainees").value(mentorDto.getNrTrainees()))
+              .andExpect(jsonPath(prefix + ".maxTrainees").value(mentorDto.getMaxTrainees()))
+              .andExpect(jsonPath(prefix + ".openForTraining").value(mentorDto.getOpenForTraining()));
         for(int j = 0; j < mentorDto.getStudiesIds().size(); j++) {
             actions.andExpect(jsonPath(prefix + ".studiesIds[" + j + "]").value(mentorDto.getStudiesIds().get(j)));
         }
         for(int j = 0; j < mentorDto.getExperiencesIds().size(); j++) {
             actions.andExpect(jsonPath(prefix + ".experiencesIds[" + j + "]").value(mentorDto.getExperiencesIds().get(j)));
         }
-        actions.andExpect(jsonPath(prefix + ".nrTrainees").value(mentorDto.getNrTrainees()));
-        actions.andExpect(jsonPath(prefix + ".maxTrainees").value(mentorDto.getMaxTrainees()));
-        actions.andExpect(jsonPath(prefix + ".isTrainingOpen").value(mentorDto.getIsTrainingOpen()));
     }
 
     private void assertMentorDtoJson(ResultActions actions, MentorDto mentorDto) throws Exception {
@@ -248,6 +240,6 @@ class MentorRestControllerMockMvcTest {
               .andExpect(jsonPath("$.experiencesIds").value(containsInAnyOrder(mentorDto.getExperiencesIds().toArray())))
               .andExpect(jsonPath("$.nrTrainees").value(mentorDto.getNrTrainees()))
               .andExpect(jsonPath("$.maxTrainees").value(mentorDto.getMaxTrainees()))
-              .andExpect(jsonPath("$.isTrainingOpen").value(mentorDto.getIsTrainingOpen()));
+              .andExpect(jsonPath("$.openForTraining").value(mentorDto.getOpenForTraining()));
     }
 }

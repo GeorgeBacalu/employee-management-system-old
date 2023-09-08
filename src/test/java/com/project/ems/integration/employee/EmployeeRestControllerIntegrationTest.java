@@ -3,6 +3,7 @@ package com.project.ems.integration.employee;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.ems.employee.EmployeeDto;
+import com.project.ems.employee.EmployeeService;
 import com.project.ems.wrapper.PageWrapper;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,10 +15,10 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
@@ -32,14 +33,12 @@ import static com.project.ems.constants.ExceptionMessageConstants.RESOURCE_NOT_F
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.EMPLOYEE_FILTER_KEY;
-import static com.project.ems.mapper.EmployeeMapper.convertToDto;
-import static com.project.ems.mapper.EmployeeMapper.convertToDtoList;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployee2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto1;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDtosPage1;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDtosPage2;
+import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDtosPage3;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployees;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage1;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage2;
-import static com.project.ems.mock.EmployeeMock.getMockedEmployeesPage3;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -55,7 +54,7 @@ class EmployeeRestControllerIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private ModelMapper modelMapper;
+    private EmployeeService employeeService;
 
     private EmployeeDto employeeDto1;
     private EmployeeDto employeeDto2;
@@ -63,9 +62,9 @@ class EmployeeRestControllerIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        employeeDto1 = convertToDto(modelMapper, getMockedEmployee1());
-        employeeDto2 = convertToDto(modelMapper, getMockedEmployee2());
-        employeeDtos = convertToDtoList(modelMapper, getMockedEmployees());
+        employeeDto1 = getMockedEmployeeDto1();
+        employeeDto2 = getMockedEmployeeDto2();
+        employeeDtos = employeeService.convertToDtos(getMockedEmployees());
     }
 
     @Test
@@ -158,20 +157,21 @@ class EmployeeRestControllerIntegrationTest {
     }
 
     private Stream<Arguments> paginationArguments() {
-        List<EmployeeDto> employeeDtosPage1 = convertToDtoList(modelMapper, getMockedEmployeesPage1());
-        List<EmployeeDto> employeeDtosPage2 = convertToDtoList(modelMapper, getMockedEmployeesPage2());
-        List<EmployeeDto> employeeDtosPage3 = convertToDtoList(modelMapper, getMockedEmployeesPage3());
-        return Stream.of(Arguments.of(0, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeeDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(employeeDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", EMPLOYEE_FILTER_KEY, new PageImpl<>(Collections.emptyList())),
-                         Arguments.of(0, 2, "id", "asc", "", new PageImpl<>(employeeDtosPage1)),
-                         Arguments.of(1, 2, "id", "asc", "", new PageImpl<>(employeeDtosPage2)),
-                         Arguments.of(2, 2, "id", "asc", "", new PageImpl<>(employeeDtosPage3)));
+        Page<EmployeeDto> employeeDtosPage1 = new PageImpl<>(getMockedEmployeeDtosPage1());
+        Page<EmployeeDto> employeeDtosPage2 = new PageImpl<>(getMockedEmployeeDtosPage2());
+        Page<EmployeeDto> employeeDtosPage3 = new PageImpl<>(getMockedEmployeeDtosPage3());
+        Page<EmployeeDto> emptyPage = new PageImpl<>(Collections.emptyList());
+        return Stream.of(Arguments.of(0, 2, "id", "asc", EMPLOYEE_FILTER_KEY, employeeDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", EMPLOYEE_FILTER_KEY, employeeDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", EMPLOYEE_FILTER_KEY, emptyPage),
+                         Arguments.of(0, 2, "id", "asc", "", employeeDtosPage1),
+                         Arguments.of(1, 2, "id", "asc", "", employeeDtosPage2),
+                         Arguments.of(2, 2, "id", "asc", "", employeeDtosPage3));
     }
 
     @ParameterizedTest
     @MethodSource("paginationArguments")
-    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, PageImpl<EmployeeDto> expectedPage) throws Exception {
+    void testFindAllByKey(int page, int size, String sortField, String sortDirection, String key, Page<EmployeeDto> expectedPage) throws Exception {
         ResponseEntity<String> response = template.getForEntity(API_EMPLOYEES + String.format(API_PAGINATION_V2, page, size, sortField, sortDirection, key), String.class);
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

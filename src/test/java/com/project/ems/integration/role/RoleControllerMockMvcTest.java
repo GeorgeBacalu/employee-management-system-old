@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,7 +26,7 @@ import static com.project.ems.constants.ThymeleafViewConstants.ROLE_DETAILS_VIEW
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_ROLE_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.TEXT_HTML_UTF8;
 import static com.project.ems.mock.RoleMock.getMockedRole1;
-import static com.project.ems.mock.RoleMock.getMockedRole2;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto1;
 import static com.project.ems.mock.RoleMock.getMockedRoles;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -54,32 +53,23 @@ class RoleControllerMockMvcTest {
     @MockBean
     private RoleService roleService;
 
-    @MockBean
-    private ModelMapper modelMapper;
-
-    private Role role1;
-    private Role role2;
+    private Role role;
     private List<Role> roles;
-    private RoleDto roleDto1;
-    private RoleDto roleDto2;
+    private RoleDto roleDto;
     private List<RoleDto> roleDtos;
 
     @BeforeEach
     void setUp() {
-        role1 = getMockedRole1();
-        role2 = getMockedRole2();
+        role = getMockedRole1();
         roles = getMockedRoles();
-        roleDto1 = convertToDto(role1);
-        roleDto2 = convertToDto(role2);
-        roleDtos = List.of(roleDto1, roleDto2);
-
-        given(modelMapper.map(roleDto1, Role.class)).willReturn(role1);
-        given(modelMapper.map(roleDto2, Role.class)).willReturn(role2);
+        roleDto = getMockedRoleDto1();
+        roleDtos = roleService.convertToDtos(roles);
     }
 
     @Test
     void getAllRolesPage_shouldReturnRolesPage() throws Exception {
         given(roleService.findAll()).willReturn(roleDtos);
+        given(roleService.convertToEntities(roleDtos)).willReturn(roles);
         mockMvc.perform(get(ROLES).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
@@ -90,12 +80,13 @@ class RoleControllerMockMvcTest {
 
     @Test
     void getRoleByIdPage_withValidId_shouldReturnRoleDetailsPage() throws Exception {
-        given(roleService.findById(anyInt())).willReturn(roleDto1);
+        given(roleService.findById(anyInt())).willReturn(roleDto);
+        given(roleService.convertToEntity(roleDto)).willReturn(role);
         mockMvc.perform(get(ROLES + "/{id}", VALID_ID).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
               .andExpect(view().name(ROLE_DETAILS_VIEW))
-              .andExpect(model().attribute("role", role1));
+              .andExpect(model().attribute("role", role));
         verify(roleService).findById(VALID_ID);
     }
 
@@ -122,13 +113,13 @@ class RoleControllerMockMvcTest {
 
     @Test
     void getSaveRolePage_withValidId_shouldReturnUpdateRolePage() throws Exception {
-        given(roleService.findById(anyInt())).willReturn(roleDto1);
+        given(roleService.findById(anyInt())).willReturn(roleDto);
         mockMvc.perform(get(ROLES + "/save/{id}", VALID_ID).accept(TEXT_HTML))
               .andExpect(status().isOk())
               .andExpect(content().contentType(TEXT_HTML_UTF8))
               .andExpect(view().name(SAVE_ROLE_VIEW))
               .andExpect(model().attribute("id", VALID_ID))
-              .andExpect(model().attribute("roleDto", roleDto1));
+              .andExpect(model().attribute("roleDto", roleDto));
     }
 
     @Test
@@ -145,7 +136,7 @@ class RoleControllerMockMvcTest {
     void save_withNegativeId_shouldSaveRole() throws Exception {
         mockMvc.perform(post(ROLES + "/save/{id}", -1).accept(TEXT_HTML)
                     .contentType(APPLICATION_FORM_URLENCODED)
-                    .params(convertToMultiValueMap(roleDto1)))
+                    .params(convertToMultiValueMap(roleDto)))
               .andExpect(status().isFound())
               .andExpect(view().name(REDIRECT_ROLES_VIEW))
               .andExpect(redirectedUrl(ROLES));
@@ -156,11 +147,11 @@ class RoleControllerMockMvcTest {
     void save_withValidId_shouldUpdateRoleWithGivenId() throws Exception {
         mockMvc.perform(post(ROLES + "/save/{id}", VALID_ID).accept(TEXT_HTML)
                     .contentType(APPLICATION_FORM_URLENCODED)
-                    .params(convertToMultiValueMap(roleDto1)))
+                    .params(convertToMultiValueMap(roleDto)))
               .andExpect(status().isFound())
               .andExpect(view().name(REDIRECT_ROLES_VIEW))
               .andExpect(redirectedUrl(ROLES));
-        verify(roleService).updateById(roleDto1, VALID_ID);
+        verify(roleService).updateById(roleDto, VALID_ID);
     }
 
     @Test
@@ -169,7 +160,7 @@ class RoleControllerMockMvcTest {
         given(roleService.updateById(any(RoleDto.class), anyInt())).willThrow(new ResourceNotFoundException(message));
         mockMvc.perform(post(ROLES + "/save/{id}", INVALID_ID).accept(TEXT_HTML)
                     .contentType(APPLICATION_FORM_URLENCODED)
-                    .params(convertToMultiValueMap(roleDto1)))
+                    .params(convertToMultiValueMap(roleDto)))
               .andExpect(status().isNotFound())
               .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResourceNotFoundException))
               .andExpect(result -> assertThat(Objects.requireNonNull(result.getResolvedException()).getMessage()).isEqualTo(message));
@@ -180,12 +171,5 @@ class RoleControllerMockMvcTest {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("authority", roleDto.getAuthority().toString());
         return params;
-    }
-
-    private RoleDto convertToDto(Role role) {
-        return RoleDto.builder()
-              .id(role.getId())
-              .authority(role.getAuthority())
-              .build();
     }
 }

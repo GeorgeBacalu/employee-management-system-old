@@ -18,5 +18,13 @@ public interface MentorService {
 
     Page<MentorDto> findAllByKey(Pageable pageable, String key);
 
+    List<MentorDto> convertToDtos(List<Mentor> mentors);
+
+    List<Mentor> convertToEntities(List<MentorDto> mentorDtos);
+
+    MentorDto convertToDto(Mentor mentor);
+
+    Mentor convertToEntity(MentorDto mentorDto);
+
     Mentor findEntityById(Integer id);
 }

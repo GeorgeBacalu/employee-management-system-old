@@ -1,15 +1,9 @@
 package com.project.ems.employee;
 
-import com.project.ems.experience.ExperienceService;
-import com.project.ems.mentor.MentorService;
-import com.project.ems.role.RoleService;
-import com.project.ems.study.StudyService;
 import com.project.ems.wrapper.SearchRequest;
 import lombok.RequiredArgsConstructor;
-import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,8 +19,6 @@ import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.EMPLOYEE_DETAILS_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.REDIRECT_EMPLOYEES_VIEW;
 import static com.project.ems.constants.ThymeleafViewConstants.SAVE_EMPLOYEE_VIEW;
-import static com.project.ems.mapper.EmployeeMapper.convertToEntity;
-import static com.project.ems.mapper.EmployeeMapper.convertToEntityList;
 import static com.project.ems.util.PageUtil.getEndIndexCurrentPage;
 import static com.project.ems.util.PageUtil.getEndIndexPageNavigation;
 import static com.project.ems.util.PageUtil.getSortDirection;
@@ -40,14 +32,9 @@ import static com.project.ems.util.PageUtil.getStartIndexPageNavigation;
 public class EmployeeController {
 
     private final EmployeeService employeeService;
-    private final RoleService roleService;
-    private final MentorService mentorService;
-    private final StudyService studyService;
-    private final ExperienceService experienceService;
-    private final ModelMapper modelMapper;
 
     @GetMapping
-    public String getAllEmployeesPage(Model model, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String getAllEmployeesPage(Model model, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         Page<EmployeeDto> employeeDtosPage = employeeService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();
         int size = pageable.getPageSize();
@@ -55,7 +42,7 @@ public class EmployeeController {
         String direction = getSortDirection(pageable);
         long nrEmployees = employeeDtosPage.getTotalElements();
         int nrPages = employeeDtosPage.getTotalPages();
-        model.addAttribute("employees", convertToEntityList(modelMapper, employeeDtosPage.getContent(), roleService, mentorService, studyService, experienceService));
+        model.addAttribute("employees", employeeService.convertToEntities(employeeDtosPage.getContent()));
         model.addAttribute("nrEmployees", nrEmployees);
         model.addAttribute("nrPages", nrPages);
         model.addAttribute("page", page);
@@ -82,7 +69,7 @@ public class EmployeeController {
 
     @GetMapping("/{id}")
     public String getEmployeeByIdPage(Model model, @PathVariable Integer id) {
-        model.addAttribute("employee", convertToEntity(modelMapper, employeeService.findById(id), roleService, mentorService, studyService, experienceService));
+        model.addAttribute("employee", employeeService.convertToEntity(employeeService.findById(id)));
         return EMPLOYEE_DETAILS_VIEW;
     }
 
@@ -104,7 +91,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(size = 9, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
+    public String deleteById(@PathVariable Integer id, RedirectAttributes redirectAttributes, @PageableDefault(sort = "id") Pageable pageable, @RequestParam(required = false, defaultValue = "") String key) {
         employeeService.deleteById(id);
         Page<EmployeeDto> employeeDtosPage = employeeService.findAllByKey(pageable, key);
         int page = pageable.getPageNumber();

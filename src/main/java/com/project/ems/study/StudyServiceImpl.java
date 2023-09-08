@@ -1,9 +1,7 @@
 package com.project.ems.study;
 
-import com.project.ems.employee.Employee;
 import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
-import com.project.ems.mentor.Mentor;
 import com.project.ems.mentor.MentorRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,9 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.STUDY_NOT_FOUND;
-import static com.project.ems.mapper.StudyMapper.convertToDto;
-import static com.project.ems.mapper.StudyMapper.convertToDtoList;
-import static com.project.ems.mapper.StudyMapper.convertToEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -30,20 +25,20 @@ public class StudyServiceImpl implements StudyService {
     @Override
     public List<StudyDto> findAll() {
         List<Study> studies = studyRepository.findAll();
-        return !studies.isEmpty() ? convertToDtoList(modelMapper, studies) : new ArrayList<>();
+        return !studies.isEmpty() ? convertToDtos(studies) : new ArrayList<>();
     }
 
     @Override
     public StudyDto findById(Integer id) {
         Study study = findEntityById(id);
-        return convertToDto(modelMapper, study);
+        return convertToDto(study);
     }
 
     @Override
     public StudyDto save(StudyDto studyDto) {
-        Study study = convertToEntity(modelMapper, studyDto);
+        Study study = convertToEntity(studyDto);
         Study savedStudy = studyRepository.save(study);
-        return convertToDto(modelMapper, savedStudy);
+        return convertToDto(savedStudy);
     }
 
     @Override
@@ -51,23 +46,41 @@ public class StudyServiceImpl implements StudyService {
         Study studyToUpdate = findEntityById(id);
         updateEntityFromDto(studyDto, studyToUpdate);
         Study updatedStudy = studyRepository.save(studyToUpdate);
-        return convertToDto(modelMapper, updatedStudy);
+        return convertToDto(updatedStudy);
     }
 
     @Override
     public void deleteById(Integer id) {
         Study studyToDelete = findEntityById(id);
-        List<Employee> employees = employeeRepository.findAllByStudiesContains(studyToDelete);
-        employees.forEach(employee -> employee.getStudies().remove(studyToDelete));
-        List<Mentor> mentors = mentorRepository.findAllByStudiesContains(studyToDelete);
-        mentors.forEach(mentor -> mentor.getStudies().remove(studyToDelete));
+        employeeRepository.findAllByStudiesContains(studyToDelete).forEach(employee -> employee.getStudies().remove(studyToDelete));
+        mentorRepository.findAllByStudiesContains(studyToDelete).forEach(mentor -> mentor.getStudies().remove(studyToDelete));
         studyRepository.delete(studyToDelete);
     }
 
     @Override
     public Page<StudyDto> findAllByKey(Pageable pageable, String key) {
         Page<Study> studiesPage = key.trim().equals("") ? studyRepository.findAll(pageable) : studyRepository.findAllByKey(pageable, key.toLowerCase());
-        return studiesPage.hasContent() ? studiesPage.map(study -> convertToDto(modelMapper, study)) : Page.empty();
+        return studiesPage.hasContent() ? studiesPage.map(this::convertToDto) : Page.empty();
+    }
+
+    @Override
+    public List<StudyDto> convertToDtos(List<Study> studies) {
+        return studies.stream().map(this::convertToDto).toList();
+    }
+
+    @Override
+    public List<Study> convertToEntities(List<StudyDto> studyDtos) {
+        return studyDtos.stream().map(this::convertToEntity).toList();
+    }
+
+    @Override
+    public StudyDto convertToDto(Study study) {
+        return modelMapper.map(study, StudyDto.class);
+    }
+
+    @Override
+    public Study convertToEntity(StudyDto studyDto) {
+        return modelMapper.map(studyDto, Study.class);
     }
 
     @Override

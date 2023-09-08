@@ -11,24 +11,19 @@ import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static com.project.ems.constants.EndpointConstants.API_ROLES;
 import static com.project.ems.constants.ExceptionMessageConstants.ROLE_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
-import static com.project.ems.mapper.RoleMapper.convertToDto;
-import static com.project.ems.mapper.RoleMapper.convertToDtoList;
-import static com.project.ems.mock.RoleMock.getMockedRole1;
-import static com.project.ems.mock.RoleMock.getMockedRole2;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto1;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto2;
 import static com.project.ems.mock.RoleMock.getMockedRoles;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -56,18 +51,15 @@ class RoleRestControllerMockMvcTest {
     @MockBean
     private RoleService roleService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private RoleDto roleDto1;
     private RoleDto roleDto2;
     private List<RoleDto> roleDtos;
 
     @BeforeEach
     void setUp() {
-        roleDto1 = convertToDto(modelMapper, getMockedRole1());
-        roleDto2 = convertToDto(modelMapper, getMockedRole2());
-        roleDtos = convertToDtoList(modelMapper, getMockedRoles());
+        roleDto1 = getMockedRoleDto1();
+        roleDto2 = getMockedRoleDto2();
+        roleDtos = roleService.convertToDtos(getMockedRoles());
     }
 
     @Test
@@ -77,8 +69,7 @@ class RoleRestControllerMockMvcTest {
         for(int i = 0; i < roleDtos.size(); i++) {
             assertRoleDto(actions, "$[" + i + "]", roleDtos.get(i));
         }
-        MvcResult result = actions.andReturn();
-        List<RoleDto> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+        List<RoleDto> response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), new TypeReference<>() {});
         assertThat(response).isEqualTo(roleDtos);
     }
 
@@ -86,10 +77,10 @@ class RoleRestControllerMockMvcTest {
     void findById_withValidId_shouldReturnRoleWithGivenId() throws Exception {
         given(roleService.findById(anyInt())).willReturn(roleDto1);
         ResultActions actions = mockMvc.perform(get(API_ROLES + "/{id}", VALID_ID)).andExpect(status().isOk());
-        verify(roleService).findById(VALID_ID);
         assertRoleDtoJson(actions, roleDto1);
         RoleDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), RoleDto.class);
         assertThat(response).isEqualTo(roleDto1);
+        verify(roleService).findById(VALID_ID);
     }
 
     @Test
@@ -110,10 +101,10 @@ class RoleRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(roleDto1)))
               .andExpect(status().isCreated());
-        verify(roleService).save(roleDto1);
         assertRoleDtoJson(actions, roleDto1);
         RoleDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), RoleDto.class);
         assertThat(response).isEqualTo(roleDto1);
+        verify(roleService).save(roleDto1);
     }
 
     @Test
@@ -124,10 +115,10 @@ class RoleRestControllerMockMvcTest {
                     .contentType(APPLICATION_JSON_VALUE)
                     .content(objectMapper.writeValueAsString(roleDto2)))
               .andExpect(status().isOk());
-        verify(roleService).updateById(roleDto2, VALID_ID);
         assertRoleDtoJson(actions, roleDto);
         RoleDto response = objectMapper.readValue(actions.andReturn().getResponse().getContentAsString(), RoleDto.class);
         assertThat(response).isEqualTo(roleDto);
+        verify(roleService).updateById(roleDto2, VALID_ID);
     }
 
     @Test

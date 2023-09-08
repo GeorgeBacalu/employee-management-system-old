@@ -9,17 +9,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static com.project.ems.constants.IdentifierConstants.VALID_ID;
-import static com.project.ems.mapper.RoleMapper.convertToDto;
-import static com.project.ems.mapper.RoleMapper.convertToDtoList;
-import static com.project.ems.mock.RoleMock.getMockedRole1;
-import static com.project.ems.mock.RoleMock.getMockedRole2;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto1;
+import static com.project.ems.mock.RoleMock.getMockedRoleDto2;
 import static com.project.ems.mock.RoleMock.getMockedRoles;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -35,18 +31,15 @@ class RoleRestControllerTest {
     @Mock
     private RoleService roleService;
 
-    @Spy
-    private ModelMapper modelMapper;
-
     private RoleDto roleDto1;
     private RoleDto roleDto2;
     private List<RoleDto> roleDtos;
 
     @BeforeEach
     void setUp() {
-        roleDto1 = convertToDto(modelMapper, getMockedRole1());
-        roleDto2 = convertToDto(modelMapper, getMockedRole2());
-        roleDtos = convertToDtoList(modelMapper, getMockedRoles());
+        roleDto1 = getMockedRoleDto1();
+        roleDto2 = getMockedRoleDto2();
+        roleDtos = roleService.convertToDtos(getMockedRoles());
     }
 
     @Test
