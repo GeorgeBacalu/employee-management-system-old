@@ -69,6 +69,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     private void updateEntityFromDto(RoleDto roleDto, Role role) {
-        role.setAuthority(roleDto.getAuthority());
+        role.setType(roleDto.getType());
     }
 }

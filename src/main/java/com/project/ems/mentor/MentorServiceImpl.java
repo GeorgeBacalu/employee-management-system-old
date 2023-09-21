@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.MENTOR_NOT_FOUND;
@@ -28,6 +29,7 @@ public class MentorServiceImpl implements MentorService {
     private final StudyService studyService;
     private final ExperienceService experienceService;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<MentorDto> findAll() {
@@ -44,6 +46,7 @@ public class MentorServiceImpl implements MentorService {
     @Override
     public MentorDto save(MentorDto mentorDto) {
         Mentor mentor = convertToEntity(mentorDto);
+        mentor.setPassword(passwordEncoder.encode(mentor.getPassword()));
         Mentor savedMentor = mentorRepository.save(mentor);
         return convertToDto(savedMentor);
     }
@@ -110,7 +113,7 @@ public class MentorServiceImpl implements MentorService {
         Integer supervisingMentorId = mentorDto.getSupervisingMentorId();
         mentor.setName(mentorDto.getName());
         mentor.setEmail(mentorDto.getEmail());
-        mentor.setPassword(mentorDto.getPassword());
+        mentor.setPassword(passwordEncoder.encode(mentorDto.getPassword()));
         mentor.setMobile(mentorDto.getMobile());
         mentor.setAddress(mentorDto.getAddress());
         mentor.setBirthday(mentorDto.getBirthday());

@@ -169,7 +169,7 @@ class RoleControllerMockMvcTest {
 
     private MultiValueMap<String, String> convertToMultiValueMap(RoleDto roleDto) {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("authority", roleDto.getAuthority().toString());
+        params.add("type", roleDto.getType().toString());
         return params;
     }
 }

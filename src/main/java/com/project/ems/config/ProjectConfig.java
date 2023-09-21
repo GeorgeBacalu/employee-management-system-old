@@ -10,11 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ProjectConfig {
 
-    private final String timeZone;
-
-    public ProjectConfig(@Value("${app.timezone}") String timeZone) {
-        this.timeZone = timeZone;
-    }
+    @Value("${app.timezone}")
+    private String timeZone;
 
     @Bean
     public ModelMapper modelMapper() {

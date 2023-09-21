@@ -136,11 +136,11 @@ class RoleRestControllerMockMvcTest {
 
     private void assertRoleDto(ResultActions actions, String prefix, RoleDto roleDto) throws Exception {
         actions.andExpect(jsonPath(prefix + ".id").value(roleDto.getId()));
-        actions.andExpect(jsonPath(prefix + ".authority").value(roleDto.getAuthority().name()));
+        actions.andExpect(jsonPath(prefix + ".type").value(roleDto.getType().name()));
     }
 
     private void assertRoleDtoJson(ResultActions actions, RoleDto roleDto) throws Exception {
         actions.andExpect(jsonPath("$.id").value(roleDto.getId()))
-              .andExpect(jsonPath("$.authority").value(roleDto.getAuthority().name()));
+              .andExpect(jsonPath("$.type").value(roleDto.getType().name()));
     }
 }

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import static com.project.ems.constants.ExceptionMessageConstants.EMPLOYEE_NOT_FOUND;
@@ -28,6 +29,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final StudyService studyService;
     private final ExperienceService experienceService;
     private final ModelMapper modelMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public List<EmployeeDto> findAll() {
@@ -44,6 +46,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeDto save(EmployeeDto employeeDto) {
         Employee employee = convertToEntity(employeeDto);
+        employee.setPassword(passwordEncoder.encode(employee.getPassword()));
         Employee savedEmployee = employeeRepository.save(employee);
         return convertToDto(savedEmployee);
     }
@@ -103,7 +106,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private void updateEntityFromDto(EmployeeDto employeeDto, Employee employee) {
         employee.setName(employeeDto.getName());
         employee.setEmail(employeeDto.getEmail());
-        employee.setPassword(employeeDto.getPassword());
+        employee.setPassword(passwordEncoder.encode(employeeDto.getPassword()));
         employee.setMobile(employeeDto.getMobile());
         employee.setAddress(employeeDto.getAddress());
         employee.setBirthday(employeeDto.getBirthday());

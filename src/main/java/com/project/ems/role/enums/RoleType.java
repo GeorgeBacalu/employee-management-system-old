@@ -1,5 +1,5 @@
 package com.project.ems.role.enums;
 
-public enum Authority {
+public enum RoleType {
     USER, ADMIN
 }

@@ -11,11 +11,13 @@ public interface RoleApi {
 
     @Operation(summary = "Get all roles", description = "Return a list of roles", tags = "role", responses = {
           @ApiResponse(responseCode = "200", description = "Successful operation"),
+          @ApiResponse(responseCode = "401", description = "Unauthorized"),
           @ApiResponse(responseCode = "500", description = "Internal server error")})
     ResponseEntity<List<RoleDto>> findAll();
 
     @Operation(summary = "Get role by ID", description = "Return the role with the given ID", tags = "role", responses = {
           @ApiResponse(responseCode = "200", description = "Successful operation"),
+          @ApiResponse(responseCode = "401", description = "Unauthorized"),
           @ApiResponse(responseCode = "404", description = "Invalid ID supplied"),
           @ApiResponse(responseCode = "500", description = "Internal server error")})
     ResponseEntity<RoleDto> findById(@Parameter(name = "id", description = "ID of the role to fetch", example = "1") Integer id);
@@ -23,12 +25,16 @@ public interface RoleApi {
     @Operation(summary = "Save role", description = "Save a new role to the database", tags = "role", responses = {
           @ApiResponse(responseCode = "200", description = "Successful operation"),
           @ApiResponse(responseCode = "400", description = "Invalid request body"),
+          @ApiResponse(responseCode = "401", description = "Unauthorized"),
+          @ApiResponse(responseCode = "403", description = "Forbidden"),
           @ApiResponse(responseCode = "500", description = "Internal server error")})
     ResponseEntity<RoleDto> save(@RequestBody(description = "Role object to save") RoleDto roleDto);
 
     @Operation(summary = "Update role by ID", description = "Update an existing role with the given ID", tags = "role", responses = {
           @ApiResponse(responseCode = "200", description = "Successful operation"),
           @ApiResponse(responseCode = "400", description = "Invalid request body"),
+          @ApiResponse(responseCode = "401", description = "Unauthorized"),
+          @ApiResponse(responseCode = "403", description = "Forbidden"),
           @ApiResponse(responseCode = "404", description = "Invalid ID supplied"),
           @ApiResponse(responseCode = "500", description = "Internal server error")})
     ResponseEntity<RoleDto> updateById(@RequestBody(description = "Updated role object") RoleDto roleDto,

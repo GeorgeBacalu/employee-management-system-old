@@ -1,6 +1,6 @@
 package com.project.ems.role;
 
-import com.project.ems.role.enums.Authority;
+import com.project.ems.role.enums.RoleType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -32,7 +32,7 @@ public class Role {
     private Integer id;
 
     @Enumerated(EnumType.STRING)
-    private Authority authority;
+    private RoleType type;
 
     @Override
     public boolean equals(Object o) {

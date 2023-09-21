@@ -9,10 +9,10 @@
     <div class="card-body">
       <form th:action="@{'/roles/save/' + ${id}}" method="post" th:object="${roleDto}">
         <div class="row mb-3">
-          <label for="authority">Authority <span class="text-danger font-weight-bold">*</span></label>
-          <select name="authority" id="authority" th:field="*{authority}" class="custom-select form-control" required>
-            <option value="" hidden>---Choose authority---</option>
-            <option th:each="authority : ${T(com.project.ems.role.enums.Authority).values()}" th:text="${authority}" th:value="${authority}"></option>
+          <label for="role">Role <span class="text-danger font-weight-bold">*</span></label>
+          <select name="role" id="role" th:field="*{type}" class="custom-select form-control" required>
+            <option value="" hidden>---Choose role---</option>
+            <option th:each="role : ${T(com.project.ems.role.enums.RoleType).values()}" th:text="${role}" th:value="${role}"></option>
           </select>
         </div>
         <button type="submit" class="btn btn-success btn-container"><i class="fa fa-save"></i> [[${(id == -1) ? 'Save' : 'Update'}]]</button>
