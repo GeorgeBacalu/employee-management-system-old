@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EndpointConstants {
 
+    public static final String API_AUTHORITIES = "/api/authorities";
     public static final String API_EMPLOYEES = "/api/employees";
     public static final String API_EXPERIENCES = "/api/experiences";
     public static final String API_FEEDBACKS = "/api/feedbacks";
@@ -14,6 +15,7 @@ public class EndpointConstants {
     public static final String API_STUDIES = "/api/studies";
     public static final String API_USERS = "/api/users";
 
+    public static final String AUTHORITIES = "/authorities";
     public static final String EMPLOYEES = "/employees";
     public static final String EXPERIENCES = "/experiences";
     public static final String FEEDBACKS = "/feedbacks";

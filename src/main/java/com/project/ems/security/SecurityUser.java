@@ -2,10 +2,8 @@ package com.project.ems.security;
 
 import com.project.ems.user.User;
 import java.util.Collection;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @RequiredArgsConstructor
@@ -15,7 +13,7 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Stream.of(user.getRole().getType().name()).map(SimpleGrantedAuthority::new).toList();
+        return user.getAuthorities().stream().map(SecurityAuthority::new).toList();
     }
 
     @Override

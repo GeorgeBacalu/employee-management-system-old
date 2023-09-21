@@ -1,9 +1,12 @@
 package com.project.ems.user;
 
+import com.project.ems.authority.Authority;
+import com.project.ems.authority.AuthorityService;
 import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.role.RoleService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
@@ -19,6 +22,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleService roleService;
+    private final AuthorityService authorityService;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
 
@@ -74,13 +78,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto convertToDto(User user) {
-        return modelMapper.map(user, UserDto.class);
+        UserDto userDto = modelMapper.map(user, UserDto.class);
+        userDto.setAuthoritiesIds(user.getAuthorities().stream().map(Authority::getId).toList());
+        return userDto;
     }
 
     @Override
     public User convertToEntity(UserDto userDto) {
         User user = modelMapper.map(userDto, User.class);
         user.setRole(roleService.findEntityById(userDto.getRoleId()));
+        user.setAuthorities(userDto.getAuthoritiesIds().stream().map(authorityService::findEntityById).toList());
         return user;
     }
 
@@ -97,5 +104,6 @@ public class UserServiceImpl implements UserService {
         user.setAddress(userDto.getAddress());
         user.setBirthday(userDto.getBirthday());
         user.setRole(roleService.findEntityById(userDto.getRoleId()));
+        user.setAuthorities(userDto.getAuthoritiesIds().stream().map(authorityService::findEntityById).collect(Collectors.toList()));
     }
 }

@@ -14,6 +14,8 @@
             <input type="text" id="name" th:field="*{name}" placeholder="Enter name" class="form-control" required>
             <label for="email" class="mt-2">Email <span class="text-danger font-weight-bold">*</span></label>
             <input type="email" id="email" th:field="*{email}" placeholder="Enter email" class="form-control" required>
+            <label for="password" class="mt-2">Password <span class="text-danger font-weight-bold">*</span></label>
+            <input type="password" id="password" th:field="*{password}" placeholder="Enter password" class="form-control" required>
             <label for="mobile" class="mt-2">Mobile <span class="text-danger font-weight-bold">*</span></label>
             <input type="text" id="mobile" th:field="*{mobile}" placeholder="Enter mobile" class="form-control" required>
             <label for="address" class="mt-2">Address <span class="text-danger font-weight-bold">*</span></label>
@@ -27,17 +29,17 @@
             <label for="employment-type">Employment Type <span class="text-danger font-weight-bold">*</span></label>
             <select name="employment-type" id="employment-type" th:field="*{employmentType}" class="custom-select form-control" required>
               <option value="" hidden>---Choose employment type---</option>
-              <option th:each="type : ${T(com.project.ems.employee.enums.EmploymentType).values()}" th:text="${type}" th:value="${type}"></option>
+              <option th:each="type : ${T(com.project.ems.employee.enums.EmploymentType).values()}" th:value="${type}">[[${type}]]</option>
             </select>
             <label for="position" class="mt-2">Position <span class="text-danger font-weight-bold">*</span></label>
             <select name="position" id="position" th:field="*{position}" class="custom-select form-control" required>
               <option value="" hidden>---Choose position---</option>
-              <option th:each="position : ${T(com.project.ems.employee.enums.Position).values()}" th:text="${position}" th:value="${position}"></option>
+              <option th:each="position : ${T(com.project.ems.employee.enums.Position).values()}" th:value="${position}">[[${position}]]</option>
             </select>
             <label for="grade" class="mt-2">Grade <span class="text-danger font-weight-bold">*</span></label>
             <select name="grade" id="grade" th:field="*{grade}" class="custom-select form-control" required>
               <option value="" hidden>---Choose grade---</option>
-              <option th:each="grade : ${T(com.project.ems.employee.enums.Grade).values()}" th:text="${grade}" th:value="${grade}"></option>
+              <option th:each="grade : ${T(com.project.ems.employee.enums.Grade).values()}" th:value="${grade}">[[${grade}]]</option>
             </select>
             <label for="mentor-id" class="mt-2">Mentor ID <span class="text-danger font-weight-bold">*</span></label>
             <input type="number" id="mentor-id" th:field="*{mentorId}" placeholder="Enter mentor ID" class="form-control" required>
@@ -45,6 +47,8 @@
             <input type="text" id="studies-ids" th:field="*{studiesIds}" placeholder="Enter studies IDs" class="form-control" required>
             <label for="experiences-ids" class="mt-2">Experiences IDs <span class="text-danger font-weight-bold">*</span></label>
             <input type="text" id="experiences-ids" th:field="*{experiencesIds}" placeholder="Enter experiences IDs" class="form-control" required>
+            <label for="authorities-ids" class="mt-2">Authorities IDs <span class="text-danger font-weight-bold">*</span></label>
+            <input type="text" id="authorities-ids" th:field="*{authoritiesIds}" placeholder="Enter authorities IDs" class="form-control" required>
           </div>
         </div>
         <button type="submit" class="btn btn-success btn-container"><i class="fa fa-save"></i> [[${(id == -1) ? 'Save' : 'Update'}]]</button>

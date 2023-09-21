@@ -1,5 +1,7 @@
 package com.project.ems.unit.mentor;
 
+import com.project.ems.authority.Authority;
+import com.project.ems.authority.AuthorityService;
 import com.project.ems.employee.Employee;
 import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
@@ -32,6 +34,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import static com.project.ems.constants.ExceptionMessageConstants.MENTOR_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
@@ -39,6 +42,7 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
+import static com.project.ems.mock.AuthorityMock.getMockedAuthorities;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences1;
 import static com.project.ems.mock.ExperienceMock.getMockedExperiences2;
@@ -57,6 +61,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -78,10 +83,16 @@ class MentorServiceImplTest {
     private RoleService roleService;
 
     @Mock
+    private AuthorityService authorityService;
+
+    @Mock
     private StudyService studyService;
 
     @Mock
     private ExperienceService experienceService;
+
+    @Mock
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Spy
     private ModelMapper modelMapper;
@@ -94,6 +105,7 @@ class MentorServiceImplTest {
     private List<Mentor> mentors;
     private Employee employee;
     private Role role;
+    private List<Authority> authorities;
     private List<Study> studies1;
     private List<Study> studies2;
     private List<Experience> experiences1;
@@ -109,6 +121,7 @@ class MentorServiceImplTest {
         mentors = getMockedMentors();
         employee = getMockedEmployee1();
         role = getMockedRole2();
+        authorities = getMockedAuthorities();
         studies1 = getMockedStudies1();
         studies2 = getMockedStudies2();
         experiences1 = getMockedExperiences1();
@@ -142,8 +155,10 @@ class MentorServiceImplTest {
     @Test
     void save_shouldAddMentorToList() {
         given(roleService.findEntityById(anyInt())).willReturn(role);
+        mentorDto1.getAuthoritiesIds().forEach(id -> given(authorityService.findEntityById(id)).willReturn(authorities.get(id - 1)));
         mentorDto1.getStudiesIds().forEach(id -> given(studyService.findEntityById(id)).willReturn(studies1.get(id - 1)));
         mentorDto1.getExperiencesIds().forEach(id -> given(experienceService.findEntityById(id)).willReturn(experiences1.get(id - 1)));
+        given(passwordEncoder.encode(anyString())).willReturn(mentorDto1.getPassword());
         given(mentorRepository.save(any(Mentor.class))).willReturn(mentor1);
         MentorDto result = mentorService.save(mentorDto1);
         verify(mentorRepository).save(mentorCaptor.capture());
@@ -155,8 +170,10 @@ class MentorServiceImplTest {
         Mentor mentor = mentor2; mentor.setId(VALID_ID);
         given(mentorRepository.findById(anyInt())).willReturn(Optional.ofNullable(mentor1));
         given(roleService.findEntityById(anyInt())).willReturn(role);
+        mentorDto2.getAuthoritiesIds().forEach(id -> given(authorityService.findEntityById(id)).willReturn(authorities.get(id - 1)));
         mentorDto2.getStudiesIds().forEach(id -> given(studyService.findEntityById(id)).willReturn(studies2.get(id - 3)));
         mentorDto2.getExperiencesIds().forEach(id -> given(experienceService.findEntityById(id)).willReturn(experiences2.get(id - 3)));
+        given(passwordEncoder.encode(anyString())).willReturn(mentorDto2.getPassword());
         given(mentorRepository.save(any(Mentor.class))).willReturn(mentor);
         MentorDto result = mentorService.updateById(mentorDto2, VALID_ID);
         verify(mentorRepository).save(mentorCaptor.capture());

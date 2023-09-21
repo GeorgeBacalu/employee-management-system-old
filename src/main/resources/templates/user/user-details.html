@@ -14,7 +14,8 @@
           <p>Mobile: [[${user.mobile}]]</p>
           <p>Address: [[${user.address}]]</p>
           <p>Birthday: [[${user.birthday}]]</p>
-          <p>Role: [[${user.role.authority}]]</p>
+          <p>Role: [[${user.role.type}]]</p>
+          <p>Authorities: <span th:each="authority : ${user.authorities}">[[${authority.type}]] </span></p>
         </div>
         <a th:href="@{/users}" type="button" class="btn btn-secondary btn-container"><i class="fas fa-arrow-left"></i> Back</a>
       </div>

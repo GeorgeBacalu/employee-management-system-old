@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/_fragments/layout :: head('Role Details')}"></head>
+<head th:replace="~{/_fragments/layout :: head('Authority Details')}"></head>
 <body>
 <header th:replace="~{/_fragments/layout :: header}"></header>
 <main class="container my-2">
   <div class="card px-3">
-    <h3 class="text-center">Role Details</h3>
+    <h3 class="text-center">Authority Details</h3>
     <div class="card-body">
       <div class="row details">
         <div class="col-md-12">
-          <p>ID: [[${role.id}]]</p>
-          <p>Authority: [[${role.type}]]</p>
+          <p>ID: [[${authority.id}]]</p>
+          <p>Authority: [[${authority.type}]]</p>
         </div>
-        <a th:href="@{/roles}" type="button" class="btn btn-secondary btn-container"><i class="fas fa-arrow-left"></i> Back</a>
+        <a th:href="@{/authorities}" type="button" class="btn btn-secondary btn-container"><i class="fas fa-arrow-left"></i> Back</a>
       </div>
     </div>
   </div>

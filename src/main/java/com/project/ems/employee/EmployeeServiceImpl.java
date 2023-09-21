@@ -1,5 +1,7 @@
 package com.project.ems.employee;
 
+import com.project.ems.authority.Authority;
+import com.project.ems.authority.AuthorityService;
 import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.experience.Experience;
 import com.project.ems.experience.ExperienceService;
@@ -25,6 +27,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final RoleService roleService;
+    private final AuthorityService authorityService;
     private final MentorService mentorService;
     private final StudyService studyService;
     private final ExperienceService experienceService;
@@ -84,6 +87,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeDto convertToDto(Employee employee) {
         EmployeeDto employeeDto = modelMapper.map(employee, EmployeeDto.class);
+        employeeDto.setAuthoritiesIds(employee.getAuthorities().stream().map(Authority::getId).toList());
         employeeDto.setStudiesIds(employee.getStudies().stream().map(Study::getId).toList());
         employeeDto.setExperiencesIds(employee.getExperiences().stream().map(Experience::getId).toList());
         return employeeDto;
@@ -94,6 +98,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = modelMapper.map(employeeDto, Employee.class);
         employee.setRole(roleService.findEntityById(employeeDto.getRoleId()));
         employee.setMentor(mentorService.findEntityById(employeeDto.getMentorId()));
+        employee.setAuthorities(employeeDto.getAuthoritiesIds().stream().map(authorityService::findEntityById).toList());
         employee.setStudies(employeeDto.getStudiesIds().stream().map(studyService::findEntityById).toList());
         employee.setExperiences(employeeDto.getExperiencesIds().stream().map(experienceService::findEntityById).toList());
         return employee;
@@ -111,6 +116,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         employee.setAddress(employeeDto.getAddress());
         employee.setBirthday(employeeDto.getBirthday());
         employee.setRole(roleService.findEntityById(employeeDto.getRoleId()));
+        employee.setAuthorities(employeeDto.getAuthoritiesIds().stream().map(authorityService::findEntityById).collect(Collectors.toList()));
         employee.setEmploymentType(employeeDto.getEmploymentType());
         employee.setPosition(employeeDto.getPosition());
         employee.setGrade(employeeDto.getGrade());

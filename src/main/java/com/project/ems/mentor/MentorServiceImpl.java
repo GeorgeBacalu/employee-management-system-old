@@ -1,5 +1,7 @@
 package com.project.ems.mentor;
 
+import com.project.ems.authority.Authority;
+import com.project.ems.authority.AuthorityService;
 import com.project.ems.employee.EmployeeRepository;
 import com.project.ems.exception.ResourceNotFoundException;
 import com.project.ems.experience.Experience;
@@ -26,6 +28,7 @@ public class MentorServiceImpl implements MentorService {
     private final MentorRepository mentorRepository;
     private final EmployeeRepository employeeRepository;
     private final RoleService roleService;
+    private final AuthorityService authorityService;
     private final StudyService studyService;
     private final ExperienceService experienceService;
     private final ModelMapper modelMapper;
@@ -88,6 +91,7 @@ public class MentorServiceImpl implements MentorService {
         MentorDto mentorDto = modelMapper.map(mentor, MentorDto.class);
         Mentor supervisingMentor = mentor.getSupervisingMentor();
         mentorDto.setSupervisingMentorId(supervisingMentor != null ? supervisingMentor.getId() : null);
+        mentorDto.setAuthoritiesIds(mentor.getAuthorities().stream().map(Authority::getId).toList());
         mentorDto.setStudiesIds(mentor.getStudies().stream().map(Study::getId).toList());
         mentorDto.setExperiencesIds(mentor.getExperiences().stream().map(Experience::getId).toList());
         return mentorDto;
@@ -99,6 +103,7 @@ public class MentorServiceImpl implements MentorService {
         Integer supervisingMentorId = mentorDto.getSupervisingMentorId();
         mentor.setRole(roleService.findEntityById(mentorDto.getRoleId()));
         mentor.setSupervisingMentor(supervisingMentorId != null ? this.findEntityById(supervisingMentorId) : null);
+        mentor.setAuthorities(mentorDto.getAuthoritiesIds().stream().map(authorityService::findEntityById).toList());
         mentor.setStudies(mentorDto.getStudiesIds().stream().map(studyService::findEntityById).toList());
         mentor.setExperiences(mentorDto.getExperiencesIds().stream().map(experienceService::findEntityById).toList());
         return mentor;
@@ -118,6 +123,7 @@ public class MentorServiceImpl implements MentorService {
         mentor.setAddress(mentorDto.getAddress());
         mentor.setBirthday(mentorDto.getBirthday());
         mentor.setRole(roleService.findEntityById(mentorDto.getRoleId()));
+        mentor.setAuthorities(mentorDto.getAuthoritiesIds().stream().map(authorityService::findEntityById).collect(Collectors.toList()));
         mentor.setEmploymentType(mentorDto.getEmploymentType());
         mentor.setPosition(mentorDto.getPosition());
         mentor.setGrade(mentorDto.getGrade());

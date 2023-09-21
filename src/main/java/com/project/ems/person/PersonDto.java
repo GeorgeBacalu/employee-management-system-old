@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import java.time.LocalDate;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -45,4 +46,9 @@ public class PersonDto {
     @NotNull(message = "Role ID must not be null")
     @Positive(message = "Role ID must be positive")
     private Integer roleId;
+
+    private List<
+          @NotNull(message = "Authority ID must not be null")
+          @Positive(message = "Authority ID must be positive")
+          Integer> authoritiesIds;
 }

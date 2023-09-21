@@ -27,7 +27,8 @@
           </ul>
         </div>
         <div class="col-md-6">
-          <p>Role: [[${employee.role.authority}]]</p>
+          <p>Role: [[${employee.role.type}]]</p>
+          <p>Authorities: <span th:each="authority : ${employee.authorities}">[[${authority.type}]] </span></p>
           <p>Employment type: [[${employee.employmentType}]]</p>
           <p>Position: [[${employee.position}]]</p>
           <p>Grade: [[${employee.grade}]]</p>

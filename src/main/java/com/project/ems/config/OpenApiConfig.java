@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
             version = "1.0.0",
             contact = @Contact(name = "George Bacalu", email = "georgebacalu83@gmail.com")),
       tags = {
+            @Tag(name = "authority", description = "Authority REST Controller operations"),
             @Tag(name = "employee", description = "Employee REST Controller operations"),
             @Tag(name = "experience", description = "Experience REST Controller operations"),
             @Tag(name = "feedback", description = "Feedback REST Controller operations"),

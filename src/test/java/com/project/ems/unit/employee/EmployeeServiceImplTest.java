@@ -1,5 +1,7 @@
 package com.project.ems.unit.employee;
 
+import com.project.ems.authority.Authority;
+import com.project.ems.authority.AuthorityService;
 import com.project.ems.employee.Employee;
 import com.project.ems.employee.EmployeeDto;
 import com.project.ems.employee.EmployeeRepository;
@@ -32,6 +34,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import static com.project.ems.constants.ExceptionMessageConstants.EMPLOYEE_NOT_FOUND;
 import static com.project.ems.constants.IdentifierConstants.INVALID_ID;
@@ -39,6 +42,7 @@ import static com.project.ems.constants.IdentifierConstants.VALID_ID;
 import static com.project.ems.constants.PaginationConstants.pageable;
 import static com.project.ems.constants.PaginationConstants.pageable2;
 import static com.project.ems.constants.PaginationConstants.pageable3;
+import static com.project.ems.mock.AuthorityMock.getMockedAuthorities;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee1;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployee2;
 import static com.project.ems.mock.EmployeeMock.getMockedEmployeeDto1;
@@ -59,6 +63,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.never;
@@ -77,6 +82,9 @@ class EmployeeServiceImplTest {
     private RoleService roleService;
 
     @Mock
+    private AuthorityService authorityService;
+
+    @Mock
     private MentorService mentorService;
 
     @Mock
@@ -84,6 +92,9 @@ class EmployeeServiceImplTest {
 
     @Mock
     private ExperienceService experienceService;
+
+    @Mock
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Spy
     private ModelMapper modelMapper;
@@ -98,6 +109,7 @@ class EmployeeServiceImplTest {
     private Role role2;
     private Mentor mentor1;
     private Mentor mentor2;
+    private List<Authority> authorities;
     private List<Study> studies1;
     private List<Study> studies2;
     private List<Experience> experiences1;
@@ -115,6 +127,7 @@ class EmployeeServiceImplTest {
         role2 = getMockedRole2();
         mentor1 = getMockedMentor1();
         mentor2 = getMockedMentor2();
+        authorities = getMockedAuthorities();
         studies1 = getMockedStudies1();
         studies2 = getMockedStudies2();
         experiences1 = getMockedExperiences1();
@@ -149,8 +162,10 @@ class EmployeeServiceImplTest {
     void save_shouldAddEmployeeToList() {
         given(roleService.findEntityById(anyInt())).willReturn(role1);
         given(mentorService.findEntityById(anyInt())).willReturn(mentor1);
+        employeeDto1.getAuthoritiesIds().forEach(id -> given(authorityService.findEntityById(id)).willReturn(authorities.get(id - 1)));
         employeeDto1.getStudiesIds().forEach(id -> given(studyService.findEntityById(id)).willReturn(studies1.get(id - 1)));
         employeeDto1.getExperiencesIds().forEach(id -> given(experienceService.findEntityById(id)).willReturn(experiences1.get(id - 1)));
+        given(passwordEncoder.encode(anyString())).willReturn(employeeDto1.getPassword());
         given(employeeRepository.save(any(Employee.class))).willReturn(employee1);
         EmployeeDto result = employeeService.save(employeeDto1);
         verify(employeeRepository).save(employeeCaptor.capture());
@@ -163,8 +178,10 @@ class EmployeeServiceImplTest {
         given(employeeRepository.findById(anyInt())).willReturn(Optional.ofNullable(employee1));
         given(roleService.findEntityById(anyInt())).willReturn(role2);
         given(mentorService.findEntityById(anyInt())).willReturn(mentor2);
+        employeeDto2.getAuthoritiesIds().forEach(id -> given(authorityService.findEntityById(id)).willReturn(authorities.get(id - 1)));
         employeeDto2.getStudiesIds().forEach(id -> given(studyService.findEntityById(id)).willReturn(studies2.get(id - 3)));
         employeeDto2.getExperiencesIds().forEach(id -> given(experienceService.findEntityById(id)).willReturn(experiences2.get(id - 3)));
+        given(passwordEncoder.encode(anyString())).willReturn(employeeDto2.getPassword());
         given(employeeRepository.save(any(Employee.class))).willReturn(employee);
         EmployeeDto result = employeeService.updateById(employeeDto2, VALID_ID);
         verify(employeeRepository).save(employeeCaptor.capture());

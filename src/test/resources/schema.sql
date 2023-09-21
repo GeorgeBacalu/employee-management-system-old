@@ -2,6 +2,7 @@ drop table if exists employees_studies;
 drop table if exists employees_experiences;
 drop table if exists mentors_studies;
 drop table if exists mentors_experiences;
+drop table if exists users_authorities;
 drop table if exists employees;
 drop table if exists mentors;
 drop table if exists studies;
@@ -9,11 +10,18 @@ drop table if exists experiences;
 drop table if exists feedbacks;
 drop table if exists users;
 drop table if exists roles;
+drop table if exists authorities;
+
+create table if not exists authorities
+(
+    id   int auto_increment primary key,
+    type varchar(255) not null
+);
 
 create table if not exists roles
 (
-    id        int auto_increment primary key,
-    authority varchar(255) not null
+    id   int auto_increment primary key,
+    type varchar(255) not null
 );
 
 create table if not exists users
@@ -98,6 +106,14 @@ create table if not exists employees
     position        varchar(255) not null,
     foreign key (mentor_id) references mentors (id),
     foreign key (role_id) references roles (id)
+);
+
+create table if not exists users_authorities
+(
+    authority_id int not null,
+    user_id      int not null,
+    foreign key (authority_id) references authorities (id),
+    foreign key (user_id) references users (id)
 );
 
 create table if not exists mentors_experiences

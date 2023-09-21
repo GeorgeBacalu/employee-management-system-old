@@ -18,7 +18,7 @@
           <label for="type" class="mt-2">Experience type <span class="text-danger font-weight-bold">*</span></label>
           <select name="type" id="type" th:field="*{type}" class="custom-select form-control" required>
             <option value="" hidden>---Choose experience type---</option>
-            <option th:each="type : ${T(com.project.ems.experience.enums.ExperienceType).values()}" th:text="${type}" th:value="${type}"></option>
+            <option th:each="type : ${T(com.project.ems.experience.enums.ExperienceType).values()}" th:value="${type}">[[${type}]]</option>
           </select>
           <label for="started-at" class="mt-2">Starting date <span class="text-danger font-weight-bold">*</span></label>
           <input type="date" id="started-at" th:field="*{startedAt}" placeholder="Enter starting date" class="form-control" required>

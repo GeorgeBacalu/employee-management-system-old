@@ -10,14 +10,14 @@
     <thead class="thead-dark">
     <tr>
       <th>ID</th>
-      <th>Authority</th>
+      <th>Role Type</th>
       <th>Actions</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="role : ${roles}">
       <td>[[${role.id}]]</td>
-      <td>[[${role.authority}]]</td>
+      <td>[[${role.type}]]</td>
       <td>
         <a th:href="@{'/roles/save/' + ${role.id}}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i> Update</a>
         <a th:href="@{'/roles/' + ${role.id}}" class="btn btn-sm btn-info"><i class="fas fa-info-circle"></i> View details</a>

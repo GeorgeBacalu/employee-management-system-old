@@ -14,8 +14,8 @@
           <p>Mobile: [[${mentor.mobile}]]</p>
           <p>Address: [[${mentor.address}]]</p>
           <p>Birthday: [[${mentor.birthday}]]</p>
-          <p>Role: [[${mentor.role.authority}]]</p>
-          <p>Mentor: [[${mentor.supervisingMentor != null ? mentor.supervisingMentor.name : 'null'}]]</p>
+          <p>Role: [[${mentor.role.type}]]</p>
+          <p>Authorities: <span th:each="authority : ${mentor.authorities}">[[${authority.type}]] </span></p>
           <p>Studies: </p>
           <ul th:each="study : ${mentor.studies}">
             <li>
@@ -29,6 +29,7 @@
           </ul>
         </div>
         <div class="col-md-6">
+          <p>Mentor: [[${mentor.supervisingMentor != null ? mentor.supervisingMentor.name : 'null'}]]</p>
           <p>Employment type: [[${mentor.employmentType}]]</p>
           <p>Position: [[${mentor.position}]]</p>
           <p>Grade: [[${mentor.grade}]]</p>

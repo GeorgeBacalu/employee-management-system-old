@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/_fragments/layout :: head('Save Authority')}"></head>
+<body>
+<header th:replace="~{/_fragments/layout :: header}"></header>
+<main class="container my-2">
+  <div class="card px-3">
+    <h3 class="text-center">[[${(id == -1) ? 'Save' : 'Update'}]] Authority</h3>
+    <div class="card-body">
+      <form th:action="@{'/authorities/save/' + ${id}}" method="post" th:object="${authorityDto}">
+        <div class="row mb-3">
+          <label for="authority">Authority <span class="text-danger font-weight-bold">*</span></label>
+          <select name="authority" id="authority" th:field="*{type}" class="custom-select form-control" required>
+          <option value="" hidden>---Choose authority---</option>
+          <option th:each="authority : ${T(com.project.ems.authority.enums.AuthorityType).values()}" th:value="${authority}">[[${authority}]]</option>
+        </select>
+        </div>
+        <button type="submit" class="btn btn-success btn-container"><i class="fa fa-save"></i> [[${(id == -1) ? 'Save' : 'Update'}]]</button>
+        <a th:href="@{/authorities}" type="button" class="btn btn-danger btn-container ml-2"><i class="fa fa-times"></i> Cancel</a>
+      </form>
+    </div>
+  </div>
+</main>
+<footer th:replace="~{/_fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -8,6 +8,11 @@ public class ThymeleafViewConstants {
 
     public static final String TEXT_HTML_UTF8 = "text/html;charset=UTF-8";
 
+    public static final String AUTHORITIES_VIEW = "authority/authorities";
+    public static final String AUTHORITY_DETAILS_VIEW = "authority/authority-details";
+    public static final String SAVE_AUTHORITY_VIEW = "authority/save-authority";
+    public static final String REDIRECT_AUTHORITIES_VIEW = "redirect:/authorities";
+
     public static final String EMPLOYEES_VIEW = "employee/employees";
     public static final String EMPLOYEE_DETAILS_VIEW = "employee/employee-details";
     public static final String SAVE_EMPLOYEE_VIEW = "employee/save-employee";
